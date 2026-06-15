@@ -1,0 +1,2095 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Silanes ARN · Dashboard Regulatorio 2025-2030</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#F1F5F9;color:#0F172A;font-size:13px}
+/* ── HEADER PRINCIPAL ── */
+.main-hdr{background:#0F172A;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;border-bottom:1px solid #1E293B}
+.main-hdr h1{color:#fff;font-size:17px;font-weight:800;letter-spacing:-.01em}
+.main-hdr p{color:rgba(255,255,255,.45);font-size:10px;margin-top:2px}
+/* ── TABS PRINCIPALES (universos) ── */
+.main-tabs{background:#0F172A;display:flex;padding:0 22px;gap:4px}
+.main-tab{padding:12px 20px;border:none;background:transparent;color:rgba(255,255,255,.45);font-size:12px;font-weight:800;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap;letter-spacing:.03em;transition:all .2s}
+.main-tab.on{color:#fff;border-bottom-color:#3B82F6;background:rgba(59,130,246,.08)}
+.main-tab:hover{color:rgba(255,255,255,.85)}
+.main-tab-bar{background:#0F172A;border-bottom:2px solid #1E293B}
+/* ── UNIVERSO ── */
+.universe{display:none}
+.universe.on{display:block}
+/* ── SUB-HEADER (filtros de cada universo) ── */
+.sub-hdr{background:#1E293B;padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #334155}
+.sub-hdr select{font-size:11px;padding:5px 10px;border-radius:7px;border:1px solid #334155;background:#0F172A;color:#fff;cursor:pointer;font-weight:600}
+.sub-hdr .info{margin-left:auto;font-size:11px;font-weight:700;color:#93C5FD}
+/* ── TABS SECUNDARIOS (secciones) ── */
+.sec-tabs{background:#F8FAFC;border-bottom:1.5px solid #E2E8F0;display:flex;padding:0 18px;overflow-x:auto}
+.sec-tab{padding:9px 16px;border:none;background:transparent;color:#64748B;font-size:11px;font-weight:700;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.sec-tab.on{color:#1E40AF;border-bottom-color:#3B82F6}
+.sec-tab:hover{color:#374151}
+/* ── CONTENIDO ── */
+.pg{padding:14px 18px;display:flex;flex-direction:column;gap:14px}
+.hidden{display:none!important}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.card{background:#fff;border-radius:12px;padding:15px 18px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.ct{font-size:10px;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+/* ── KPI ── */
+.kpi{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-top:4px solid}
+.kl{font-size:9px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.kv{font-size:26px;font-weight:900;line-height:1}
+.ks{font-size:10px;color:#64748B;margin-top:3px}
+.kb{height:4px;background:#E2E8F0;border-radius:3px;margin-top:7px}
+.kbf{height:4px;border-radius:3px}
+/* ── PROGRESS BARS ── */
+.pr{margin-bottom:10px}
+.pt{display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px}
+.pb{background:#F1F5F9;border-radius:5px;height:9px;overflow:hidden}
+.pbf{height:9px;border-radius:5px}
+/* ── TABLES ── */
+.tw{overflow-x:auto;max-height:440px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;min-width:500px}
+th{padding:7px 9px;font-size:9px;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #E2E8F0;text-align:left;background:#F8FAFC;white-space:nowrap;position:sticky;top:0;z-index:1}
+td{padding:6px 9px;border-bottom:1px solid #F1F5F9;color:#1E293B;vertical-align:middle}
+tr:hover td{background:#F8FAFC}
+/* ── BADGES ── */
+.badge{display:inline-block;border-radius:5px;padding:2px 8px;font-size:9px;font-weight:800;white-space:nowrap}
+/* ── TOGGLES / ALERTS ── */
+.tgl-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.tgl{padding:6px 14px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;opacity:.6;transition:all .15s}
+.tgl.on{opacity:1;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.stgl{padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;opacity:.55;transition:all .15s}
+.stgl.on{opacity:1}
+.sm{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.sm-card{background:#fff;border-radius:12px;padding:20px 14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.07);cursor:pointer;transition:transform .15s}
+.sm-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.sf{font-size:11px;padding:6px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#0F172A;min-width:200px}
+.sf:focus{outline:none;border-color:#3B82F6}
+.uc-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:#F8FAFC;border-radius:10px;margin-bottom:8px;border-left:4px solid}
+@media(max-width:600px){.g2,.g3,.sm{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+
+
+
+
+<!-- ══════ HEADER PRINCIPAL ══════ -->
+<div class="main-hdr">
+  <div>
+    <h1>🏥 Silanes · Dashboard Regulatorio</h1>
+    <p>Plan de Trabajo ARN 2025–2030 &nbsp;|&nbsp; Registro de Pagos COFEPRIS</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div id="sello-actualizacion" style="font-size:11px;color:#FCD34D;font-weight:600">&#8987; Cargando...</div>
+    <button id="btn-actualizar" onclick="cargarDatosEnVivo()" style="background:#1E40AF;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">&#128260; Actualizar</button>
+  </div>
+</div>
+
+<!-- ══════ TABS PRINCIPALES ══════ -->
+<div class="main-tab-bar">
+  <div class="main-tabs">
+    <button class="main-tab on" onclick="showUniverse('arn',this)">📋 Plan de Trabajo ARN</button>
+    <button class="main-tab" onclick="showUniverse('pag',this)">💳 Registro de Pagos</button>
+    <button class="main-tab" onclick="showUniverse('ari',this)">🌎 Plan de Trabajo ARI</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     UNIVERSO 1: PLAN DE TRABAJO ARN
+══════════════════════════════════════ -->
+<div id="uni-arn" class="universe on">
+  <!-- Filtros ARN -->
+  <div class="sub-hdr">
+    <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
+    <select id="a-fy" onchange="applyARN()">
+      <option value="">Todos los años</option>
+      <option>2025</option><option>2026</option><option>2027</option>
+      <option>2028</option><option>2029</option><option>2030</option>
+    </select>
+    <select id="a-ft" onchange="applyARN()">
+      <option value="">Todos los tipos</option>
+      <option>MCR</option><option>Prorroga</option><option>BPF/Licencia sanitaria</option>
+      <option>Corrección interna</option><option>Controlados</option><option>EL</option><option>Aviso</option>
+    </select>
+    <select id="a-fr" onchange="applyARN()">
+      <option value="">Todos los responsables</option>
+      <option>Ivan Torres Martinez</option><option>Itzel Flores Portilla</option>
+      <option>Karla Cristina Jiménez García</option><option>Monica Mezquita Alcocer</option>
+      <option>Alejandro Oviedo Becerril</option>
+    </select>
+    <select id="a-fry" onchange="applyARN()">
+      <option value="">Año resolución: Todos</option>
+      <option>Sin resolución</option>
+      <option>2025</option><option>2026</option>
+    </select>
+    <span class="info" id="a-info">150 trámites</span>
+  </div>
+  <!-- Tabs ARN -->
+  <div class="sec-tabs">
+    <button class="sec-tab on" onclick="showARNTab('ov',this)">📊 Resumen Ejecutivo</button>
+    <button class="sec-tab" onclick="showARNTab('an',this)">📈 Análisis</button>
+    <button class="sec-tab" onclick="showARNTab('eq',this)">👥 Equipo</button>
+    <button class="sec-tab" onclick="showARNTab('al',this)">🚨 Alertas</button>
+    <button class="sec-tab" onclick="showARNTab('dt',this)">📋 Detalle</button>
+  </div>
+  <!-- ARN: Resumen -->
+  <div id="a-pg-ov" class="pg">
+    <div class="g4" id="a-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Índice de Salud Regulatoria</div>
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <canvas id="a-gauge" width="220" height="130"></canvas>
+          <div id="a-gauge-txt" style="font-size:12px;color:#64748B;margin-top:6px;text-align:center"></div>
+        </div>
+        <div class="g3" id="a-gauge-stats" style="gap:8px;margin-top:12px"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Cumplimiento General</div>
+        <div style="height:190px"><canvas id="a-cumpl">Cumplimiento</canvas></div>
+        <div id="a-cumpl-lg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Trámites por año de plan</div>
+      <div style="height:210px"><canvas id="a-year">Año</canvas></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Por tipo de trámite</div>
+        <div id="a-tipo-bars"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Por estado</div>
+        <div style="height:240px"><canvas id="a-estado">Estado</canvas></div>
+      </div>
+    </div>
+  </div>
+  <!-- ARN: Análisis -->
+  <div id="a-pg-an" class="pg hidden">
+    <div class="g2">
+      <div class="card">
+        <div class="ct">MCR por complejidad</div>
+        <div style="height:210px"><canvas id="a-mcr">MCR</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Tiempos de resolución (días: Ingreso → Resolución)</div>
+        <div style="height:210px"><canvas id="a-timing">Tiempos</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Cumplimiento cruzado por tipo</div>
+      <div style="height:250px"><canvas id="a-ct">Cumpl tipo</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Presupuestados vs No Presupuestados</div>
+      <div style="height:170px"><canvas id="a-pr">Presup</canvas></div>
+    </div>
+  </div>
+  <!-- ARN: Equipo -->
+  <div id="a-pg-eq" class="pg hidden">
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Carga total por responsable</div>
+        <div style="height:250px"><canvas id="a-resp">Resp</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Cumplimiento por responsable</div>
+        <div style="height:250px"><canvas id="a-rc">Resp cumpl</canvas></div>
+      </div>
+    </div>
+    <div class="g2" id="a-resp-cards"></div>
+  </div>
+  <!-- ARN: Alertas -->
+  <div id="a-pg-al" class="pg hidden">
+    <div class="sm" id="a-semaforo"></div>
+    <div class="tgl-bar">
+      <span style="font-size:10px;font-weight:800;color:#64748B;text-transform:uppercase">Ver:</span>
+      <button class="tgl on" id="a-tgl-at" onclick="setAV('at')" style="background:#DCFCE7;color:#15803D;border:2px solid #059669">✓ A tiempo</button>
+      <button class="tgl" id="a-tgl-re" onclick="setAV('re')" style="background:#FEE2E2;color:#991B1B;border:2px solid #DC2626">⚠ Atrasados</button>
+      <button class="tgl" id="a-tgl-rp" onclick="setAV('rp')" style="background:#EDE9FE;color:#5B21B6;border:2px solid #7C3AED">↺ Reprogramados</button>
+      <span id="a-al-cnt" style="margin-left:auto;font-size:11px;font-weight:700;color:#64748B"></span>
+    </div>
+    <div id="a-av-at" class="card">
+      <div class="ct" style="color:#059669">✓ Trámites A Tiempo</div>
+      <div class="tw"><table><thead><tr><th>#</th><th>Producto</th><th>Tipo</th><th>Responsable</th><th>F.Planeada</th><th>F.Ingreso</th><th>F.Resolución</th><th>Δ Días Plan/Ingreso</th><th>Monto</th></tr></thead><tbody id="a-bd-at"></tbody></table></div>
+    </div>
+    <div id="a-av-re" class="card hidden">
+      <div class="ct" style="color:#DC2626">⚠ Trámites Atrasados</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <button class="stgl on" id="a-sub-all" onclick="setSV('all')" style="background:#FEE2E2;color:#991B1B;border:1.5px solid #DC2626">Todos</button>
+        <button class="stgl" id="a-sub-res" onclick="setSV('res')" style="background:#FEF3C7;color:#92400E;border:1.5px solid #D97706">Atrasado resuelto</button>
+        <button class="stgl" id="a-sub-proc" onclick="setSV('proc')" style="background:#FEE2E2;color:#991B1B;border:1.5px solid #DC2626">En proceso</button>
+        <button class="stgl" id="a-sub-pend" onclick="setSV('pend')" style="background:#FEF3C7;color:#78350F;border:1.5px solid #B45309">Pendiente</button>
+      </div>
+      <div class="tw"><table><thead><tr><th>#</th><th>Producto</th><th>RS</th><th>Tipo</th><th>Responsable</th><th>Cumplimiento</th><th>F.Planeada</th><th>F.Ingreso</th><th>F.Resolución</th><th>Δ Días Plan/Ingreso</th></tr></thead><tbody id="a-bd-re"></tbody></table></div>
+    </div>
+    <div id="a-av-rp" class="card hidden">
+      <div class="ct" style="color:#7C3AED">↺ Trámites Reprogramados</div>
+      <p style="font-size:11px;color:#64748B;margin-bottom:10px">Fecha planeada actual del plan. Motivo en columna comentarios.</p>
+      <div class="tw"><table><thead><tr><th>#</th><th>Producto</th><th>RS</th><th>Tipo</th><th>Descripción</th><th>Responsable</th><th>Nueva Fecha Planeada</th><th>Estado</th><th>Motivo / Comentario</th></tr></thead><tbody id="a-bd-rp"></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="ct" style="color:#1D4ED8">📅 Próximos Vencimientos</div>
+      <div id="a-upcoming"></div>
+    </div>
+  </div>
+  <!-- ARN: Detalle -->
+  <div id="a-pg-dt" class="pg hidden">
+    <div class="card">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <input class="sf" id="a-srch" placeholder="Buscar producto o registro sanitario..." oninput="renderARNDet()">
+        <span id="a-det-cnt" style="font-size:11px;font-weight:700;color:#2563EB"></span>
+      </div>
+      <div class="tw"><table><thead><tr>
+        <th>Producto</th><th>RS</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Cumplimiento</th>
+        <th>Responsable</th><th>F.Planeada</th><th>F.Ingreso</th><th>F.Resolución</th><th>Δ días</th><th>Presup.</th><th>Monto</th>
+      </tr></thead><tbody id="a-det-body"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     UNIVERSO 2: REGISTRO DE PAGOS
+══════════════════════════════════════ -->
+<div id="uni-pag" class="universe">
+  <!-- Filtros Pagos -->
+  <div class="sub-hdr">
+    <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
+    <select id="p-fy" onchange="applyPAG()">
+      <option value="">Todos los años</option>
+      <option value="2025">2025</option><option value="2026">2026</option>
+    </select>
+    <select id="p-fm" onchange="applyPAG()">
+      <option value="">Todos los meses</option>
+      <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+      <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+    </select>
+    <select id="p-ft" onchange="applyPAG()">
+      <option value="">Todos los trámites</option>
+      <option>P.Import</option><option>Permiso Publicidad</option><option>MCR</option>
+      <option>Protocolo</option><option>Permiso Venta</option><option>Prórroga</option>
+      <option>Visita y Verificación</option><option>Permiso Adquisición</option>
+      <option>Ubicación Geo</option><option>RN</option><option>Multa</option>
+    </select>
+    <select id="p-fr" onchange="applyPAG()">
+      <option value="">Todos los responsables</option>
+      <option>M. Mezquita</option><option>I. Flores</option><option>MA. Flores</option>
+      <option>A. Oviedo</option><option>JC.Vargas</option><option>I. Torres</option>
+      <option>D. Castillo</option><option>K. Jimenez</option>
+    </select>
+    <select id="p-fc" style="display:none">
+      <option value="">Todas las llaves</option>
+      <option value="✅">✅ Confirmadas</option><option value="⚠️">⚠️ Pendientes</option>
+    </select>
+    <span class="info" id="p-info">351 pagos</span>
+  </div>
+  <!-- Tabs Pagos -->
+  <div class="sec-tabs">
+    <button class="sec-tab on" onclick="showPAGTab('ov',this)">📊 Resumen</button>
+    <button class="sec-tab" onclick="showPAGTab('mes',this)">📅 Por Mes</button>
+    <button class="sec-tab" onclick="showPAGTab('tram',this)">📋 Por Trámite</button>
+    <button class="sec-tab" onclick="showPAGTab('resp',this)">👤 Por Responsable</button>
+    <button class="sec-tab" onclick="showPAGTab('llaves',this)">🔑 Llaves de Pago</button>
+    <button class="sec-tab" onclick="showPAGTab('det',this)">🔎 Detalle</button>
+  </div>
+  <!-- Pagos: Resumen -->
+  <div id="p-pg-ov" class="pg">
+    <div class="g4" id="p-kpis"></div>
+    <!-- Planeado vs Real - tarjetas grandes -->
+    <div class="g2">
+      <div class="card" style="border-left:5px solid #059669">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em">Gasto Real Ejecutado</div>
+            <div style="font-size:11px;color:#64748B;margin-top:2px">Llave de pago + Num. de Entrada</div>
+          </div>
+          <div style="width:40px;height:40px;background:#DCFCE7;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">✅</div>
+        </div>
+        <div id="p-real-monto" style="font-size:38px;font-weight:900;color:#059669;line-height:1">$0</div>
+        <div id="p-real-cnt" style="font-size:12px;color:#64748B;margin-top:4px"></div>
+        <div style="background:#E2E8F0;border-radius:4px;height:8px;margin-top:12px;overflow:hidden">
+          <div id="p-real-bar" style="background:#059669;height:8px;border-radius:4px;transition:width .5s"></div>
+        </div>
+        <div id="p-real-pct" style="font-size:11px;color:#059669;font-weight:700;margin-top:5px"></div>
+      </div>
+      <div class="card" style="border-left:5px solid #3B82F6">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em">Gasto Planeado Sin Ejecutar</div>
+            <div style="font-size:11px;color:#64748B;margin-top:2px">Llave de pago SIN Num. de Entrada</div>
+          </div>
+          <div style="width:40px;height:40px;background:#DBEAFE;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">📊</div>
+        </div>
+        <div id="p-plan-monto" style="font-size:38px;font-weight:900;color:#3B82F6;line-height:1">$0</div>
+        <div id="p-plan-cnt" style="font-size:12px;color:#64748B;margin-top:4px"></div>
+        <div style="background:#E2E8F0;border-radius:4px;height:8px;margin-top:12px;overflow:hidden">
+          <div id="p-plan-bar" style="background:#3B82F6;height:8px;border-radius:4px;transition:width .5s"></div>
+        </div>
+        <div id="p-plan-pct" style="font-size:11px;color:#3B82F6;font-weight:700;margin-top:5px"></div>
+      </div>
+    </div>
+    <!-- Grafica planeado vs real por mes -->
+    <div class="card">
+      <div class="ct">Planeado vs Real por mes (monto $)</div>
+      <div style="height:230px"><canvas id="p-pvrmes">PvR mes</canvas></div>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="ct">Monto por tipo de trámite</div><div style="height:220px"><canvas id="p-tramite">Tram</canvas></div></div>
+      <div class="card"><div class="ct">Por dirección (PLANTA vs REGULATORIO)</div><div style="height:220px"><canvas id="p-dir">Dir</canvas></div></div>
+    </div>
+  </div>
+  <!-- Pagos: Por Mes -->
+  <div id="p-pg-mes" class="pg hidden">
+    <div class="card">
+      <div class="ct">Real vs Planeado por mes - Monto ($)</div>
+      <div style="height:230px"><canvas id="p-mes2">Mes m</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Real vs Planeado por mes - Cantidad de pagos</div>
+      <div style="height:210px"><canvas id="p-mes3">Mes c</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Detalle mensual - Planeado vs Real</div>
+      <div class="tw"><table><thead><tr>
+        <th>Mes</th><th>Año</th>
+        <th style="color:#059669">Pagos Reales</th><th style="color:#059669">Monto Real</th>
+        <th style="color:#D97706">Pagos Plan.</th><th style="color:#D97706">Monto Planeado</th>
+        <th>% Ejecucion</th>
+      </tr></thead><tbody id="p-mes-body"></tbody></table></div>
+    </div>
+  </div>
+  <!-- Pagos: Por Trámite -->
+  <div id="p-pg-tram" class="pg hidden">
+    <div class="card">
+      <div class="ct">Real vs Planeado por tipo de tramite ($)</div>
+      <div style="height:260px"><canvas id="p-tr2">T m</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Desglose completo por tramite</div>
+      <div id="p-tram-bars"></div>
+    </div>
+  </div>
+  <!-- Pagos: Por Responsable -->
+  <div id="p-pg-resp" class="pg hidden">
+    <div class="card">
+      <div class="ct">Real vs Planeado por responsable ($)</div>
+      <div style="height:260px"><canvas id="p-r2">R m</canvas></div>
+    </div>
+    <div class="g2" id="p-resp-cards"></div>
+  </div>
+  <!-- Pagos: Llaves de Pago -->
+  <div id="p-pg-llaves" class="pg hidden">
+    <div class="g4" id="p-llaves-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Distribucion de llaves de pago</div>
+        <div style="height:220px"><canvas id="p-llaves-donut">Llaves</canvas></div>
+        <div id="p-llaves-leg" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Monto por estado de llave ($)</div>
+        <div style="height:220px"><canvas id="p-llaves-monto">Monto llaves</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct" style="color:#059669">Gasto Real - tienen Llave + Num. de Entrada (208)</div>
+      <div class="tw"><table><thead><tr>
+        <th>#</th><th>Producto</th><th>Tramite</th><th>Responsable</th><th>Monto</th>
+        <th>Llave Pago</th><th>Num Entrada</th><th>F.Solicitado</th><th>Comentario</th>
+      </tr></thead><tbody id="p-usadas-body"></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="ct" style="color:#D97706">Planeado sin ejecutar - tienen Llave pero SIN Num. de Entrada (122)</div>
+      <p style="font-size:11px;color:#64748B;margin-bottom:10px">Pagos realizados sin tramite asociado aun. Presupuesto disponible.</p>
+      <div class="tw"><table><thead><tr>
+        <th>#</th><th>Producto</th><th>Tramite</th><th>Responsable</th><th>Monto</th>
+        <th>Llave Pago</th><th>F.Solicitado</th><th>Mes/Ano Sol.</th><th>Comentario</th>
+      </tr></thead><tbody id="p-disp-body"></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="ct" style="color:#DC2626">Llaves Duplicadas - misma llave en varios registros</div>
+      <p style="font-size:11px;color:#64748B;margin-bottom:10px">Revisar si son pagos complementarios o duplicados erroneos.</p>
+      <div class="tw"><table><thead><tr>
+        <th>Llave Pago</th><th>Veces</th><th>Producto</th><th>Tramite</th><th>Responsable</th>
+        <th>Monto</th><th>Num Entrada</th><th>Estado</th><th>Comentario</th>
+      </tr></thead><tbody id="p-dup-body"></tbody></table></div>
+    </div>
+  </div>
+  <!-- Pagos: Detalle -->
+  <div id="p-pg-det" class="pg hidden">
+    <div class="card">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <input class="sf" id="p-srch" placeholder="Buscar producto, llave, descripción..." oninput="renderPAGDet()">
+        <span id="p-det-cnt" style="font-size:11px;font-weight:700;color:#2563EB"></span>
+      </div>
+      <div class="tw"><table><thead><tr>
+        <th>#</th><th>Producto</th><th>Trámite</th><th>Descripción</th><th>Responsable</th>
+        <th>Monto</th><th>F.Solicitado</th><th>F.Entregado</th><th>Llave Pago</th><th>Confirm.</th><th>Comentario</th>
+      </tr></thead><tbody id="p-det-body"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCRIPTS ══ -->
+
+<div id="uni-ari" class="universe">
+  <div class="sub-hdr">
+    <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
+    <select id="ri-fp" onchange="applyARI()">
+      <option value="">Todos los paises</option>
+      <option>Guatemala</option><option>Nicaragua</option><option>Honduras</option>
+      <option>El Salvador</option><option>República Dominicana</option>
+      <option>Colombia</option><option>EUA</option>
+    </select>
+    <select id="ri-ft" onchange="applyARI()">
+      <option value="">Todos los tipos</option>
+      <option>MODIFICACIÓN / NOTIFICACIÓN</option><option>NUEVO REGISTRO</option>
+      <option>RENOVACIÓN</option><option>PERMISO EXPORTACIÓN</option>
+      <option>RENOVACIÓN BPM INVIMA</option>
+    </select>
+    <select id="ri-fd" onchange="applyARI()">
+      <option value="">Todos los dictamenes</option>
+      <option>APROBADO / CONCLUIDO</option><option>PROGRAMADO</option>
+      <option>REPROGRAMADO</option><option>EN EVALUACIÓN</option>
+      <option>CANCELADO</option><option>PREVENIDO POR CONTESTAR</option>
+      <option>RECHAZADO</option><option>PAGADO</option>
+    </select>
+    <select id="ri-fa" onchange="applyARI()">
+      <option value="">Todos los años</option>
+      <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
+    </select>
+    <span class="info" id="ri-info">443 trámites</span>
+  </div>
+  <div class="sec-tabs">
+    <button class="sec-tab on" onclick="showARITab('ov',this)">📊 Resumen</button>
+    <button class="sec-tab" onclick="showARITab('pais',this)">🌍 Por País</button>
+    <button class="sec-tab" onclick="showARITab('tiempos',this)">⏱ Tiempos</button>
+    <button class="sec-tab" onclick="showARITab('alertas',this)">🚨 Alertas</button>
+    <button class="sec-tab" onclick="showARITab('det',this)">📋 Detalle</button>
+  </div>
+
+  <!-- ARI: RESUMEN -->
+  <div id="ri-pg-ov" class="pg">
+    <div class="g4" id="ri-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Distribución por Dictamen (estatus actual)</div>
+        <div style="height:200px"><canvas id="ri-donut">Dictamen</canvas></div>
+        <div id="ri-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Trámites por País</div>
+        <div id="ri-pais-map" style="width:100%;overflow:hidden;border-radius:8px;background:#EFF6FF;min-height:200px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Volumen por mes programado y estatus</div>
+      <div style="height:220px"><canvas id="ri-mes">Mes</canvas></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Por tipo de trámite</div>
+        <div id="ri-tipo-bars"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Nuevos vs Continuación</div>
+        <div style="height:180px"><canvas id="ri-nc">NC</canvas></div>
+        <div class="ct" style="margin-top:14px">Por año programado</div>
+        <div style="height:120px"><canvas id="ri-anio">Anio</canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARI: POR PAÍS -->
+  <div id="ri-pg-pais" class="pg hidden">
+    <div class="card">
+      <div class="ct">Aprobados vs Total por país</div>
+      <div style="height:260px"><canvas id="ri-pais2">País2</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Cumplimiento por país (apilado)</div>
+      <div style="height:260px"><canvas id="ri-pais3">País3</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Desglose por país</div>
+      <div id="ri-pais-bars"></div>
+    </div>
+  </div>
+
+  <!-- ARI: TIEMPOS -->
+  <div id="ri-pg-tiempos" class="pg hidden">
+    <div class="g3" id="ri-time-kpis"></div>
+    <div class="card">
+      <div class="ct">Tiempo de evaluación por tipo (días naturales: mín / prom / máx)</div>
+      <div style="height:230px"><canvas id="ri-timing">Timing</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Distribución de tiempos (días naturales) — trámites resueltos</div>
+      <div style="height:210px"><canvas id="ri-tdist">Dist</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Detalle de tiempos por trámite</div>
+      <div class="tw"><table><thead><tr>
+        <th>Producto</th><th>País</th><th>Tipo</th><th>Dictamen</th>
+        <th>F.Sometimiento Real</th><th>F.Resolución</th>
+        <th>Días Naturales</th><th>Días Hábiles</th><th>Prevenciones</th>
+      </tr></thead><tbody id="ri-time-body"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- ARI: ALERTAS -->
+  <div id="ri-pg-alertas" class="pg hidden">
+    <div class="g3" id="ri-al-kpis"></div>
+    <div class="card">
+      <div class="ct" style="color:#DC2626">⚠️ Programados con fecha vencida (sin someter)</div>
+      <div class="tw"><table><thead><tr>
+        <th>#</th><th>Producto</th><th>País</th><th>Tipo</th><th>Nuevo/Cont.</th>
+        <th>F.Programada</th><th>Días vencido</th><th>Comentario</th>
+      </tr></thead><tbody id="ri-al-atrasado"></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="ct" style="color:#D97706">🔔 Prevenidos por contestar</div>
+      <div class="tw"><table><thead><tr>
+        <th>#</th><th>Producto</th><th>País</th><th>Tipo</th><th>No.Ingreso</th>
+        <th>Dictamen</th><th>Comentario</th>
+      </tr></thead><tbody id="ri-al-prev"></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="ct" style="color:#3B82F6">📅 Próximos sometimientos programados (siguientes 90 días)</div>
+      <div id="ri-upcoming"></div>
+    </div>
+    <div class="card">
+      <div class="ct" style="color:#7C3AED">🔄 Reprogramados — mayor concentración</div>
+      <div class="tw"><table><thead><tr>
+        <th>País</th><th>Reprogramados</th><th>% del país</th><th>Barra</th>
+      </tr></thead><tbody id="ri-al-reprog"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- ARI: DETALLE -->
+  <div id="ri-pg-det" class="pg hidden">
+    <div class="card">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <input class="sf" id="ri-srch" placeholder="Buscar producto, país, tipo..." oninput="renderARIDet()">
+        <span id="ri-det-cnt" style="font-size:11px;font-weight:700;color:#2563EB"></span>
+      </div>
+      <div class="tw"><table><thead><tr>
+        <th>#</th><th>Producto</th><th>País</th><th>Tipo</th><th>Descripción</th>
+        <th>Nuevo/Cont.</th><th>Dictamen</th><th>F.Prog.</th><th>F.Real Somet.</th>
+        <th>F.Resolución</th><th>No.Ingreso</th><th>Días Nat.</th><th>Días Háb.</th><th>Comentario</th>
+      </tr></thead><tbody id="ri-det-body"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Error catcher visible en pantalla ── */
+window.onerror=function(msg,src,line,col,err){
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#7F1D1D;color:#fff;padding:10px 16px;font-size:11px;font-family:monospace;z-index:9999;word-break:break-all';
+  d.textContent='ERROR L'+line+':'+col+' → '+msg+' | '+src;
+  document.body.appendChild(d);
+  return false;
+};
+
+/* ── Helpers seguros ── */
+function setTC(id,val){var e=document.getElementById(id);if(e)e.textContent=val;else console.warn('setTC: missing #'+id);}
+function setHTML(id,val){var e=document.getElementById(id);if(e)e.innerHTML=val;else console.warn('setHTML: missing #'+id);}
+function getEl(id){var e=document.getElementById(id);if(!e)console.warn('getEl: missing #'+id);return e;}
+
+/* ─── CONFIG COLORES ─── */
+var ARNTODAY='2026-05-29';
+var ACFG={'A tiempo':{bg:'#DCFCE7',c:'#15803D',bar:'#059669'},'Pendiente':{bg:'#DBEAFE',c:'#1D4ED8',bar:'#2563EB'},'Atrasado resuelto':{bg:'#FEF3C7',c:'#92400E',bar:'#D97706'},'Atrasado en proceso':{bg:'#FEE2E2',c:'#991B1B',bar:'#DC2626'},'Atrasado pendiente':{bg:'#FEF3C7',c:'#78350F',bar:'#B45309'},'Reprogramado':{bg:'#EDE9FE',c:'#5B21B6',bar:'#7C3AED'},'Cancelado':{bg:'#F3F4F6',c:'#374151',bar:'#6B7280'},'En proceso':{bg:'#CFFAFE',c:'#155E75',bar:'#0891B2'},'Aprobado s/fecha':{bg:'#ECFCCB',c:'#365314',bar:'#65A30D'}};
+var ATCLR={'MCR':'#1D4ED8','Prorroga':'#059669','BPF/Licencia sanitaria':'#7C3AED','Corrección interna':'#D97706','Controlados':'#DC2626','EL':'#0891B2','Aviso':'#6B7280'};
+var PTCLR={'P.Import':'#1D4ED8','Permiso Publicidad':'#059669','MCR':'#DC2626','Protocolo':'#7C3AED','Permiso Venta':'#D97706','Prórroga':'#0891B2','Visita y Verificación':'#BE185D','Permiso Adquisición':'#65A30D','Ubicación Geo':'#6B7280','RN':'#B45309','Multa':'#7F1D1D'};
+var PRCLR={'M. Mezquita':'#1E40AF','I. Flores':'#059669','MA. Flores':'#7C3AED','A. Oviedo':'#D97706','JC.Vargas':'#0891B2','I. Torres':'#DC2626','D. Castillo':'#BE185D','K. Jimenez':'#65A30D'};
+var ARESP_S={'Ivan Torres Martinez':'Ivan T.','Itzel Flores Portilla':'Itzel F.','Karla Cristina Jim\u00e9nez Garc\u00eda':'Karla J.','Monica Mezquita Alcocer':'Monica M.','Alejandro Oviedo Becerril':'Alejandro O.'};
+var MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+var ARC=['#1E40AF','#059669','#7C3AED','#D97706','#0891B2'];
+
+function atc(t){return ATCLR[t]||'#6B7280';}
+function ptc(t){return PTCLR[t]||'#6B7280';}
+function prc(r){return PRCLR[r]||'#6B7280';}
+function fmt(n){if(!n)return'$0';if(n>=1000000)return'$'+(n/1000000).toFixed(1)+'M';if(n>=1000)return'$'+(n/1000).toFixed(0)+'k';return'$'+Math.round(n);}
+function pct(n,t){return t?Math.round(n*100/t):0;}
+function dc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
+function cnt(arr,k){return arr.reduce(function(m,d){var v=d[k]||'?';m[v]=(m[v]||0)+1;return m;},{});}
+function sum(arr,k){return arr.reduce(function(s,d){return s+(d[k]||0);},0);}
+function dd(a,b){if(!a||!b)return null;var r=Math.round((new Date(b)-new Date(a))/86400000);return isNaN(r)?null:r;}
+function kc(k){return ACFG[k]||{bg:'#F3F4F6',c:'#374151',bar:'#9CA3AF'};}
+function rs(r){return ARESP_S[r]||r||'--';}
+function badgeA(c){var cf=kc(c);return '<span class="badge" style="background:'+cf.bg+';color:'+cf.c+'">'+c+'</span>';}
+function badgeT(t,tc){return '<span class="badge" style="background:'+tc(t)+'22;color:'+tc(t)+'">'+(t||'--')+'</span>';}
+
+var CH={};
+var AFILTERED=[], PFILTERED=[];
+var CUR_AV='at', CUR_SV='all';
+
+/* ── NAVEGACIÓN PRINCIPAL ── */
+var _rendered={arn:false,pag:false,ari:false};
+function showUniverse(id,btn){
+  document.querySelectorAll('.universe').forEach(function(u){u.classList.remove('on');});
+  document.querySelectorAll('.main-tab').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('uni-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(!_rendered[id]){
+    _rendered[id]=true;
+    if(id==='arn') renderARN();
+    else if(id==='pag') renderPAG();
+    else if(id==='ari') renderARI();
+  }
+}
+
+/* ── NAVEGACIÓN ARN ── */
+function showARNTab(id,btn){
+  ['ov','an','eq','al','dt'].forEach(function(x){document.getElementById('a-pg-'+x).classList.add('hidden');});
+  document.querySelectorAll('#uni-arn .sec-tab').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('a-pg-'+id).classList.remove('hidden');
+  btn.classList.add('on');
+}
+
+/* ── NAVEGACIÓN PAGOS ── */
+function showPAGTab(id,btn){
+  ['ov','mes','tram','resp','llaves','det'].forEach(function(x){document.getElementById('p-pg-'+x).classList.add('hidden');});
+  document.querySelectorAll('#uni-pag .sec-tab').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('p-pg-'+id).classList.remove('hidden');
+  btn.classList.add('on');
+}
+
+/* ══════════════════════════════════════
+   LÓGICA ARN
+══════════════════════════════════════ */
+function applyARN(){
+  var fy=document.getElementById('a-fy').value;
+  var ft=document.getElementById('a-ft').value;
+  var fr=document.getElementById('a-fr').value;
+  var fry=document.getElementById('a-fry').value;
+  AFILTERED=D.records.filter(function(d){
+    if(fy&&String(d.y)!==fy)return false;
+    if(ft&&d.t!==ft)return false;
+    if(fr&&d.r!==fr)return false;
+    if(fry){
+      if(fry==='Sin resolución')return!d.fr;
+      if(!d.fr||String(new Date(d.fr).getFullYear())!==fry)return false;
+    }
+    return true;
+  });
+  setTC('a-info',AFILTERED.length+' trámites');
+  renderARN();
+}
+
+function renderARN(){
+  renderARNKPIs();renderARNGauge();renderARNCumpl();renderARNYear();renderARNTipoBars();renderARNEstado();
+  renderARNMCR();renderARNTiming();renderARNCumplTipo();renderARNPresup();
+  renderARNResp();renderARNAlertas();renderARNDet();
+}
+
+function renderARNKPIs(){
+  var t=AFILTERED.length;
+  var ap=AFILTERED.filter(function(d){return d.e==='Aprobado';}).length;
+  var at=AFILTERED.filter(function(d){return d.c==='A tiempo';}).length;
+  var atr=AFILTERED.filter(function(d){return d.c.indexOf('Atrasado')===0;}).length;
+  var rp=AFILTERED.filter(function(d){return d.c==='Reprogramado';}).length;
+  var ca=AFILTERED.filter(function(d){return d.c==='Cancelado';}).length;
+  var pe=AFILTERED.filter(function(d){return d.c==='Pendiente'||d.c==='En proceso';}).length;
+  var pr=AFILTERED.filter(function(d){return d.presupuestado==='Si'||d.presupuestado==='SI';}).length;
+  var mn=AFILTERED.reduce(function(s,d){return s+(d.monto||0);},0);
+  var items=[
+    {l:'Total Trámites',v:t,s:'Plan 2025–2030',c:'#1E40AF',p:100},
+    {l:'Aprobados',v:ap,s:pct(ap,t)+'% del total',c:'#059669',p:pct(ap,t)},
+    {l:'A Tiempo',v:at,s:pct(at,t)+'% del total',c:'#059669',p:pct(at,t)},
+    {l:'Atrasados',v:atr,s:pct(atr,t)+'% del total',c:'#DC2626',p:pct(atr,t)},
+    {l:'Reprogramados',v:rp,s:pct(rp,t)+'% del total',c:'#7C3AED',p:pct(rp,t)},
+    {l:'Pendientes',v:pe,s:'por resolver',c:'#D97706',p:pct(pe,t)},
+    {l:'Cancelados',v:ca,s:'fuera del plan',c:'#6B7280',p:pct(ca,t)},
+    {l:'Presupuestados',v:pr,s:'de '+t+' totales',c:'#0891B2',p:pct(pr,t)},
+  ];
+  (document.getElementById('a-kpis')||{innerHTML:''}).innerHTML=items.map(function(k){
+    return '<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div><div class="kb"><div class="kbf" style="width:'+k.p+'%;background:'+k.c+'"></div></div></div>';
+  }).join('');
+}
+
+function renderARNGauge(){
+  var t=AFILTERED.length;
+  var at=AFILTERED.filter(function(d){return d.c==='A tiempo';}).length;
+  var ap=AFILTERED.filter(function(d){return d.e==='Aprobado';}).length;
+  var atr=AFILTERED.filter(function(d){return d.c.indexOf('Atrasado')===0;}).length;
+  var pe=AFILTERED.filter(function(d){return d.c==='Pendiente'||d.c==='En proceso';}).length;
+  var sp=pct(at+ap,t);
+  var col=sp>=60?'#059669':sp>=40?'#D97706':'#DC2626';
+  dc('a-gauge');
+  var ctx=document.getElementById('a-gauge').getContext('2d');
+  CH['a-gauge']=new Chart(ctx,{type:'doughnut',data:{datasets:[{data:[sp,100-sp],backgroundColor:[col,'#E2E8F0'],borderWidth:0,circumference:240,rotation:-120}]},options:{responsive:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{onComplete:function(){var c=document.getElementById('a-gauge'),x=c.getContext('2d');x.font='bold 24px -apple-system,sans-serif';x.fillStyle=col;x.textAlign='center';x.fillText(sp+'%',c.width/2,c.height/2+8);x.font='bold 10px -apple-system,sans-serif';x.fillStyle='#94A3B8';x.fillText('SALUD ARN',c.width/2,c.height/2+22);}}}});
+  setTC('a-gauge-txt',sp>=60?'Desempeño aceptable':sp>=40?'Desempeño en riesgo':'Requiere atención urgente');
+  (document.getElementById('a-gauge-stats')||{innerHTML:''}).innerHTML=[['A tiempo',at,'#059669'],['Atrasados',atr,'#DC2626'],['Pendientes',pe,'#D97706']].map(function(x){return '<div style="background:#F8FAFC;border-radius:8px;padding:8px;text-align:center"><div style="font-size:20px;font-weight:900;color:'+x[2]+'">'+x[1]+'</div><div style="font-size:9px;color:#94A3B8;font-weight:700;text-transform:uppercase;margin-top:2px">'+x[0]+'</div></div>';}).join('');
+}
+
+function renderARNCumpl(){
+  var cc=cnt(AFILTERED,'c');var labels=Object.keys(cc);var vals=labels.map(function(l){return cc[l];});var colors=labels.map(function(l){return kc(l).bar;});var t=AFILTERED.length;
+  dc('a-cumpl');var ctx=document.getElementById('a-cumpl').getContext('2d');
+  CH['a-cumpl']=new Chart(ctx,{type:'doughnut',data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,t)+'%)';}}}}}});
+  (document.getElementById('a-cumpl-lg')||{innerHTML:''}).innerHTML=labels.map(function(l,i){return '<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600"><span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';flex-shrink:0;display:inline-block"></span>'+l+' ('+vals[i]+')</div>';}).join('');
+}
+
+function renderARNYear(){
+  var yrs=['2025','2026','2027','2028','2029','2030'];
+  function yd(key,color){return{label:key,data:yrs.map(function(y){var s=AFILTERED.filter(function(r){return String(r.y)===y;});if(key==='A tiempo')return s.filter(function(r){return r.c==='A tiempo';}).length;if(key==='Atrasado')return s.filter(function(r){return r.c.indexOf('Atrasado')===0;}).length;if(key==='Reprogramado')return s.filter(function(r){return r.c==='Reprogramado';}).length;if(key==='Pendiente')return s.filter(function(r){return r.c==='Pendiente'||r.c==='En proceso';}).length;if(key==='Cancelado')return s.filter(function(r){return r.c==='Cancelado';}).length;return 0;}),backgroundColor:color,stack:'a'};}
+  dc('a-year');var ctx=document.getElementById('a-year').getContext('2d');
+  CH['a-year']=new Chart(ctx,{type:'bar',data:{labels:yrs,datasets:[yd('A tiempo','#059669'),yd('Atrasado','#DC2626'),yd('Reprogramado','#7C3AED'),yd('Pendiente','#2563EB'),yd('Cancelado','#9CA3AF')]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'}}}}});
+}
+
+function renderARNTipoBars(){
+  var tc2=cnt(AFILTERED,'t');var tot=AFILTERED.length;var arr=Object.keys(tc2).map(function(k){return[k,tc2[k]];}).sort(function(a,b){return b[1]-a[1];});
+  (document.getElementById('a-tipo-bars')||{innerHTML:''}).innerHTML=arr.map(function(kv){var n=kv[0],v=kv[1],c=atc(n),p=pct(v,tot);return'<div class="pr"><div class="pt"><span style="font-weight:700">'+n+'</span><span style="font-weight:800;color:'+c+'">'+v+' <span style="font-size:9px;color:#94A3B8">('+p+'%)</span></span></div><div class="pb"><div class="pbf" style="width:'+p+'%;background:'+c+'"></div></div></div>';}).join('');
+}
+
+function renderARNEstado(){
+  var ec=cnt(AFILTERED,'e');var labels=Object.keys(ec).sort(function(a,b){return ec[b]-ec[a];});
+  dc('a-estado');var ctx=document.getElementById('a-estado').getContext('2d');
+  CH['a-estado']=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{data:labels.map(function(l){return ec[l];}),backgroundColor:'#3B82F6',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'}},y:{grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}}}}});
+}
+
+function renderARNMCR(){
+  var mcr=AFILTERED.filter(function(d){return d.t==='MCR';});var dc2=cnt(mcr,'d');
+  var dat=[['Mayor',dc2['Mayor']||0,'#DC2626'],['Moderada',dc2['Moderada']||0,'#D97706'],['Menor',dc2['Menor']||0,'#059669']].filter(function(d){return d[1]>0;});
+  dc('a-mcr');var ctx=document.getElementById('a-mcr').getContext('2d');
+  CH['a-mcr']=new Chart(ctx,{type:'pie',data:{labels:dat.map(function(d){return d[0];}),datasets:[{data:dat.map(function(d){return d[1];}),backgroundColor:dat.map(function(d){return d[2];}),borderWidth:3,borderColor:'#fff',hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'bold'},boxWidth:12,padding:10}}}}});
+}
+
+function renderARNTiming(){
+  var td=D.timing;
+  dc('a-timing');var ctx=document.getElementById('a-timing').getContext('2d');
+  CH['a-timing']=new Chart(ctx,{type:'bar',data:{labels:td.map(function(d){return d.tipo.length>10?d.tipo.slice(0,10)+'...':d.tipo;}),datasets:[{label:'Mínimo',data:td.map(function(d){return d.min;}),backgroundColor:'#059669',borderRadius:3},{label:'Promedio',data:td.map(function(d){return d.avg;}),backgroundColor:'#2563EB',borderRadius:3},{label:'Máximo',data:td.map(function(d){return d.max;}),backgroundColor:'#DC2626',borderRadius:{topLeft:4,topRight:4}}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'},title:{display:true,text:'Días',color:'#94A3B8',font:{size:9}}}}}});
+}
+
+function renderARNCumplTipo(){
+  var tipos=['MCR','Prorroga','BPF/Licencia sanitaria','Corrección interna','Controlados','EL','Aviso'].filter(function(t){return AFILTERED.some(function(d){return d.t===t;});});
+  function cdat(label,fn,color){return{label:label,data:tipos.map(fn),backgroundColor:color,stack:'a'};}
+  dc('a-ct');var ctx=document.getElementById('a-ct').getContext('2d');
+  CH['a-ct']=new Chart(ctx,{type:'bar',data:{labels:tipos.map(function(t){return t.length>10?t.slice(0,10)+'...':t;}),datasets:[cdat('A tiempo',function(t){return AFILTERED.filter(function(d){return d.t===t&&d.c==='A tiempo';}).length;},'#059669'),cdat('Atrasado',function(t){return AFILTERED.filter(function(d){return d.t===t&&d.c.indexOf('Atrasado')===0;}).length;},'#DC2626'),cdat('Reprogramado',function(t){return AFILTERED.filter(function(d){return d.t===t&&d.c==='Reprogramado';}).length;},'#7C3AED'),cdat('Pendiente',function(t){return AFILTERED.filter(function(d){return d.t===t&&(d.c==='Pendiente'||d.c==='En proceso');}).length;},'#2563EB')]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'},stacked:true}}}});
+}
+
+function renderARNPresup(){
+  var tipos=['MCR','Prorroga','BPF/Licencia sanitaria','Controlados','EL'].filter(function(t){return AFILTERED.some(function(d){return d.t===t;});});
+  dc('a-pr');var ctx=document.getElementById('a-pr').getContext('2d');
+  CH['a-pr']=new Chart(ctx,{type:'bar',data:{labels:tipos.map(function(t){return t.length>10?t.slice(0,10)+'...':t;}),datasets:[{label:'Presupuestado',data:tipos.map(function(t){return AFILTERED.filter(function(d){return d.t===t&&(d.presupuestado==='Si'||d.presupuestado==='SI');}).length;}),backgroundColor:'#0891B2',borderRadius:4},{label:'No presupuestado',data:tipos.map(function(t){return AFILTERED.filter(function(d){return d.t===t&&d.presupuestado==='No';}).length;}),backgroundColor:'#F59E0B',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'}}}}});
+}
+
+function renderARNResp(){
+  var rd=D.respData.map(function(r,i){return Object.assign({},r,{color:ARC[i%5]});});
+  dc('a-resp');var c1=document.getElementById('a-resp').getContext('2d');
+  CH['a-resp']=new Chart(c1,{type:'doughnut',data:{labels:rd.map(function(r){return r.short;}),datasets:[{data:rd.map(function(r){return r.total;}),backgroundColor:rd.map(function(r){return r.color;}),borderWidth:3,borderColor:'#fff',hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10,weight:'bold'},boxWidth:10,padding:8}}}}});
+  dc('a-rc');var c2=document.getElementById('a-rc').getContext('2d');
+  CH['a-rc']=new Chart(c2,{type:'bar',data:{labels:rd.map(function(r){return r.short;}),datasets:[{label:'A tiempo',data:rd.map(function(r){return r.aTiempo;}),backgroundColor:'#059669',stack:'a'},{label:'Atrasado',data:rd.map(function(r){return r.atrasado;}),backgroundColor:'#DC2626',stack:'a'},{label:'Pendiente',data:rd.map(function(r){return r.pendiente;}),backgroundColor:'#2563EB',borderRadius:{topLeft:4,topRight:4},stack:'a'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}},y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'}}}}});
+  (document.getElementById('a-resp-cards')||{innerHTML:''}).innerHTML=rd.map(function(r){return'<div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:5px solid '+r.color+'"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:42px;height:42px;border-radius:50%;background:'+r.color+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0">'+r.initials+'</div><div><div style="font-weight:800;font-size:13px">'+r.name+'</div><div style="font-size:10px;color:#64748B">'+r.total+' trámites</div></div><div style="margin-left:auto;text-align:center"><div style="font-size:22px;font-weight:900;color:'+r.color+'">'+pct(r.aTiempo,r.total)+'%</div><div style="font-size:8px;color:#94A3B8;font-weight:800">EFECTIVIDAD</div></div></div><div style="display:flex;gap:6px">'+ [['A tiempo',r.aTiempo,'#059669'],['Atrasados',r.atrasado,'#DC2626'],['Pendientes',r.pendiente,'#D97706'],['Cancelados',r.cancelado,'#6B7280']].map(function(x){return'<div style="background:#F8FAFC;border-radius:8px;padding:8px;text-align:center;flex:1"><div style="font-size:18px;font-weight:900;color:'+x[2]+'">'+x[1]+'</div><div style="font-size:9px;color:#94A3B8;font-weight:700;text-transform:uppercase;margin-top:2px">'+x[0]+'</div></div>';}).join('')+'</div></div>';}).join('');
+}
+
+function setAV(v){CUR_AV=v;['at','re','rp'].forEach(function(id){document.getElementById('a-av-'+id).classList.add('hidden');document.getElementById('a-tgl-'+id).classList.remove('on');});document.getElementById('a-av-'+v).classList.remove('hidden');document.getElementById('a-tgl-'+v).classList.add('on');renderARNAlView();}
+function setSV(v){CUR_SV=v;['all','res','proc','pend'].forEach(function(id){document.getElementById('a-sub-'+id).classList.remove('on');});document.getElementById('a-sub-'+v).classList.add('on');renderARNAtrasados();}
+
+function renderARNAlertas(){
+  var at=AFILTERED.filter(function(d){return d.c==='A tiempo';}).length;
+  var atr=AFILTERED.filter(function(d){return d.c.indexOf('Atrasado')===0;}).length;
+  var rp=AFILTERED.filter(function(d){return d.c==='Reprogramado';}).length;
+  document.getElementById('a-semaforo').innerHTML=
+  '<div class="sm-card" data-av="at" onclick="setAV(this.dataset.av)"><div style="font-size:34px">🟢</div><div style="font-size:40px;font-weight:900;color:#059669;line-height:1;margin:6px 0">'+at+'</div><div style="font-size:12px;font-weight:800;color:#0F172A;margin-top:6px">A Tiempo</div><div style="font-size:10px;color:#64748B;margin-top:3px">Resueltos en plazo</div></div>'+
+  '<div class="sm-card" data-av="re" onclick="setAV(this.dataset.av)"><div style="font-size:34px">🔴</div><div style="font-size:40px;font-weight:900;color:#DC2626;line-height:1;margin:6px 0">'+atr+'</div><div style="font-size:12px;font-weight:800;color:#0F172A;margin-top:6px">Atrasados</div><div style="font-size:10px;color:#64748B;margin-top:3px">Accion inmediata</div></div>'+
+  '<div class="sm-card" data-av="rp" onclick="setAV(this.dataset.av)"><div style="font-size:34px">🟡</div><div style="font-size:40px;font-weight:900;color:#D97706;line-height:1;margin:6px 0">'+rp+'</div><div style="font-size:12px;font-weight:800;color:#0F172A;margin-top:6px">Reprogramados</div><div style="font-size:10px;color:#64748B;margin-top:3px">Fecha modificada</div></div>';;
+  renderARNAlView();
+  var upcoming=AFILTERED.filter(function(d){return(d.c==='Pendiente'||d.c==='En proceso')&&d.fp&&d.fp>=ARNTODAY;}).sort(function(a,b){return a.fp>b.fp?1:-1;}).slice(0,7);
+  (document.getElementById('a-upcoming')||{innerHTML:''}).innerHTML=upcoming.map(function(d){var df=dd(ARNTODAY,d.fp);var uc=df<=7?'#DC2626':df<=30?'#D97706':'#059669';return'<div class="uc-item" style="border-left-color:'+uc+'"><div style="background:'+uc+'22;border-radius:8px;width:46px;height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><div style="font-size:16px;font-weight:900;color:'+uc+';line-height:1">'+df+'</div><div style="font-size:8px;color:'+uc+';font-weight:800">DÍAS</div></div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:12px">'+d.p+'</div><div style="font-size:10px;color:#64748B;margin-top:2px">'+(d.rs||'')+' · '+(d.t||'')+'</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:10px;color:#94A3B8;font-family:monospace">'+d.fp+'</div><div style="font-size:10px;color:#64748B;margin-top:2px;font-weight:600">'+rs(d.r)+'</div></div></div>';}).join('')||'<div style="text-align:center;color:#94A3B8;padding:16px">Sin vencimientos próximos</div>';
+}
+
+function renderARNAlView(){if(CUR_AV==='at')renderARNATiempo();else if(CUR_AV==='re')renderARNAtrasados();else renderARNReprog();}
+
+function renderARNATiempo(){
+  var data=AFILTERED.filter(function(d){return d.c==='A tiempo';}).sort(function(a,b){return(a.fp||'')>(b.fp||'')?1:-1;});
+  setTC('a-al-cnt',data.length+' a tiempo');
+  (document.getElementById('a-bd-at')||{innerHTML:''}).innerHTML=data.map(function(d,i){var dif=dd(d.fp,d.fi);var dc2=dif===null?'#94A3B8':dif<=0?'#059669':dif<=15?'#D97706':'#DC2626';var dt=dif===null?'Sin ingreso':dif===0?'En fecha':dif<0?(Math.abs(dif)+'d antes'):('+'+dif+'d tarde');return'<tr><td style="font-weight:800;color:#059669">'+(i+1)+'</td><td style="font-weight:700">'+d.p+'</td>'+badgeT(d.t,atc)+'<td style="font-size:10px">'+rs(d.r)+'</td><td style="font-family:monospace;font-size:10px;color:#64748B">'+(d.fp||'--')+'</td><td style="font-family:monospace;font-size:10px;color:#1D4ED8">'+(d.fi||'--')+'</td><td style="font-family:monospace;font-size:10px;color:#059669;font-weight:700">'+(d.fr||'--')+'</td><td style="font-weight:800;color:'+dc2+'">'+dt+'</td><td style="color:#0F766E;font-weight:700">'+(d.monto?'$'+d.monto.toLocaleString():'--')+'</td></tr>';}).join('')||'<tr><td colspan="9" style="text-align:center;color:#94A3B8;padding:20px">Sin trámites a tiempo</td></tr>';
+}
+
+function renderARNAtrasados(){
+  var data=AFILTERED.filter(function(d){return d.c.indexOf('Atrasado')===0;});
+  if(CUR_SV==='res')data=data.filter(function(d){return d.c==='Atrasado resuelto';});
+  else if(CUR_SV==='proc')data=data.filter(function(d){return d.c==='Atrasado en proceso';});
+  else if(CUR_SV==='pend')data=data.filter(function(d){return d.c==='Atrasado pendiente';});
+  data.sort(function(a,b){return(a.fp||'')>(b.fp||'')?1:-1;});
+  setTC('a-al-cnt',data.length+' atrasados');
+  (document.getElementById('a-bd-re')||{innerHTML:''}).innerHTML=data.map(function(d,i){var df=d.fi?dd(d.fp,d.fi):(d.fp?dd(d.fp,ARNTODAY):null);var rb=df>90?'#FFF5F5':df>30?'#FFFBEB':'#fff';var dc2=df>90?'#DC2626':df>30?'#D97706':'#374151';var dt=df===null?'Sin ingreso':df>0?('+'+df+' días'):df<=0?'En fecha':'--';var cf=kc(d.c);return'<tr style="background:'+rb+'"><td style="font-weight:900;color:'+dc2+';font-size:13px">'+(i+1)+'</td><td style="font-weight:700">'+d.p+'</td><td style="font-family:monospace;font-size:9px;color:#64748B">'+(d.rs||'--')+'</td>'+badgeT(d.t,atc)+'<td style="font-size:10px">'+rs(d.r)+'</td><td><span class="badge" style="background:'+cf.bg+';color:'+cf.c+'">'+d.c+'</span></td><td style="font-family:monospace;font-size:10px;color:#64748B">'+(d.fp||'--')+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fi?'#1D4ED8':'#CBD5E1')+'">'+(d.fi||'Sin ingreso')+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fr?'#059669':'#CBD5E1')+'">'+(d.fr||'--')+'</td><td style="font-weight:900;font-size:13px;color:'+dc2+'">'+dt+'</td></tr>';}).join('')||'<tr><td colspan="10" style="text-align:center;color:#94A3B8;padding:20px">Sin trámites</td></tr>';
+}
+
+function renderARNReprog(){
+  var data=AFILTERED.filter(function(d){return d.c==='Reprogramado';}).sort(function(a,b){return(a.fp||'z')>(b.fp||'z')?1:-1;});
+  setTC('a-al-cnt',data.length+' reprogramados');
+  (document.getElementById('a-bd-rp')||{innerHTML:''}).innerHTML=data.map(function(d,i){var df=d.fp?dd(ARNTODAY,d.fp):null;var uc=df===null?'#94A3B8':df<0?'#DC2626':df<=30?'#D97706':'#7C3AED';var dfT=df===null?'Por definir':df<0?('VENCIDA '+Math.abs(df)+'d'):df===0?'HOY':('En '+df+' días');var mot=(d.comentarios||'Sin comentario').slice(0,100);return'<tr><td style="font-weight:800;color:#7C3AED">'+(i+1)+'</td><td style="font-weight:700">'+d.p+'</td><td style="font-family:monospace;font-size:9px;color:#64748B">'+(d.rs||'--')+'</td>'+badgeT(d.t,atc)+'<td style="font-size:10px;color:#64748B;max-width:100px">'+(d.det||d.d||'--').slice(0,50)+'</td><td style="font-size:10px">'+rs(d.r)+'</td><td style="font-weight:800;color:'+uc+'"><div style="font-family:monospace;font-size:11px">'+(d.fp||'Por definir')+'</div><div style="font-size:9px;margin-top:2px">'+dfT+'</div></td><td style="font-size:10px">'+(d.e||'Reprogramado')+'</td><td style="font-size:10px;color:#64748B;max-width:180px" title="'+mot.replace(/"/g,"'")+'">'+mot+(mot.length>=100?'...':'')+'</td></tr>';}).join('')||'<tr><td colspan="9" style="text-align:center;color:#94A3B8;padding:20px">Sin reprogramados</td></tr>';
+}
+
+function renderARNDet(){
+  var q=(document.getElementById('a-srch').value||'').toLowerCase();
+  var data=AFILTERED.filter(function(d){return!q||(d.p||'').toLowerCase().indexOf(q)>=0||(d.rs||'').toLowerCase().indexOf(q)>=0;});
+  setTC('a-det-cnt',data.length+' registros');
+  (document.getElementById('a-det-body')||{innerHTML:''}).innerHTML=data.map(function(d,i){var cf=kc(d.c);var dif=d.fp&&d.fi?dd(d.fp,d.fi):null;var dc2=dif===null?'#CBD5E1':dif>0?'#DC2626':dif<0?'#059669':'#94A3B8';var dt=dif===null?'--':dif===0?'0d':dif>0?('+'+dif+'d'):(dif+'d');return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'"><td style="font-weight:700;max-width:120px">'+d.p+'</td><td style="font-family:monospace;font-size:9px;color:#64748B;white-space:nowrap">'+(d.rs||'--')+'</td>'+badgeT(d.t,atc)+'<td style="color:#64748B">'+(d.d||'--')+'</td><td style="font-size:10px">'+(d.e||'--')+'</td><td><span class="badge" style="background:'+cf.bg+';color:'+cf.c+'">'+d.c+'</span></td><td style="font-size:10px;white-space:nowrap">'+rs(d.r)+'</td><td style="font-family:monospace;font-size:10px;color:#64748B;white-space:nowrap">'+(d.fp||'--')+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fi?'#1D4ED8':'#CBD5E1')+';white-space:nowrap">'+(d.fi||'--')+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fr?'#059669':'#CBD5E1')+';white-space:nowrap">'+(d.fr||'--')+'</td><td style="font-weight:800;color:'+dc2+';white-space:nowrap">'+dt+'</td><td style="text-align:center;font-weight:700;color:'+(d.presupuestado==='Si'||d.presupuestado==='SI'?'#059669':'#CBD5E1')+'">'+(d.presupuestado==='Si'||d.presupuestado==='SI'?'✓':'·')+'</td><td style="font-weight:'+(d.monto?'700':'400')+';color:'+(d.monto?'#0F766E':'#CBD5E1')+';white-space:nowrap">'+(d.monto?'$'+d.monto.toLocaleString():'--')+'</td></tr>';}).join('');
+}
+
+/* ══════════════════════════════════════
+   LÓGICA PAGOS
+══════════════════════════════════════ */
+function applyPAG(){
+  var fy=document.getElementById('p-fy').value;
+  var fm=document.getElementById('p-fm').value;
+  var ft=document.getElementById('p-ft').value;
+  var fr=document.getElementById('p-fr').value;
+  PFILTERED=P.records.filter(function(d){
+    if(fy&&String(d.anioSol)!==fy)return false;
+    if(fm&&String(d.mesSol)!==fm)return false;
+    if(ft&&d.tramite!==ft)return false;
+    if(fr&&d.resp!==fr)return false;
+    return true;
+  });
+  var real=PFILTERED.filter(function(d){return d.status==='Real';});
+  var plan=PFILTERED.filter(function(d){return d.status==='Planeado';});
+  setTC('p-info',PFILTERED.length+' pagos | Planeado: '+fmt(sum(PFILTERED,'monto'))+' | Real: '+fmt(sum(real,'monto'))+' ('+pct(sum(real,'monto'),sum(PFILTERED,'monto'))+'% ejec.)');
+  renderPAG();
+}
+
+function renderPAG(){renderPAGKPIs();renderPAGOv();renderPAGMesTabs();renderPAGTramTabs();renderPAGRespTabs();renderPAGLlaves();renderPAGDet();}
+
+function renderPAGKPIs(){
+  var real=PFILTERED.filter(function(d){return d.status==='Real';});
+  var t=PFILTERED.length;
+  var mT=sum(PFILTERED,'monto');  /* TOTAL = planeado */
+  var mR=sum(real,'monto');       /* Real ejecutado */
+  var mPend=mT-mR;
+  var ejPct=mT>0?pct(mR,mT):0;
+  var items=[
+    {l:'Total Registros',v:t,s:'presupuesto planeado',c:'#3B82F6',p:100},
+    {l:'Presupuesto Total',v:fmt(mT),s:'todo lo cargado',c:'#3B82F6',p:100},
+    {l:'Gasto Real',v:real.length,s:fmt(mR)+' ejecutado',c:'#059669',p:pct(real.length,t)},
+    {l:'Monto Real',v:fmt(mR),s:ejPct+'% del presupuesto',c:'#059669',p:ejPct},
+    {l:'Por Ejecutar',v:t-real.length,s:fmt(mPend)+' pendiente',c:'#D97706',p:pct(t-real.length,t)},
+    {l:'Monto Pendiente',v:fmt(mPend),s:(100-ejPct)+'% del presupuesto',c:'#D97706',p:100-ejPct},
+    {l:'% Ejecucion',v:ejPct+'%',s:'real vs planeado',c:ejPct>=80?'#059669':ejPct>=50?'#D97706':'#DC2626',p:ejPct},
+    {l:'Llaves Duplicadas',v:PFILTERED.filter(function(d){return d.isDup;}).length,s:'revisar',c:'#DC2626',p:0},
+  ];
+  (document.getElementById('p-kpis')||{innerHTML:''}).innerHTML=items.map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div><div class="kb"><div class="kbf" style="width:'+k.p+'%;background:'+k.c+'"></div></div></div>';}).join('');
+}
+
+function renderPAGOv(){
+  /* Planeado = TODOS los registros cargados (presupuesto total aprobado)
+     Real     = los que tienen llave de pago Y numero de entrada          */
+  var real=PFILTERED.filter(function(d){return d.status==='Real';});
+  var mTotal=sum(PFILTERED,'monto');   /* presupuesto total planeado      */
+  var mReal=sum(real,'monto');         /* gasto real ejecutado             */
+  var mPend=mTotal-mReal;              /* por ejecutar                     */
+  var ejPct=mTotal>0?pct(mReal,mTotal):0;
+  var pendPct=mTotal>0?pct(mPend,mTotal):0;
+
+  /* ── Tarjeta Planeado (total) ── */
+  setTC('p-plan-monto',fmt(mTotal));
+  setTC('p-plan-cnt',PFILTERED.length+' registros cargados = presupuesto total');
+  var __e=document.getElementById('p-plan-bar');if(__e)__e.style.width='100%';
+  setTC('p-plan-pct','Presupuesto total aprobado del periodo');
+
+  /* ── Tarjeta Real (ejecutado) ── */
+  setTC('p-real-monto',fmt(mReal));
+  setTC('p-real-cnt',real.length+' pagos con Llave + Num. de Entrada');
+  var __e=document.getElementById('p-real-bar');if(__e)__e.style.width=ejPct+'%';
+  setTC('p-real-pct',ejPct+'% del presupuesto total ejecutado | Pendiente: '+fmt(mPend)+' ('+pendPct+'%)');
+
+  /* ── Grafica barras: Planeado vs Real por mes ── */
+  var md=getPMesData();
+  dc('p-pvrmes');
+  var ctx=document.getElementById('p-pvrmes').getContext('2d');
+  CH['p-pvrmes']=new Chart(ctx,{type:'bar',
+    data:{labels:md.map(function(d){return d.label;}),
+      datasets:[
+        {label:'Total Planeado',data:md.map(function(d){return d.montoTotal;}),
+         backgroundColor:'rgba(59,130,246,0.25)',borderColor:'#3B82F6',borderWidth:2,
+         borderRadius:4,type:'bar',order:2},
+        {label:'Gasto Real',data:md.map(function(d){return d.montoReal;}),
+         backgroundColor:'#059669',borderRadius:4,order:1},
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:12,boxHeight:12}},
+               tooltip:{callbacks:{label:function(c){
+                 var v=c.parsed.y;
+                 var total=md[c.dataIndex]?md[c.dataIndex].montoTotal:1;
+                 var pctV=total>0?pct(c.parsed.y,total):0;
+                 return c.dataset.label+': '+fmt(v)+(c.datasetIndex===1?' ('+pctV+'% ejec.)':'');
+               }}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8',
+                       callback:function(v){return fmt(v);}}}}}});
+
+  /* ── Donut tipo tramite ── */
+  var td=Object.entries(PFILTERED.reduce(function(m,d){var t=d.tramite||'?';
+    if(!m[t])m[t]={t:t,cnt:0,monto:0};m[t].cnt++;m[t].monto+=d.monto;return m;},{}))
+    .map(function(e){return e[1];}).sort(function(a,b){return b.monto-a.monto;});
+  dc('p-tramite');
+  var c3=document.getElementById('p-tramite').getContext('2d');
+  CH['p-tramite']=new Chart(c3,{type:'doughnut',
+    data:{labels:td.map(function(d){return d.t;}),
+          datasets:[{data:td.map(function(d){return d.monto;}),
+                     backgroundColor:td.map(function(d){return ptc(d.t);}),
+                     borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      plugins:{legend:{position:'right',labels:{font:{size:10,weight:'bold'},boxWidth:10,padding:8}},
+               tooltip:{callbacks:{label:function(c){return c.label+': '+fmt(c.parsed);}}}}}});
+
+  /* ── Pie direccion ── */
+  var dd2=Object.entries(PFILTERED.reduce(function(m,d){var v=d.dir||'Sin dato';
+    if(!m[v])m[v]=0;m[v]+=d.monto;return m;},{}))
+    .map(function(e){return{n:e[0],v:e[1]};}).sort(function(a,b){return b.v-a.v;}).slice(0,6);
+  dc('p-dir');
+  var clrs=['#1E40AF','#059669','#7C3AED','#D97706','#DC2626','#0891B2'];
+  var c2=document.getElementById('p-dir').getContext('2d');
+  CH['p-dir']=new Chart(c2,{type:'pie',
+    data:{labels:dd2.map(function(d){return d.n;}),
+          datasets:[{data:dd2.map(function(d){return d.v;}),backgroundColor:clrs,
+                     borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:10,weight:'bold'},boxWidth:10,padding:8}},
+               tooltip:{callbacks:{label:function(c){return c.label+': '+fmt(c.parsed);}}}}}});
+}
+
+function getPMesData(){
+  var mp={};
+  PFILTERED.forEach(function(d){
+    if(!d.anioSol||!d.mesSol)return;
+    var k=d.anioSol+'-'+(d.mesSol<10?'0':'')+d.mesSol;
+    if(!mp[k])mp[k]={k:k,y:d.anioSol,m:d.mesSol,
+      label:MESES[d.mesSol-1]+' '+d.anioSol,
+      montoTotal:0,cntTotal:0,montoReal:0,cntReal:0};
+    mp[k].montoTotal+=d.monto;   /* todos = planeado */
+    mp[k].cntTotal++;
+    if(d.status==='Real'){mp[k].montoReal+=d.monto;mp[k].cntReal++;}
+  });
+  return Object.values(mp).sort(function(a,b){return a.k>b.k?1:-1;});
+}
+
+function renderPAGMesTabs(){
+  var md=getPMesData();
+  dc('p-mes2');
+  var c1=document.getElementById('p-mes2').getContext('2d');
+  CH['p-mes2']=new Chart(c1,{type:'bar',
+    data:{labels:md.map(function(d){return d.label;}),
+      datasets:[
+        {label:'Total Planeado',data:md.map(function(d){return d.montoTotal;}),
+         backgroundColor:'rgba(59,130,246,0.2)',borderColor:'#3B82F6',
+         borderWidth:2,borderRadius:4},
+        {label:'Gasto Real',data:md.map(function(d){return d.montoReal;}),
+         backgroundColor:'#059669',borderRadius:4},
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}},
+               tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmt(c.parsed.y);}}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8',
+                       callback:function(v){return fmt(v);}}}}}});
+  dc('p-mes3');
+  var c2=document.getElementById('p-mes3').getContext('2d');
+  CH['p-mes3']=new Chart(c2,{type:'bar',
+    data:{labels:md.map(function(d){return d.label;}),
+      datasets:[
+        {label:'Total registros',data:md.map(function(d){return d.cntTotal;}),
+         backgroundColor:'rgba(59,130,246,0.2)',borderColor:'#3B82F6',borderWidth:2,borderRadius:4},
+        {label:'Ejecutados',data:md.map(function(d){return d.cntReal;}),
+         backgroundColor:'#059669',borderRadius:4},
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'}}}}});
+  (document.getElementById('p-mes-body')||{innerHTML:''}).innerHTML=md.map(function(d){
+    var ejPct=d.montoTotal>0?pct(d.montoReal,d.montoTotal):0;
+    var bc=ejPct>=80?'#059669':ejPct>=50?'#D97706':'#DC2626';
+    return'<tr>'+
+      '<td style="font-weight:700">'+MESES[d.m-1]+'</td>'+
+      '<td>'+d.y+'</td>'+
+      '<td style="font-weight:700;color:#3B82F6">'+d.cntTotal+'</td>'+
+      '<td style="font-weight:800;color:#3B82F6">'+fmt(d.montoTotal)+'</td>'+
+      '<td style="font-weight:700;color:#059669">'+d.cntReal+'</td>'+
+      '<td style="font-weight:800;color:#059669">'+fmt(d.montoReal)+'</td>'+
+      '<td><div style="display:flex;align-items:center;gap:8px">'+
+        '<div style="background:#E2E8F0;border-radius:4px;height:8px;width:80px;overflow:hidden">'+
+          '<div style="background:'+bc+';height:8px;border-radius:4px;width:'+ejPct+'%"></div>'+
+        '</div>'+
+        '<span style="font-weight:800;color:'+bc+'">'+ejPct+'%</span></div></td></tr>';
+  }).join('');
+}
+
+function renderPAGTramTabs(){
+  var tipos=[...new Set(PFILTERED.map(function(d){return d.tramite;}))].filter(Boolean);
+  var td=tipos.map(function(t){
+    var sub=PFILTERED.filter(function(d){return d.tramite===t;});
+    var real=sub.filter(function(d){return d.status==='Real';});
+    var mT=sum(sub,'monto'), mR=sum(real,'monto');
+    return{t:t,cntTotal:sub.length,montoTotal:mT,cntReal:real.length,montoReal:mR};
+  }).sort(function(a,b){return b.montoTotal-a.montoTotal;});
+  dc('p-tr2');
+  var c1=document.getElementById('p-tr2').getContext('2d');
+  CH['p-tr2']=new Chart(c1,{type:'bar',
+    data:{labels:td.map(function(d){return d.t;}),
+      datasets:[
+        {label:'Total Planeado',data:td.map(function(d){return d.montoTotal;}),
+         backgroundColor:'rgba(59,130,246,0.2)',borderColor:'#3B82F6',borderWidth:2,borderRadius:4},
+        {label:'Gasto Real',data:td.map(function(d){return d.montoReal;}),
+         backgroundColor:'#059669',borderRadius:4},
+      ]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}},
+               tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmt(c.parsed.x);}}}},
+      scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8',
+                       callback:function(v){return fmt(v);}}},
+              y:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}}}}});
+  (document.getElementById('p-tram-bars')||{innerHTML:''}).innerHTML=td.map(function(d){
+    var ejPct=d.montoTotal>0?pct(d.montoReal,d.montoTotal):0;
+    var bc=ejPct>=80?'#059669':ejPct>=50?'#D97706':'#DC2626';
+    return'<div class="pr" style="margin-bottom:14px">'+
+      '<div class="pt">'+
+        '<span style="font-weight:700">'+d.t+'</span>'+
+        '<span style="font-size:11px;color:#64748B">'+
+          '<b style="color:#059669">'+fmt(d.montoReal)+'</b> real de '+
+          '<b style="color:#3B82F6">'+fmt(d.montoTotal)+'</b> planeado &nbsp;'+
+          '<b style="color:'+bc+'">'+ejPct+'% ejecutado</b>'+
+        '</span>'+
+      '</div>'+
+      '<div style="background:#E8F4FD;height:10px;border-radius:5px;overflow:hidden">'+
+        '<div style="background:#059669;height:10px;width:'+ejPct+'%;transition:width .5s;border-radius:5px"></div>'+
+      '</div></div>';
+  }).join('');
+}
+
+function renderPAGRespTabs(){
+  var resps=[...new Set(PFILTERED.map(function(d){return d.resp;}))].filter(Boolean);
+  var rd=resps.map(function(r){
+    var sub=PFILTERED.filter(function(d){return d.resp===r;});
+    var real=sub.filter(function(d){return d.status==='Real';});
+    var mT=sum(sub,'monto'), mR=sum(real,'monto');
+    return{resp:r,cntTotal:sub.length,montoTotal:mT,cntReal:real.length,montoReal:mR,
+           ejPct:mT>0?pct(mR,mT):0};
+  }).sort(function(a,b){return b.montoTotal-a.montoTotal;});
+  dc('p-r2');
+  var c1=document.getElementById('p-r2').getContext('2d');
+  CH['p-r2']=new Chart(c1,{type:'bar',
+    data:{labels:rd.map(function(d){return d.resp;}),
+      datasets:[
+        {label:'Total Planeado',data:rd.map(function(d){return d.montoTotal;}),
+         backgroundColor:'rgba(59,130,246,0.2)',borderColor:'#3B82F6',borderWidth:2,borderRadius:4},
+        {label:'Gasto Real',data:rd.map(function(d){return d.montoReal;}),
+         backgroundColor:'#059669',borderRadius:{topLeft:4,topRight:4}},
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}},
+               tooltip:{callbacks:{label:function(c){return c.dataset.label+': '+fmt(c.parsed.y);}}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8',
+                       callback:function(v){return fmt(v);}}}}}});
+  (document.getElementById('p-resp-cards')||{innerHTML:''}).innerHTML=rd.map(function(d){
+    var color=prc(d.resp);
+    var bc=d.ejPct>=80?'#059669':d.ejPct>=50?'#D97706':'#DC2626';
+    return'<div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:5px solid '+color+'">'+
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'+
+        '<div style="width:42px;height:42px;border-radius:50%;background:'+color+';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0">'+d.resp.split('.')[0][0]+'</div>'+
+        '<div><div style="font-weight:800;font-size:13px">'+d.resp+'</div>'+
+        '<div style="font-size:10px;color:#64748B">'+d.cntTotal+' pagos registrados</div></div>'+
+        '<div style="margin-left:auto;text-align:center">'+
+          '<div style="font-size:22px;font-weight:900;color:'+bc+'">'+d.ejPct+'%</div>'+
+          '<div style="font-size:8px;color:#94A3B8;font-weight:800;text-transform:uppercase">Ejecucion</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;margin-bottom:10px">'+
+        '<div style="flex:1;background:#F0FDF4;border-radius:8px;padding:10px;text-align:center">'+
+          '<div style="font-size:9px;color:#059669;font-weight:800;text-transform:uppercase;margin-bottom:3px">Gasto Real</div>'+
+          '<div style="font-size:18px;font-weight:900;color:#059669">'+fmt(d.montoReal)+'</div>'+
+          '<div style="font-size:10px;color:#64748B;margin-top:2px">'+d.cntReal+' pagos con num. entrada</div>'+
+        '</div>'+
+        '<div style="flex:1;background:#EFF6FF;border-radius:8px;padding:10px;text-align:center">'+
+          '<div style="font-size:9px;color:#3B82F6;font-weight:800;text-transform:uppercase;margin-bottom:3px">Total Planeado</div>'+
+          '<div style="font-size:18px;font-weight:900;color:#3B82F6">'+fmt(d.montoTotal)+'</div>'+
+          '<div style="font-size:10px;color:#64748B;margin-top:2px">'+d.cntTotal+' registros cargados</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="background:#E2E8F0;border-radius:4px;height:8px;overflow:hidden">'+
+        '<div style="background:'+color+';height:8px;border-radius:4px;width:'+d.ejPct+'%"></div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function renderPAGLlaves(){
+  var usadas=PFILTERED.filter(function(d){return d.status==='Real';});
+  var disp=PFILTERED.filter(function(d){return d.status==='Planeado';});
+  var sinD=PFILTERED.filter(function(d){return d.status==='Sin datos';});
+  var mUsada=sum(usadas,'monto'),mDisp=sum(disp,'monto'),mSin=sum(sinD,'monto');
+  var tot=PFILTERED.length,totM=sum(PFILTERED,'monto');
+  (document.getElementById('p-llaves-kpis')||{innerHTML:''}).innerHTML=[
+    {l:'Gasto Real',v:usadas.length,s:fmt(mUsada)+' ejecutado',c:'#059669',p:pct(usadas.length,tot)},
+    {l:'Planeado sin usar',v:disp.length,s:fmt(mDisp)+' por usar',c:'#D97706',p:pct(disp.length,tot)},
+    {l:'Sin datos',v:sinD.length,s:'sin llave ni num.',c:'#94A3B8',p:pct(sinD.length,tot)},
+    {l:'Duplicadas',v:PFILTERED.filter(function(d){return d.isDup;}).length,s:'misma llave',c:'#DC2626',p:0},
+    {l:'Monto Usado',v:fmt(mUsada),s:pct(mUsada,totM)+'% ejecutado',c:'#059669',p:pct(mUsada,totM)},
+    {l:'Monto Disponible',v:fmt(mDisp),s:pct(mDisp,totM)+'% por usar',c:'#D97706',p:pct(mDisp,totM)},
+    {l:'Monto Sin Datos',v:fmt(mSin),s:'revisar',c:'#94A3B8',p:0},
+    {l:'Ejecucion',v:pct(mUsada,totM)+'%',s:'del presupuesto',c:'#1E40AF',p:pct(mUsada,totM)},
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div><div class="kb"><div class="kbf" style="width:'+k.p+'%;background:'+k.c+'"></div></div></div>';}).join('');
+  dc('p-llaves-donut');
+  var c1=document.getElementById('p-llaves-donut').getContext('2d');
+  var dd2=[{l:'Real (con Num. Entrada)',n:usadas.length,c:'#059669'},{l:'Planeado (sin Num. Entrada)',n:disp.length,c:'#D97706'},{l:'Sin datos',n:sinD.length,c:'#94A3B8'}].filter(function(x){return x.n>0;});
+  CH['p-llaves-donut']=new Chart(c1,{type:'doughnut',data:{labels:dd2.map(function(x){return x.l;}),datasets:[{data:dd2.map(function(x){return x.n;}),backgroundColor:dd2.map(function(x){return x.c;}),borderWidth:3,borderColor:'#fff',hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,tot)+'%)';}}}}}});
+  (document.getElementById('p-llaves-leg')||{innerHTML:''}).innerHTML=dd2.map(function(x){return'<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#374151;font-weight:600"><span style="width:12px;height:12px;border-radius:3px;background:'+x.c+';flex-shrink:0;display:inline-block"></span>'+x.l+' ('+x.n+')</div>';}).join('');
+  dc('p-llaves-monto');
+  var c2=document.getElementById('p-llaves-monto').getContext('2d');
+  var bd=[{l:'Real',m:mUsada,c:'#059669'},{l:'Planeado',m:mDisp,c:'#D97706'},{l:'Sin datos',m:mSin,c:'#94A3B8'}].filter(function(x){return x.m>0;});
+  CH['p-llaves-monto']=new Chart(c2,{type:'bar',data:{labels:bd.map(function(x){return x.l;}),datasets:[{data:bd.map(function(x){return x.m;}),backgroundColor:bd.map(function(x){return x.c;}),borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return fmt(c.parsed);}}}},scales:{x:{grid:{display:false},ticks:{font:{size:12,weight:'bold'},color:'#374151'}},y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',callback:function(v){return fmt(v);}}}}}});
+  (document.getElementById('p-usadas-body')||{innerHTML:''}).innerHTML=usadas.map(function(d,i){return'<tr style="background:'+(i%2===0?'#F0FDF4':'#DCFCE7')+'"><td style="font-weight:800;color:#059669">'+(i+1)+'</td><td style="font-weight:700">'+d.prod+'</td><td>'+badgeT(d.tramite,ptc)+'</td><td style="font-size:10px">'+d.resp+'</td><td style="font-weight:800;color:#059669">'+fmt(d.monto)+'</td><td style="font-family:monospace;font-size:10px;color:#1E40AF;font-weight:700">'+(d.llave||'--')+'</td><td style="font-family:monospace;font-size:10px;color:#059669;font-weight:600">'+(d.numEnt||'--')+'</td><td style="font-family:monospace;font-size:10px;color:#64748B">'+(d.fSol||'--')+'</td><td style="font-size:10px;color:#64748B;max-width:140px">'+(d.coment?d.coment.slice(0,55):'--')+'</td></tr>';}).join('')||'<tr><td colspan="9" style="text-align:center;color:#94A3B8;padding:20px">Sin resultados</td></tr>';
+  (document.getElementById('p-disp-body')||{innerHTML:''}).innerHTML=disp.map(function(d,i){return'<tr style="background:'+(i%2===0?'#FFFBEB':'#FEF3C7')+'"><td style="font-weight:800;color:#D97706">'+(i+1)+'</td><td style="font-weight:700">'+d.prod+'</td><td>'+badgeT(d.tramite,ptc)+'</td><td style="font-size:10px">'+d.resp+'</td><td style="font-weight:800;color:#D97706">'+fmt(d.monto)+'</td><td style="font-family:monospace;font-size:10px;color:#1E40AF;font-weight:700">'+(d.llave||'Sin llave')+'</td><td style="font-family:monospace;font-size:10px;color:#64748B">'+(d.fSol||'--')+'</td><td style="font-size:10px">'+(d.mesSol?MESES[d.mesSol-1]:'-')+' '+(d.anioSol||'')+'</td><td style="font-size:10px;color:#64748B;max-width:140px">'+(d.coment?d.coment.slice(0,55):'--')+'</td></tr>';}).join('')||'<tr><td colspan="9" style="text-align:center;color:#94A3B8;padding:20px">Sin resultados</td></tr>';
+  var dupMap={};PFILTERED.filter(function(d){return d.isDup;}).forEach(function(d){if(!dupMap[d.llave])dupMap[d.llave]=[];dupMap[d.llave].push(d);});
+  var dupRows='';Object.keys(dupMap).forEach(function(lv){var arr=dupMap[lv];arr.forEach(function(d,i){dupRows+='<tr style="background:'+(i===0?'#FFF1F2':'#FEE2E2')+'">'+(i===0?'<td style="font-family:monospace;font-size:10px;font-weight:800;color:#DC2626" rowspan="'+arr.length+'">'+lv+'</td><td style="font-weight:800;color:#DC2626;text-align:center" rowspan="'+arr.length+'">x'+arr.length+'</td>':'')+'<td style="font-weight:700">'+d.prod+'</td><td>'+badgeT(d.tramite,ptc)+'</td><td style="font-size:10px">'+d.resp+'</td><td style="font-weight:700;color:#DC2626">'+fmt(d.monto)+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.numEnt?'#059669':'#CBD5E1')+'">'+(d.numEnt||'Sin num.entrada')+'</td><td><span class="badge" style="background:'+(d.numEnt?'#DCFCE7':'#FEF3C7')+';color:'+(d.numEnt?'#15803D':'#92400E')+'">'+(d.numEnt?'Usada':'Disponible')+'</span></td><td style="font-size:10px;color:#64748B;max-width:140px">'+(d.coment?d.coment.slice(0,55):'--')+'</td></tr>';});});
+  (document.getElementById('p-dup-body')||{innerHTML:''}).innerHTML=dupRows||'<tr><td colspan="9" style="text-align:center;color:#94A3B8;padding:20px">Sin llaves duplicadas</td></tr>';
+}
+
+function renderPAGDet(){
+  var q=(document.getElementById('p-srch').value||'').toLowerCase();
+  var data=PFILTERED.filter(function(d){return!q||(d.prod||'').toLowerCase().indexOf(q)>=0||(d.llave||'').toLowerCase().indexOf(q)>=0||(d.desc||'').toLowerCase().indexOf(q)>=0||(d.tramite||'').toLowerCase().indexOf(q)>=0;});
+  setTC('p-det-cnt',data.length+' registros · '+fmt(sum(data,'monto')));
+  (document.getElementById('p-det-body')||{innerHTML:''}).innerHTML=data.map(function(d,i){var confBg=d.conf==='✅'?'#DCFCE7':d.conf==='⚠️'?'#FEF3C7':'#F1F5F9';var confC=d.conf==='✅'?'#15803D':d.conf==='⚠️'?'#92400E':'#64748B';return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'"><td style="font-weight:700;color:#64748B;font-size:10px">'+(d.orden||i+1)+'</td><td style="font-weight:700;max-width:120px">'+d.prod+'</td><td>'+badgeT(d.tramite,ptc)+'</td><td style="color:#64748B;font-size:10px;max-width:130px">'+(d.desc||'--')+'</td><td style="font-size:10px">'+d.resp+'</td><td style="font-weight:800;color:#059669;white-space:nowrap">'+fmt(d.monto)+'</td><td style="font-family:monospace;font-size:10px;color:#64748B;white-space:nowrap">'+(d.fSol||'--')+'</td><td style="font-family:monospace;font-size:10px;color:#1D4ED8;white-space:nowrap">'+(d.fEnt||'--')+'</td><td style="font-family:monospace;font-size:10px;white-space:nowrap">'+(d.llave||'--')+'</td><td><span class="badge" style="background:'+confBg+';color:'+confC+'">'+(d.conf||'--')+'</span></td><td style="font-size:10px;color:#64748B;max-width:150px" title="'+(d.coment||'').replace(/"/g,"'")+'">'+(d.coment?d.coment.slice(0,55)+(d.coment.length>55?'...':''):'--')+'</td></tr>';}).join('');
+}
+
+/* INIT: datos se cargan en vivo via cargarDatosEnVivo() */
+/* PAG renders lazily when tab is clicked */
+/* Lazy rendering - triggered by showUniverse */
+/* init deferred to live data load */
+
+/* ══════════════════════════════════════
+   LÓGICA ARI
+══════════════════════════════════════ */
+var ARIF = [];
+var TODAY_ARI = (new Date()).toISOString().slice(0,10);
+var DCFG = {
+  'Aprobado':      {bg:'#DCFCE7',c:'#15803D',bar:'#059669'},
+  'Programado':    {bg:'#DBEAFE',c:'#1D4ED8',bar:'#3B82F6'},
+  'En evaluacion': {bg:'#CFFAFE',c:'#155E75',bar:'#0891B2'},
+  'Reprogramado':  {bg:'#EDE9FE',c:'#5B21B6',bar:'#7C3AED'},
+  'Cancelado':     {bg:'#F3F4F6',c:'#374151',bar:'#6B7280'},
+  'Atrasado':      {bg:'#FEE2E2',c:'#991B1B',bar:'#DC2626'},
+  'Prevenido':     {bg:'#FEF3C7',c:'#92400E',bar:'#D97706'},
+  'Rechazado':     {bg:'#FFF1F2',c:'#9F1239',bar:'#E11D48'},
+  'Pagado':        {bg:'#F0FDF4',c:'#14532D',bar:'#16A34A'},
+  'Otro':          {bg:'#F8FAFC',c:'#64748B',bar:'#94A3B8'},
+};
+var PCLR = {'Guatemala':'#1E40AF','Nicaragua':'#059669','Honduras':'#DC2626',
+  'El Salvador':'#7C3AED','República Dominicana':'#D97706',
+  'Colombia':'#0891B2','EUA':'#BE185D','México':'#65A30D'};
+function pclr(p){return PCLR[p]||'#6B7280';}
+function dclr(c){return (DCFG[c]||DCFG['Otro']).bar;}
+function dbadge(c){var cf=DCFG[c]||DCFG['Otro'];return '<span class="badge" style="background:'+cf.bg+';color:'+cf.c+'">'+c+'</span>';}
+
+function showARITab(id,btn){
+  ['ov','pais','tiempos','alertas','det'].forEach(function(x){
+    document.getElementById('ri-pg-'+x).classList.add('hidden');});
+  document.querySelectorAll('#uni-ari .sec-tab').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('ri-pg-'+id).classList.remove('hidden');
+  btn.classList.add('on');
+}
+
+function applyARI(){
+  var fp=document.getElementById('ri-fp').value;
+  var ft=document.getElementById('ri-ft').value;
+  var fd=document.getElementById('ri-fd').value;
+  var fa=document.getElementById('ri-fa').value;
+  ARIF=ARI.records.filter(function(d){
+    if(fp && d.pa!==fp) return false;
+    if(ft && d.ti!==ft) return false;
+    if(fd && d.dic!==fd) return false;
+    if(fa && String(d.ap)!==fa) return false;
+    return true;
+  });
+  setTC('ri-info',ARIF.length+' trámites');
+  renderARI();
+}
+
+function renderARI(){
+  renderARIKPIs();renderARIDonut();renderARIPais();renderARIMes();renderARITipo();renderARINC();
+  renderARIPaisTabs();renderARITiempos();renderARIAlertas();renderARIDet();
+}
+
+function renderARIKPIs(){
+  var t=ARIF.length;
+  var ap=ARIF.filter(function(d){return d.cu==='Aprobado';}).length;
+  var ev=ARIF.filter(function(d){return d.cu==='En evaluacion';}).length;
+  var rp=ARIF.filter(function(d){return d.cu==='Reprogramado';}).length;
+  var pr=ARIF.filter(function(d){return d.cu==='Programado';}).length;
+  var ca=ARIF.filter(function(d){return d.cu==='Cancelado';}).length;
+  var at=ARIF.filter(function(d){return d.cu==='Atrasado';}).length;
+  var prev=ARIF.filter(function(d){return d.cu==='Prevenido';}).length;
+  var conTD=ARIF.filter(function(d){return d.td;});
+  var avgD=conTD.length?Math.round(sum(conTD,'td')/conTD.length):0;
+  var items=[
+    {l:'Total Tramites',v:t,s:'Plan ARI 2026',c:'#1E40AF',p:100},
+    {l:'Aprobados',v:ap,s:pct(ap,t)+'% del total',c:'#059669',p:pct(ap,t)},
+    {l:'En Evaluacion',v:ev,s:pct(ev,t)+'% en proceso',c:'#0891B2',p:pct(ev,t)},
+    {l:'Programados',v:pr,s:'por someter',c:'#3B82F6',p:pct(pr,t)},
+    {l:'Reprogramados',v:rp,s:pct(rp,t)+'% postergado',c:'#7C3AED',p:pct(rp,t)},
+    {l:'Cancelados',v:ca,s:pct(ca,t)+'% cancelado',c:'#6B7280',p:pct(ca,t)},
+    {l:'Atrasados',v:at,s:'fecha vencida',c:'#DC2626',p:pct(at,t)},
+    {l:'Prevenc. Activas',v:prev,s:'por contestar',c:'#D97706',p:pct(prev,t)},
+    {l:'Paises',v:new Set(ARIF.map(function(d){return d.pa;}).filter(Boolean)).size,s:'con tramites activos',c:'#BE185D',p:0},
+    {l:'Tiempo Prom.',v:avgD+'d',s:'dias naturales eval.',c:'#64748B',p:0},
+  ];
+  (document.getElementById('ri-kpis')||{innerHTML:''}).innerHTML=items.map(function(k){
+    return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div>'+
+      '<div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div>'+
+      '<div class="kb"><div class="kbf" style="width:'+k.p+'%;background:'+k.c+'"></div></div></div>';
+  }).join('');
+}
+
+function renderARIDonut(){
+  var cc={};ARIF.forEach(function(d){cc[d.cu]=(cc[d.cu]||0)+1;});
+  var labels=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];});
+  var vals=labels.map(function(l){return cc[l];});
+  var colors=labels.map(function(l){return dclr(l);});
+  dc('ri-donut');
+  var ctx=document.getElementById('ri-donut').getContext('2d');
+  CH['ri-donut']=new Chart(ctx,{type:'doughnut',
+    data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,ARIF.length)+'%)';}}}}}});
+  (document.getElementById('ri-donut-leg')||{innerHTML:''}).innerHTML=labels.map(function(l,i){
+    return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+      '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';flex-shrink:0;display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
+  }).join('');
+}
+
+function renderARIPais(){
+  var el=document.getElementById('ri-pais-map');
+  if(!el)return;
+  var counts={};
+  ARIF.forEach(function(d){if(d.pa)counts[d.pa]=(counts[d.pa]||0)+1;});
+  var maxC=Math.max.apply(null,Object.values(counts).concat([1]));
+
+  function gc(n){
+    if(!n)return'#E2E8F0';var t=n/maxC;
+    if(t<0.2)return'#BBF7D0';if(t<0.45)return'#4ADE80';
+    if(t<0.7)return'#16A34A';return'#14532D';
+  }
+  function lc(n){return gc(n)==='#14532D'||gc(n)==='#16A34A'?'#fff':'#1E293B';}
+
+  /* Embedded Americas paths (Natural Earth 110m, equirect lon:-175→-30, lat:-60→85, 960x620) */
+  var AM=[{"n":"Canada","dn":null,"d":"M345.3,153.9 L344.4,153.9 L331.6,149.7 L326.9,147.9 L314.9,146.1 L311.2,142.3 L312.2,139.7 L303.7,137.9 L302.5,134.4 L294.5,131.3 L294.4,129.1 L294.4,129.1 L298.1,127.1 L297.9,124.4 L286.6,121.6 L279.9,116.8 L275.7,113.7 L269.7,111.8 L265.2,110.0 L261.7,107.8 L255.0,109.2 L248.6,111.6 L242.7,108.8 L238.1,106.9 L231.6,105.7 L225.1,105.6 L225.2,81.2 L225.2,65.4 L225.2,65.4 L237.5,66.4 L248.0,68.5 L254.9,68.8 L260.7,67.1 L268.7,65.7 L278.5,66.3 L288.5,64.4 L299.3,63.3 L303.8,65.1 L308.8,64.1 L310.3,62.1 L314.8,62.5 L326.0,66.4 L334.8,63.5 L335.7,66.7 L343.9,66.0 L346.4,64.8 L354.4,65.0 L364.5,66.8 L380.0,68.4 L389.1,69.1 L395.6,68.8 L404.5,71.0 L395.2,73.1 L407.2,74.0 L425.1,73.5 L430.7,72.8 L437.8,75.3 L445.0,73.2 L438.2,71.4 L442.5,69.9 L450.5,69.7 L455.8,69.3 L461.2,70.3 L467.8,72.6 L475.2,72.3 L486.9,74.2 L497.2,73.5 L506.9,73.6 L506.1,71.0 L512.0,70.2 L522.2,71.7 L522.2,75.7 L526.4,72.3 L531.7,72.4 L534.7,68.1 L527.6,65.5 L519.9,63.8 L520.4,59.0 L528.3,55.9 L537.0,56.6 L543.7,58.5 L552.7,63.3 L546.8,65.4 L559.1,66.3 L559.1,70.7 L568.0,67.3 L575.9,70.1 L573.9,73.2 L580.3,76.1 L587.2,73.0 L592.0,69.3 L592.4,64.6 L601.8,65.0 L611.6,65.6 L620.5,67.7 L620.9,69.8 L616.0,72.1 L620.6,74.4 L619.8,76.5 L606.8,79.5 L597.6,80.1 L590.8,78.9 L588.8,81.0 L582.4,84.6 L580.5,86.5 L572.8,89.4 L563.3,89.7 L558.1,91.5 L557.7,94.2 L550.0,94.8 L541.9,98.2 L534.7,103.1 L532.1,106.4 L531.7,111.4 L541.5,112.1 L544.5,116.1 L547.6,119.4 L556.8,118.5 L569.1,120.4 L575.7,122.0 L580.5,124.0 L588.8,125.2 L595.8,127.0 L606.7,127.2 L613.9,127.6 L612.8,131.3 L614.9,135.6 L619.7,140.4 L629.5,144.5 L634.6,143.1 L638.2,138.7 L634.8,131.9 L630.1,129.7 L640.7,127.7 L648.2,124.7 L651.9,121.7 L651.3,118.9 L646.8,115.2 L638.8,112.0 L646.6,107.5 L643.7,103.7 L641.5,97.0 L646.1,96.0 L657.5,97.2 L664.3,97.6 L669.7,96.4 L675.9,97.9 L684.1,100.4 L686.1,102.0 L697.9,102.4 L697.7,106.0 L699.9,111.4 L705.9,112.0 L710.7,114.5 L720.3,112.2 L726.7,107.4 L731.0,105.5 L736.2,109.3 L744.8,114.7 L752.1,119.9 L749.5,122.5 L758.3,125.0 L764.2,127.4 L774.8,128.5 L779.0,129.9 L781.7,133.5 L786.8,134.1 L789.5,135.7 L790.0,140.5 L785.2,142.1 L780.4,143.6 L769.5,145.1 L761.2,148.6 L750.0,149.3 L735.8,148.4 L725.9,148.4 L719.0,148.7 L713.5,151.7 L705.0,153.6 L695.5,159.3 L687.9,163.2 L693.5,162.5 L704.1,156.9 L718.0,153.4 L727.9,152.9 L733.8,155.0 L727.5,157.9 L729.6,162.5 L731.8,165.7 L740.4,167.9 L751.3,167.3 L757.9,162.4 L758.4,165.6 L762.7,167.1 L754.5,169.9 L739.8,172.4 L733.3,174.2 L725.9,177.3 L720.8,176.9 L720.6,173.3 L732.1,169.8 L721.5,169.9 L714.1,170.4 L709.8,168.0 L709.8,162.2 L706.9,161.0 L702.4,161.7 L700.2,160.6 L695.2,163.8 L693.2,167.1 L690.8,169.1 L688.0,169.7 L685.9,169.9 L685.2,171.0 L673.0,171.0 L662.9,171.0 L660.0,171.8 L653.0,174.9 L652.1,175.2 L650.0,176.9 L643.9,176.9 L637.4,176.9 L634.4,177.6 L635.5,178.4 L636.1,179.7 L636.0,180.2 L627.3,182.3 L620.5,183.0 L612.8,185.3 L611.2,185.3 L608.9,184.6 L608.2,184.0 L608.3,183.5 L609.8,182.0 L612.9,179.7 L614.8,177.1 L613.5,173.4 L612.1,169.5 L605.2,167.5 L606.0,166.8 L605.0,166.3 L603.2,166.3 L601.9,165.6 L601.5,164.6 L600.3,165.0 L598.5,164.9 L598.9,164.5 L597.3,164.0 L596.7,162.9 L591.5,161.5 L586.2,160.1 L579.7,158.5 L573.5,156.9 L567.6,158.1 L565.4,158.2 L557.3,157.1 L551.9,157.6 L545.5,156.3 L538.7,155.6 L534.1,155.3 L532.0,154.6 L530.9,152.3 L528.6,152.3 L528.6,153.9 L514.9,153.9 L492.2,153.9 L469.7,153.9 L449.9,153.9 L430.0,153.9 L410.5,153.9 L390.3,153.9 L383.8,153.9 L364.1,153.9 L345.3,153.9 Z M602.5,96.4 L607.4,94.4 L616.5,94.5 L616.4,95.3 L608.6,97.7 L604.0,97.6 L602.5,96.4 Z M630.4,52.2 L623.2,49.9 L623.4,48.3 L626.6,48.1 L641.8,48.5 L653.2,50.9 L653.8,52.1 L646.7,51.9 L639.6,51.8 L632.4,52.4 L630.4,52.2 Z M626.9,98.0 L629.4,96.7 L632.1,96.8 L633.8,97.7 L631.2,99.9 L628.3,99.6 L626.6,98.3 L626.9,98.0 Z M538.8,42.8 L535.2,44.5 L525.6,44.2 L517.6,43.1 L521.1,41.1 L530.6,40.0 L536.4,41.5 L538.8,42.8 Z M537.3,32.0 L534.3,32.1 L521.9,31.8 L520.1,30.6 L533.5,30.7 L538.1,31.5 L537.3,32.0 Z M518.0,26.7 L526.0,28.1 L524.2,29.7 L514.4,30.6 L509.0,29.6 L506.1,28.0 L505.6,26.2 L514.2,26.4 L518.0,26.7 Z M575.0,45.4 L564.3,44.8 L546.7,43.5 L544.4,41.1 L543.6,39.0 L537.0,37.1 L523.3,36.6 L515.6,35.3 L518.1,33.5 L531.7,33.8 L539.1,35.2 L552.1,35.2 L557.8,36.6 L556.3,38.2 L563.9,39.1 L568.1,40.1 L577.1,40.3 L586.7,40.7 L597.3,39.8 L610.7,39.4 L621.5,39.7 L628.6,41.3 L630.1,43.1 L625.9,44.2 L616.1,45.1 L607.6,44.6 L588.6,45.3 L575.0,45.4 Z M422.0,29.3 L431.3,29.9 L429.1,31.2 L416.8,32.5 L406.9,31.1 L412.3,29.7 L422.0,29.3 Z M424.0,26.5 L432.6,27.4 L424.5,28.2 L413.5,28.2 L413.6,27.6 L420.4,26.3 L424.0,26.5 Z M790.5,144.0 L787.0,146.7 L782.6,150.5 L786.9,149.0 L791.4,149.9 L789.0,151.4 L794.9,152.6 L798.0,151.6 L804.6,152.9 L802.5,156.0 L807.2,155.3 L808.0,157.5 L810.1,160.2 L807.3,164.0 L804.3,164.1 L799.9,163.3 L801.4,159.8 L799.5,159.3 L791.8,163.0 L787.9,162.8 L792.6,160.8 L786.2,159.8 L779.1,160.0 L766.2,159.9 L765.2,158.6 L769.3,157.1 L766.5,156.0 L772.0,153.4 L778.9,146.6 L783.0,144.2 L788.7,142.7 L791.8,142.9 L790.5,144.0 Z M603.3,85.0 L610.5,86.5 L618.1,87.8 L618.7,89.9 L623.6,89.5 L628.3,91.0 L622.4,92.3 L612.1,91.3 L608.4,89.4 L601.8,91.6 L592.4,93.8 L590.1,91.3 L581.2,91.8 L586.9,89.6 L587.8,86.3 L590.0,82.4 L594.8,82.7 L596.0,84.6 L599.4,83.9 L603.3,85.0 Z M637.1,54.1 L643.4,52.4 L658.1,54.5 L667.2,56.6 L668.0,58.4 L680.3,57.5 L687.2,60.2 L703.2,61.9 L709.0,63.6 L715.2,67.6 L703.1,69.6 L718.7,72.4 L729.2,73.3 L738.7,77.3 L749.1,77.6 L747.1,80.6 L735.4,85.5 L727.3,83.7 L716.9,79.6 L708.3,80.1 L707.5,82.6 L714.4,85.1 L723.4,87.0 L726.2,88.2 L730.5,92.4 L728.2,95.5 L719.8,94.3 L703.2,90.9 L712.6,94.6 L719.5,97.1 L720.6,98.6 L702.6,96.9 L688.4,94.5 L680.4,92.4 L682.7,91.2 L672.8,89.0 L663.2,86.9 L663.3,88.1 L644.1,88.8 L638.5,87.3 L642.9,84.2 L655.3,84.1 L669.0,83.6 L666.7,82.0 L669.1,79.9 L677.6,75.7 L675.8,73.9 L673.2,72.4 L663.1,70.3 L649.7,68.9 L653.9,67.8 L646.9,65.1 L641.1,64.9 L635.9,63.4 L632.3,64.7 L620.3,65.2 L596.2,64.3 L582.2,63.0 L571.5,62.4 L566.0,60.9 L572.9,58.9 L563.5,58.9 L561.4,54.6 L566.5,50.8 L573.3,49.0 L590.4,47.9 L585.5,50.6 L590.7,53.3 L596.9,49.9 L613.6,48.1 L625.0,52.5 L624.0,55.3 L637.1,54.1 Z M532.9,46.5 L546.7,46.6 L559.4,47.6 L549.5,51.5 L541.6,52.3 L534.5,55.5 L526.9,55.3 L522.8,51.6 L522.9,49.4 L526.4,47.6 L532.9,46.5 Z M345.2,38.0 L345.2,38.0 L356.5,34.8 L370.1,32.0 L380.2,32.1 L389.3,31.4 L388.4,34.7 L383.3,36.2 L377.1,36.4 L364.8,38.3 L354.2,38.9 L345.2,38.0 Z M280.0,132.4 L286.3,132.0 L284.4,136.9 L290.1,140.3 L287.5,140.3 L283.5,138.4 L281.0,136.4 L277.7,135.1 L276.5,133.2 L276.9,131.8 L280.0,132.4 Z M460.2,24.4 L473.2,24.9 L491.1,26.5 L496.2,28.5 L498.7,30.3 L487.9,29.8 L477.0,28.5 L462.3,28.3 L468.7,27.0 L460.7,26.0 L460.2,24.4 Z M340.9,156.0 L337.6,156.6 L326.7,154.7 L324.7,153.2 L318.8,151.7 L317.6,150.4 L310.8,149.7 L308.2,147.3 L308.8,146.4 L315.8,147.3 L319.8,147.9 L326.0,148.4 L328.3,149.9 L331.6,151.9 L338.2,153.7 L340.9,156.0 Z M354.0,45.1 L363.4,46.0 L380.3,46.2 L386.8,47.5 L393.9,49.3 L385.5,50.4 L369.3,53.4 L361.1,56.4 L361.1,58.2 L343.7,60.3 L340.2,58.4 L324.9,56.1 L327.7,54.3 L332.3,51.2 L338.1,48.4 L331.6,45.8 L354.0,45.1 Z M444.8,39.1 L450.7,38.4 L457.6,38.6 L458.8,40.7 L454.8,42.7 L432.3,43.4 L415.6,45.3 L405.6,45.3 L404.7,44.0 L418.5,42.1 L388.6,42.6 L379.3,41.8 L388.3,37.6 L394.6,36.4 L413.2,37.9 L425.0,40.4 L436.5,40.7 L427.1,36.6 L433.1,35.1 L440.0,35.6 L442.2,37.6 L444.8,39.1 Z M453.4,51.0 L460.8,52.7 L464.9,56.9 L467.0,59.9 L478.1,62.0 L490.1,64.0 L489.3,65.9 L478.5,66.3 L482.7,67.9 L480.5,69.5 L468.5,68.8 L457.1,67.6 L449.4,67.9 L437.0,69.4 L420.2,70.0 L408.4,70.4 L404.8,68.4 L395.8,67.2 L389.9,67.7 L381.7,64.3 L386.2,63.9 L396.4,63.1 L405.7,63.3 L414.3,62.6 L401.5,61.6 L387.4,61.9 L378.0,61.8 L374.5,60.3 L389.9,58.5 L379.7,58.6 L368.1,57.5 L373.7,54.3 L378.3,52.6 L396.0,50.0 L402.8,50.8 L399.5,52.8 L414.2,51.5 L423.4,53.7 L430.9,51.5 L436.9,52.9 L442.3,57.1 L445.7,55.3 L441.0,50.9 L446.8,50.3 L453.4,51.0 Z M493.6,52.6 L486.4,49.8 L494.2,47.7 L502.1,48.6 L513.9,48.1 L515.6,49.3 L509.4,51.4 L519.5,53.2 L518.3,57.0 L507.4,58.7 L501.0,58.3 L496.5,56.7 L480.0,53.4 L480.1,52.0 L493.6,52.6 Z M452.9,48.7 L461.7,48.6 L466.8,49.5 L460.9,52.3 L450.6,49.3 L452.9,48.7 Z M506.5,35.4 L511.5,37.4 L511.8,39.6 L508.7,42.8 L497.8,43.2 L490.7,42.5 L490.8,40.0 L480.0,40.3 L479.6,37.0 L486.7,37.2 L496.7,35.7 L506.0,36.0 L506.5,35.4 Z M522.9,18.8 L527.5,17.5 L534.3,17.2 L531.4,16.2 L546.8,16.0 L555.3,18.3 L566.4,19.2 L577.3,20.0 L582.5,22.8 L590.5,24.2 L581.4,25.5 L569.1,28.7 L557.4,29.0 L543.7,28.5 L536.6,26.7 L536.7,25.2 L541.9,24.0 L529.8,24.1 L522.5,22.6 L518.3,20.7 L522.9,18.8 Z M552.3,13.3 L562.1,12.5 L569.8,12.3 L582.8,11.6 L592.6,10.0 L600.8,10.3 L607.9,11.5 L612.9,9.2 L621.7,8.5 L633.6,8.0 L653.8,7.8 L657.3,8.3 L676.4,7.6 L690.8,7.8 L705.1,8.1 L722.8,8.4 L737.0,9.0 L749.1,10.1 L748.8,11.3 L732.7,13.1 L716.7,14.0 L710.7,15.0 L725.1,14.9 L709.5,17.5 L698.7,18.7 L687.4,22.2 L673.7,22.9 L669.5,23.8 L649.4,24.3 L658.6,24.8 L654.0,25.6 L659.5,27.7 L653.2,29.1 L642.9,30.4 L639.8,32.0 L630.6,33.3 L631.5,34.3 L642.8,34.1 L642.9,35.2 L625.2,37.7 L607.9,36.5 L588.5,37.2 L578.6,36.7 L566.1,36.5 L565.3,34.4 L577.5,33.4 L574.3,30.4 L578.3,30.1 L596.0,31.9 L587.0,29.2 L576.3,28.3 L581.6,26.7 L593.4,25.7 L595.2,24.2 L585.9,22.5 L583.1,20.3 L601.2,20.5 L606.4,21.0 L616.7,19.4 L601.8,18.9 L578.7,19.2 L567.0,17.7 L561.4,16.0 L553.7,14.7 L552.3,13.3 Z M660.6,75.1 L656.3,76.3 L648.9,76.5 L647.3,74.5 L650.1,72.1 L656.1,71.5 L661.3,72.6 L661.4,74.5 L660.6,75.1 Z M521.3,66.3 L525.4,68.0 L521.3,69.5 L512.3,68.2 L506.9,68.6 L497.9,66.7 L503.7,65.4 L508.3,63.5 L515.4,64.7 L519.3,65.5 L521.3,66.3 Z M731.5,150.2 L733.7,149.8 L742.5,150.9 L749.2,152.7 L749.4,153.5 L746.2,153.6 L737.6,152.2 L731.5,150.2 Z M734.8,162.3 L737.1,164.4 L741.9,165.0 L748.1,164.9 L744.8,166.6 L742.3,166.9 L734.0,165.1 L732.3,163.6 L734.8,162.3 Z","cx":483.9,"cy":105.5},{"n":"United States of America","dn":"EUA","d":"M345.3,153.9 L364.1,153.9 L383.8,153.9 L390.3,153.9 L410.5,153.9 L430.0,153.9 L449.9,153.9 L469.7,153.9 L492.2,153.9 L514.9,153.9 L528.6,153.9 L528.6,152.3 L530.9,152.3 L532.0,154.6 L534.1,155.3 L538.7,155.6 L545.5,156.3 L551.9,157.6 L557.3,157.1 L565.4,158.2 L567.6,158.1 L573.5,156.9 L579.7,158.5 L586.2,160.1 L591.5,161.5 L596.7,162.9 L597.3,164.0 L598.9,164.5 L598.5,164.9 L600.3,165.0 L601.5,164.6 L601.9,165.6 L603.2,166.3 L605.0,166.3 L606.0,166.8 L605.2,167.5 L612.1,169.5 L613.5,173.4 L614.8,177.1 L612.9,179.7 L609.8,182.0 L608.3,183.5 L608.2,184.0 L608.9,184.6 L611.2,185.3 L612.8,185.3 L620.5,183.0 L627.3,182.3 L636.0,180.2 L636.1,179.7 L635.5,178.4 L634.4,177.6 L637.4,176.9 L643.9,176.9 L650.0,176.9 L652.1,175.2 L653.0,174.9 L660.0,171.8 L662.9,171.0 L673.0,171.0 L685.2,171.0 L685.9,169.9 L688.0,169.7 L690.8,169.1 L693.2,167.1 L695.2,163.8 L700.2,160.6 L702.4,161.7 L706.9,161.0 L709.8,162.2 L709.8,168.0 L714.1,170.4 L715.3,171.8 L708.2,173.9 L701.4,175.4 L694.4,176.7 L690.9,179.2 L689.8,180.2 L689.7,182.4 L691.9,184.7 L694.6,184.8 L693.9,183.2 L695.9,184.2 L695.4,185.4 L690.9,186.1 L687.8,186.0 L682.9,186.8 L680.0,187.0 L676.1,187.2 L670.6,188.4 L680.3,187.6 L682.3,188.4 L673.0,189.7 L668.8,189.7 L669.0,189.2 L667.0,190.4 L668.9,190.6 L667.5,193.7 L662.7,196.9 L662.2,195.8 L660.7,195.6 L658.6,194.6 L660.0,196.9 L661.6,197.6 L661.7,199.2 L659.6,200.9 L655.8,204.3 L655.2,204.1 L657.3,201.2 L653.9,199.6 L653.1,196.0 L651.9,197.9 L653.3,200.6 L648.9,199.9 L653.5,201.3 L653.7,205.4 L655.6,205.7 L656.3,207.2 L657.3,211.4 L653.0,214.6 L646.2,215.9 L641.8,218.4 L638.5,218.7 L635.2,220.2 L634.2,221.7 L627.0,224.4 L623.2,226.5 L620.1,229.0 L619.1,232.1 L620.3,235.0 L622.5,238.7 L625.4,241.7 L625.5,243.6 L628.6,248.5 L628.4,251.4 L628.1,253.1 L626.4,255.7 L624.5,256.2 L621.2,255.7 L620.2,253.8 L617.6,252.8 L614.1,249.2 L611.1,245.9 L610.1,244.2 L611.4,241.4 L609.6,239.0 L604.4,235.4 L601.8,234.8 L595.1,236.7 L594.0,236.5 L590.7,234.5 L586.6,233.5 L579.1,234.0 L573.2,233.5 L568.2,233.8 L565.4,234.5 L566.6,235.6 L566.5,237.4 L567.9,238.2 L566.7,238.8 L564.2,238.1 L561.7,238.9 L556.9,238.8 L552.0,236.6 L546.2,237.1 L541.4,236.1 L537.3,236.4 L531.7,237.4 L525.7,240.6 L519.1,242.4 L515.5,244.5 L514.0,246.4 L513.9,249.3 L514.2,251.4 L515.5,252.8 L512.9,253.0 L508.2,252.0 L503.0,250.7 L501.2,248.7 L499.7,245.7 L495.8,243.3 L493.5,240.7 L490.2,237.8 L485.5,236.1 L480.1,236.2 L476.0,239.6 L470.5,238.3 L467.0,237.0 L465.4,234.7 L463.2,232.4 L459.3,230.5 L455.9,229.2 L453.5,227.7 L442.0,227.7 L442.0,229.4 L436.7,229.4 L423.6,229.5 L408.5,226.5 L398.5,224.4 L399.1,223.5 L390.7,224.0 L383.2,224.3 L382.0,222.1 L377.8,219.7 L374.7,219.2 L373.9,218.0 L370.2,217.7 L367.9,216.6 L361.7,216.2 L360.0,215.5 L359.2,213.1 L352.8,208.8 L347.3,202.9 L347.5,201.9 L344.6,200.5 L339.5,196.9 L338.5,193.4 L335.0,191.1 L336.5,187.5 L336.2,183.9 L334.1,180.6 L336.7,176.6 L337.5,172.7 L338.3,168.8 L337.1,163.1 L335.0,159.4 L333.1,157.4 L333.9,156.6 L343.5,158.0 L347.0,162.1 L348.6,160.9 L347.6,157.4 L345.3,153.9 Z M129.8,277.6 L130.9,278.0 L132.0,278.5 L133.7,280.0 L133.5,280.3 L130.9,281.2 L128.8,281.8 L127.9,282.6 L126.2,282.0 L126.4,280.8 L125.3,279.2 L125.6,278.7 L126.8,278.0 L126.3,277.2 L126.7,276.8 L127.2,276.9 L129.8,277.6 Z M125.8,274.7 L125.3,275.2 L123.0,275.5 L121.9,274.6 L121.1,274.2 L121.1,274.0 L121.7,273.6 L124.1,274.0 L125.8,274.7 Z M120.8,272.9 L120.6,273.4 L117.0,273.2 L117.5,272.7 L120.8,272.9 Z M112.4,270.6 L112.9,270.9 L114.9,272.3 L114.5,272.5 L114.0,272.5 L111.7,272.3 L110.9,271.3 L110.6,271.2 L112.4,270.6 Z M103.5,268.5 L103.6,269.5 L102.9,269.9 L100.6,269.1 L101.0,268.8 L102.0,268.4 L103.5,268.5 Z M56.5,105.3 L61.7,105.6 L62.4,107.3 L58.3,107.9 L54.0,107.1 L50.0,106.0 L56.5,105.3 Z M144.1,115.6 L148.5,115.9 L151.3,117.2 L145.6,119.2 L139.0,120.9 L135.6,119.8 L134.6,117.8 L140.6,116.2 L144.1,115.6 Z M225.2,65.4 L225.2,65.4 L225.2,81.2 L225.1,105.6 L231.6,105.7 L238.1,106.9 L242.7,108.8 L248.6,111.6 L255.0,109.2 L261.7,107.8 L265.2,110.0 L269.7,111.8 L275.7,113.7 L279.9,116.8 L286.6,121.6 L297.9,124.4 L298.1,127.1 L294.4,129.1 L294.4,129.1 L294.4,129.1 L290.7,127.5 L284.9,126.1 L283.0,122.4 L274.5,119.0 L270.9,114.9 L264.6,114.6 L254.0,114.5 L246.3,113.3 L232.6,108.9 L226.3,108.1 L214.7,106.5 L205.5,106.9 L192.5,104.9 L184.6,103.1 L177.3,104.0 L178.6,107.0 L175.0,107.3 L167.3,108.2 L161.5,109.6 L154.2,110.5 L153.2,108.0 L156.2,103.8 L163.2,102.5 L161.4,101.4 L153.0,103.8 L148.4,106.6 L138.9,109.7 L143.8,111.8 L137.5,114.8 L130.4,116.6 L123.8,117.9 L122.1,119.8 L111.8,122.0 L109.7,124.0 L101.9,125.9 L97.4,125.5 L91.2,126.7 L84.5,128.2 L79.0,129.6 L67.6,130.8 L66.6,130.1 L73.8,128.1 L80.3,126.8 L87.4,124.4 L95.6,124.0 L98.8,122.2 L108.0,119.7 L109.5,118.8 L114.4,117.3 L115.5,114.0 L118.9,111.5 L111.3,112.8 L109.1,112.1 L105.5,113.6 L101.2,111.5 L99.4,113.0 L97.0,110.9 L90.3,112.6 L86.3,112.6 L85.7,110.0 L86.9,108.5 L82.6,106.9 L74.0,107.8 L68.4,105.8 L63.9,104.7 L63.9,102.3 L58.8,100.5 L61.3,98.0 L66.7,95.6 L69.1,93.4 L74.5,93.1 L79.0,93.8 L84.3,91.8 L89.2,92.1 L94.2,90.8 L93.0,88.8 L89.3,88.1 L94.2,86.4 L90.1,86.5 L83.1,87.4 L81.1,88.3 L75.8,87.4 L66.5,87.9 L56.8,86.9 L54.0,85.1 L45.6,82.7 L54.9,80.9 L69.7,78.8 L75.1,78.8 L74.2,80.9 L88.2,80.7 L82.8,78.1 L74.7,76.5 L70.0,74.3 L63.6,72.5 L54.5,71.2 L58.2,68.9 L70.0,68.8 L78.3,66.8 L79.9,64.7 L86.7,62.7 L93.1,62.2 L105.7,60.3 L111.8,60.6 L121.9,58.3 L132.0,59.2 L136.8,61.2 L139.7,60.3 L150.9,60.6 L150.5,61.6 L160.6,62.3 L167.4,61.9 L181.3,63.2 L194.1,63.6 L199.2,64.2 L208.0,63.5 L218.0,64.8 L225.2,65.4 L225.2,65.4 Z M21.6,90.7 L25.7,91.5 L29.9,91.1 L35.2,92.2 L41.8,92.8 L41.2,93.3 L36.2,94.2 L31.2,93.2 L28.7,92.5 L22.8,92.7 L21.2,92.3 L21.6,90.7 Z","cx":513.2,"cy":194.4},{"n":"Argentina","dn":null,"d":"M704.2,588.5 L706.8,590.5 L710.1,593.7 L718.7,596.3 L727.9,597.3 L725.0,599.5 L718.7,599.7 L715.3,598.2 L711.3,598.1 L704.2,598.1 L704.2,588.5 Z M777.1,492.6 L775.4,496.1 L773.7,500.5 L773.7,504.7 L772.3,505.7 L771.8,508.4 L771.3,510.7 L779.7,514.3 L778.8,517.3 L783.0,519.1 L782.6,521.2 L776.3,526.7 L766.5,529.0 L753.2,529.9 L745.9,529.5 L747.3,532.0 L745.9,535.2 L747.2,537.4 L743.2,538.9 L736.4,539.5 L730.0,537.9 L727.5,539.0 L728.4,543.3 L732.9,544.6 L736.5,543.2 L738.5,545.4 L732.4,546.8 L727.1,549.4 L726.1,553.7 L724.5,556.0 L718.3,556.0 L713.1,558.2 L711.2,561.4 L717.7,564.6 L724.0,565.4 L721.8,569.3 L713.9,571.7 L709.6,576.7 L703.6,578.4 L700.9,580.4 L703.0,584.8 L707.4,587.3 L704.6,587.1 L698.5,586.4 L682.5,585.8 L679.8,583.3 L679.9,580.1 L675.5,580.4 L673.1,578.9 L672.6,574.3 L677.6,572.4 L679.7,569.7 L679.0,567.6 L682.5,563.9 L684.9,558.3 L684.2,555.7 L687.1,554.9 L686.4,553.3 L683.3,552.5 L685.5,550.7 L682.5,549.1 L680.9,544.1 L683.6,543.3 L682.5,538.0 L684.0,533.7 L685.8,529.8 L689.8,528.3 L687.8,524.1 L687.7,520.2 L692.8,517.4 L692.6,513.8 L696.4,509.7 L696.4,505.7 L694.7,504.9 L691.6,497.6 L695.7,493.2 L695.1,489.0 L697.4,485.1 L701.8,481.1 L706.5,478.5 L704.5,476.8 L705.9,475.4 L705.6,468.3 L712.9,466.2 L715.1,461.7 L714.3,460.7 L719.8,456.8 L728.5,457.8 L732.4,460.9 L735.0,457.5 L742.5,457.7 L743.6,458.6 L755.8,465.6 L761.2,466.2 L769.3,469.4 L776.1,471.0 L777.0,472.9 L770.5,479.4 L777.2,480.6 L784.6,481.2 L789.9,480.6 L795.9,477.3 L797.0,473.5 L800.2,472.7 L803.6,475.2 L803.4,478.6 L797.9,480.9 L793.4,482.7 L785.9,486.8 L777.1,492.6 Z","cx":733.7,"cy":506.7},{"n":"Chile","dn":null,"d":"M704.2,588.5 L704.2,598.1 L711.3,598.1 L715.3,598.2 L713.1,599.9 L707.4,601.2 L704.2,601.1 L700.3,600.8 L695.4,599.5 L688.5,598.9 L680.2,596.5 L673.4,594.2 L664.3,589.4 L669.8,590.3 L679.1,593.1 L687.8,594.7 L691.3,592.7 L693.4,589.8 L699.5,588.0 L704.2,588.5 Z M697.9,438.6 L701.1,441.5 L702.0,444.6 L705.5,446.4 L703.4,450.6 L707.0,455.4 L709.6,461.2 L714.3,460.7 L715.1,461.7 L712.9,466.2 L705.6,468.3 L705.9,475.4 L704.5,476.8 L706.5,478.5 L701.8,481.1 L697.4,485.1 L695.1,489.0 L695.7,493.2 L691.6,497.6 L694.7,504.9 L696.4,505.7 L696.4,509.7 L692.6,513.8 L692.8,517.4 L687.7,520.2 L687.8,524.1 L689.8,528.3 L685.8,529.8 L684.0,533.7 L682.5,538.0 L683.6,543.3 L680.9,544.1 L682.5,549.1 L685.5,550.7 L683.3,552.5 L686.4,553.3 L687.1,554.9 L684.2,555.7 L684.9,558.3 L682.5,563.9 L679.0,567.6 L679.7,569.7 L677.6,572.4 L672.6,574.3 L673.1,578.9 L675.5,580.4 L679.9,580.1 L679.8,583.3 L682.5,585.8 L698.5,586.4 L704.6,587.1 L698.7,587.0 L695.6,588.1 L689.6,589.6 L688.5,593.6 L685.7,593.7 L678.2,592.3 L670.7,589.4 L670.7,589.4 L662.4,586.9 L660.3,584.2 L662.2,581.7 L658.9,578.9 L658.0,571.6 L660.9,567.5 L667.9,564.2 L657.8,562.9 L664.1,559.1 L666.4,552.0 L673.7,553.5 L677.2,544.7 L672.7,543.5 L670.7,548.9 L666.5,548.3 L668.6,542.2 L670.8,534.2 L673.9,531.3 L672.0,527.1 L671.4,522.3 L674.2,522.2 L678.3,515.3 L682.8,508.4 L685.6,502.1 L684.1,495.7 L686.1,492.1 L685.3,486.9 L689.2,481.6 L690.4,473.4 L692.5,464.5 L694.6,454.9 L694.1,447.9 L692.7,441.9 L696.1,440.8 L697.9,438.6 Z","cx":679.8,"cy":526.6},{"n":"Haiti","dn":null,"d":"M683.8,279.2 L684.4,281.5 L683.9,283.1 L682.3,283.8 L684.0,285.1 L683.9,286.3 L679.5,285.6 L676.3,285.9 L672.3,285.6 L669.2,286.4 L665.7,285.0 L666.2,283.6 L672.3,284.2 L677.3,284.6 L679.7,283.6 L676.7,281.8 L676.7,280.1 L672.6,279.5 L674.1,278.3 L678.1,278.5 L683.8,279.2 Z","cx":680.4,"cy":281.1},{"n":"Dominican Rep.","dn":"Rep\u00fablica Dominicana","d":"M683.9,286.3 L684.0,285.1 L682.3,283.8 L683.9,283.1 L684.4,281.5 L683.8,279.2 L684.7,278.4 L689.8,278.4 L693.8,279.5 L695.5,279.4 L696.7,281.0 L700.3,280.9 L700.1,282.1 L703.1,282.3 L706.3,283.9 L703.9,285.6 L700.7,284.7 L697.7,284.9 L695.5,284.7 L694.3,285.4 L691.7,285.7 L690.7,284.7 L688.6,285.3 L685.9,288.2 L684.2,287.5 L683.9,286.3 Z","cx":690.8,"cy":281.8},{"n":"Bahamas","dn":null,"d":"M635.7,248.9 L638.8,248.6 L643.2,248.7 L643.4,249.8 L636.2,250.5 L635.7,248.9 Z M643.6,247.8 L648.8,249.8 L647.7,252.8 L646.5,252.2 L646.6,250.0 L643.6,248.3 L643.6,247.8 Z M640.9,255.7 L642.9,255.8 L645.3,259.4 L645.3,261.9 L643.7,262.1 L642.0,259.6 L639.5,258.4 L640.9,255.7 Z","cx":647.9,"cy":250.6},{"n":"Falkland Is.","dn":null,"d":"M753.4,585.2 L761.4,582.6 L767.0,583.7 L771.0,581.9 L776.3,583.9 L774.3,585.4 L765.4,586.6 L762.4,585.2 L756.7,587.1 L753.4,585.2 Z","cx":769.7,"cy":584.1},{"n":"Greenland","dn":null,"d":"M849.0,10.1 L871.2,7.6 L894.5,7.8 L902.9,6.2 L926.3,5.8 L979.2,6.3 L983.1,11.6 L947.4,12.0 L950.8,12.7 L974.2,12.3 L989.5,58.0 L991.8,60.9 L984.1,63.2 L992.9,67.3 L974.9,70.7 L955.5,72.2 L948.2,72.2 L941.4,73.8 L932.2,78.3 L917.9,81.3 L913.4,81.5 L904.6,82.6 L895.0,83.6 L889.4,86.2 L889.3,89.2 L885.9,92.0 L875.1,95.4 L877.8,98.8 L874.8,102.3 L871.4,106.5 L862.1,106.7 L852.3,103.2 L839.1,103.2 L832.7,100.9 L828.2,96.7 L816.8,91.4 L813.4,88.6 L812.5,84.8 L803.3,80.8 L805.7,77.7 L801.3,76.2 L807.9,71.2 L817.8,69.6 L820.4,67.8 L821.8,64.4 L814.3,66.0 L810.7,66.6 L804.7,67.2 L796.6,65.8 L796.1,62.9 L798.7,60.6 L804.9,60.6 L818.4,61.7 L807.0,59.0 L801.1,57.5 L794.5,58.1 L789.0,57.1 L796.3,53.1 L792.3,51.5 L787.1,48.5 L779.1,44.0 L770.7,42.3 L770.7,40.5 L753.0,38.0 L738.9,37.7 L721.2,37.9 L705.1,38.2 L697.4,36.9 L685.9,34.2 L703.3,32.8 L716.6,32.6 L688.3,31.5 L673.3,29.7 L674.3,28.1 L699.3,26.0 L723.6,24.0 L726.1,22.4 L708.3,20.9 L714.0,19.2 L737.0,16.2 L746.6,15.7 L743.8,13.8 L759.5,12.7 L779.9,12.0 L800.2,12.0 L807.4,13.3 L825.0,11.0 L840.8,12.6 L850.1,12.9 L863.8,14.3 L848.1,12.0 L849.0,10.1 Z","cx":898.2,"cy":45.7},{"n":"Mexico","dn":"M\u00e9xico","d":"M383.2,224.3 L390.7,224.0 L399.1,223.5 L398.5,224.4 L408.5,226.5 L423.6,229.5 L436.7,229.4 L442.0,229.4 L442.0,227.7 L453.5,227.7 L455.9,229.2 L459.3,230.5 L463.2,232.4 L465.4,234.7 L467.0,237.0 L470.5,238.3 L476.0,239.6 L480.1,236.2 L485.5,236.1 L490.2,237.8 L493.5,240.7 L495.8,243.3 L499.7,245.7 L501.2,248.7 L503.0,250.7 L508.2,252.0 L512.9,253.0 L515.5,252.8 L512.9,256.6 L511.8,259.7 L511.3,265.4 L510.6,267.5 L511.8,269.8 L513.8,271.9 L515.2,275.2 L519.6,278.4 L521.1,280.8 L523.7,282.9 L530.7,284.1 L533.5,285.9 L539.3,284.7 L544.3,284.2 L549.3,283.5 L553.4,282.7 L557.6,281.0 L559.2,278.5 L559.8,274.9 L560.9,273.7 L565.4,272.5 L572.4,271.5 L578.3,271.7 L582.3,271.3 L583.9,272.2 L583.6,274.3 L580.1,276.8 L578.5,279.4 L579.7,280.2 L578.7,282.0 L577.1,285.4 L575.4,284.3 L574.0,284.3 L572.8,284.4 L570.4,287.0 L569.2,286.5 L568.4,286.7 L568.4,287.3 L562.3,287.3 L556.1,287.3 L556.1,289.7 L553.1,289.7 L555.6,291.1 L558.0,292.1 L558.8,293.0 L559.9,293.3 L559.7,294.7 L551.2,294.7 L548.0,298.2 L548.9,299.0 L548.2,300.0 L548.0,301.3 L540.5,296.7 L537.1,295.3 L531.7,294.2 L528.0,294.5 L522.7,296.1 L519.3,296.5 L514.7,295.4 L509.7,294.6 L503.5,292.6 L498.6,292.0 L491.1,290.0 L485.5,288.0 L483.8,286.8 L480.1,286.6 L473.4,285.2 L470.6,283.3 L463.5,280.9 L460.2,278.2 L458.6,276.1 L460.8,275.7 L460.1,274.4 L461.7,273.3 L461.7,271.9 L459.5,269.9 L458.9,268.2 L456.6,266.1 L450.8,261.8 L444.1,258.5 L440.9,255.8 L435.2,254.1 L434.0,253.0 L435.0,250.4 L431.7,249.4 L427.8,247.3 L426.1,244.3 L422.5,244.0 L418.7,241.7 L415.6,239.6 L415.3,238.3 L411.7,235.1 L409.4,231.8 L409.5,230.2 L404.7,228.5 L402.5,228.7 L398.7,227.5 L397.7,229.2 L398.8,231.3 L399.4,234.5 L401.7,236.2 L406.6,239.2 L407.7,240.2 L408.7,240.5 L409.6,242.0 L410.7,241.9 L412.1,244.7 L414.1,245.8 L415.5,247.3 L419.6,249.4 L421.8,253.4 L423.8,255.3 L425.6,257.3 L426.0,259.6 L429.2,259.7 L431.9,261.6 L434.3,263.5 L434.1,264.3 L431.3,265.9 L430.1,265.9 L428.4,263.3 L424.1,260.8 L419.3,258.8 L415.9,257.7 L416.1,254.5 L415.1,252.2 L412.0,250.9 L407.4,249.0 L406.5,249.5 L404.9,248.4 L400.8,247.4 L396.9,244.9 L397.4,244.6 L400.1,244.8 L402.5,243.2 L402.8,241.3 L397.7,238.3 L393.8,237.1 L391.4,234.4 L388.9,231.6 L385.8,228.2 L383.2,224.3 Z","cx":481.4,"cy":261.2},{"n":"Uruguay","dn":null,"d":"M777.1,492.6 L781.4,492.2 L788.0,495.5 L790.5,495.4 L797.3,498.1 L802.5,500.5 L806.3,503.4 L803.4,505.4 L805.3,507.8 L802.4,510.5 L794.9,512.9 L790.0,512.0 L786.4,512.5 L780.3,510.7 L775.8,510.8 L771.8,508.4 L772.3,505.7 L773.7,504.7 L773.7,500.5 L775.4,496.1 L777.1,492.6 Z","cx":788.1,"cy":504.4},{"n":"Brazil","dn":null,"d":"M805.3,507.8 L803.4,505.4 L806.3,503.4 L802.5,500.5 L797.3,498.1 L790.5,495.4 L788.0,495.5 L781.4,492.2 L777.1,492.6 L785.9,486.8 L793.4,482.7 L797.9,480.9 L803.4,478.6 L803.6,475.2 L800.2,472.7 L797.0,473.5 L798.3,471.0 L799.2,468.5 L799.2,466.2 L796.8,465.4 L794.3,466.1 L791.8,465.9 L791.1,464.2 L790.4,460.3 L789.2,459.0 L784.7,457.9 L782.0,458.7 L775.0,457.9 L775.5,452.1 L773.5,449.7 L775.6,448.8 L775.0,446.4 L776.8,444.5 L777.9,441.2 L776.4,438.5 L772.8,437.3 L772.1,435.6 L773.0,433.1 L760.3,433.0 L757.8,428.0 L759.7,427.9 L759.6,426.1 L758.3,424.8 L758.0,422.4 L754.2,421.1 L750.0,421.1 L747.3,419.9 L742.8,419.0 L740.2,417.4 L732.8,416.7 L725.6,412.9 L726.1,410.0 L725.3,408.4 L726.0,405.2 L717.4,405.9 L713.9,407.5 L708.1,409.3 L706.6,410.5 L703.2,410.6 L698.3,410.3 L694.6,411.0 L691.5,410.5 L692.0,404.0 L686.5,406.5 L680.7,406.4 L678.2,404.2 L673.8,403.9 L675.2,402.1 L671.5,399.5 L668.8,395.6 L670.5,394.8 L670.5,393.0 L674.5,391.8 L673.9,389.5 L675.5,388.0 L676.0,386.0 L683.6,383.1 L689.0,382.3 L689.9,381.6 L695.9,381.8 L698.9,370.1 L699.0,368.2 L698.0,365.8 L695.0,364.2 L695.1,361.1 L698.8,360.4 L700.1,360.9 L700.3,359.2 L696.5,358.8 L696.4,356.1 L709.3,356.2 L711.5,354.7 L713.3,356.1 L714.6,358.6 L715.9,358.1 L719.5,360.4 L724.6,360.1 L725.9,358.8 L730.9,357.8 L733.6,357.1 L734.3,355.3 L739.1,354.0 L738.7,353.1 L733.1,352.8 L732.2,350.1 L732.5,347.2 L729.5,346.1 L730.7,345.7 L735.6,346.3 L740.9,347.3 L742.8,346.3 L747.6,345.7 L755.0,344.1 L757.4,342.4 L756.5,341.2 L760.0,341.0 L761.5,342.0 L760.6,343.9 L762.9,344.5 L764.4,346.5 L762.6,348.0 L761.5,351.7 L763.2,353.8 L763.7,355.8 L767.8,357.8 L771.0,358.0 L771.8,357.2 L773.9,357.0 L776.9,356.3 L779.0,355.1 L782.7,355.5 L784.3,355.3 L787.9,355.7 L788.5,354.8 L787.4,354.0 L788.0,352.7 L790.7,353.1 L793.8,352.7 L797.6,353.6 L800.5,354.4 L802.6,353.3 L804.1,353.5 L805.0,354.7 L808.1,354.4 L810.7,352.7 L812.7,349.6 L816.6,345.7 L818.9,345.5 L820.5,347.8 L824.2,355.3 L827.8,356.0 L827.9,359.0 L823.0,362.5 L825.0,363.8 L836.7,364.5 L837.0,368.7 L842.0,365.9 L850.3,367.5 L861.3,370.1 L864.5,372.6 L863.5,375.0 L871.2,373.6 L884.0,375.9 L893.9,375.7 L903.7,379.3 L912.2,384.1 L917.3,385.3 L922.9,385.5 L925.3,386.8 L927.6,392.3 L928.7,394.8 L926.0,401.9 L922.7,404.7 L913.3,410.7 L909.1,415.5 L904.2,419.2 L902.6,419.3 L900.7,422.4 L901.2,430.4 L899.3,437.0 L898.6,439.8 L896.6,441.5 L895.4,447.3 L888.7,452.8 L887.5,457.2 L882.2,459.1 L880.6,461.7 L873.4,461.7 L863.0,463.3 L858.4,465.2 L850.9,466.4 L843.2,469.9 L837.5,474.1 L836.6,477.3 L837.7,479.6 L836.4,484.0 L834.9,486.1 L830.3,488.4 L823.0,495.9 L817.2,499.3 L812.6,501.3 L809.6,505.4 L805.3,507.8 Z","cx":830.5,"cy":415.2},{"n":"Bolivia","dn":null,"d":"M698.3,410.3 L703.2,410.6 L706.6,410.5 L708.1,409.3 L713.9,407.5 L717.4,405.9 L726.0,405.2 L725.3,408.4 L726.1,410.0 L725.6,412.9 L732.8,416.7 L740.2,417.4 L742.8,419.0 L747.3,419.9 L750.0,421.1 L754.2,421.1 L758.0,422.4 L758.3,424.8 L759.6,426.1 L759.7,427.9 L757.8,428.0 L760.3,433.0 L773.0,433.1 L772.1,435.6 L772.8,437.3 L776.4,438.5 L777.9,441.2 L776.8,444.5 L775.0,446.4 L775.6,448.8 L773.5,449.7 L773.4,448.4 L767.2,446.2 L761.1,446.2 L749.6,447.4 L746.4,451.2 L746.2,453.5 L743.6,458.6 L742.5,457.7 L735.0,457.5 L732.4,460.9 L728.5,457.8 L719.8,456.8 L714.3,460.7 L709.6,461.2 L707.0,455.4 L703.4,450.6 L705.5,446.4 L702.0,444.6 L701.1,441.5 L697.9,438.6 L702.1,434.0 L699.2,430.4 L700.7,429.0 L699.5,427.4 L702.1,425.3 L702.3,421.6 L702.6,418.6 L704.0,417.2 L698.3,410.3 Z","cx":731.0,"cy":434.7},{"n":"Peru","dn":null,"d":"M695.9,381.8 L689.9,381.6 L689.0,382.3 L683.6,383.1 L676.0,386.0 L675.5,388.0 L673.9,389.5 L674.5,391.8 L670.5,393.0 L670.5,394.8 L668.8,395.6 L671.5,399.5 L675.2,402.1 L673.8,403.9 L678.2,404.2 L680.7,406.4 L686.5,406.5 L692.0,404.0 L691.5,410.5 L694.6,411.0 L698.3,410.3 L704.0,417.2 L702.6,418.6 L702.3,421.6 L702.1,425.3 L699.5,427.4 L700.7,429.0 L699.2,430.4 L702.1,434.0 L697.9,438.6 L696.1,440.8 L692.7,441.9 L686.1,439.4 L685.5,437.7 L672.4,433.4 L660.5,428.7 L655.4,426.1 L652.6,422.6 L653.7,421.3 L648.1,415.7 L641.6,407.8 L635.3,399.3 L632.6,397.4 L630.6,394.2 L625.4,391.4 L620.7,389.7 L622.8,387.8 L619.6,383.7 L621.7,380.7 L627.0,378.0 L627.7,379.8 L625.9,380.8 L626.0,382.4 L628.8,382.0 L631.4,382.5 L634.2,384.7 L638.0,382.9 L639.2,380.0 L643.3,376.3 L651.2,374.6 L658.5,370.1 L660.5,367.3 L659.6,364.1 L661.4,363.7 L665.8,365.7 L667.9,367.7 L670.9,368.8 L674.8,373.3 L679.8,373.9 L683.4,372.7 L685.8,373.5 L689.8,373.1 L694.9,375.1 L690.6,379.5 L692.6,379.6 L695.9,381.8 Z","cx":676.0,"cy":418.9},{"n":"Colombia","dn":"Colombia","d":"M715.9,358.1 L714.6,358.6 L713.3,356.1 L711.5,354.7 L709.3,356.2 L696.4,356.1 L696.5,358.8 L700.3,359.2 L700.1,360.9 L698.8,360.4 L695.1,361.1 L695.0,364.2 L698.0,365.8 L699.0,368.2 L698.9,370.1 L695.9,381.8 L692.6,379.6 L690.6,379.5 L694.9,375.1 L689.8,373.1 L685.8,373.5 L683.4,372.7 L679.8,373.9 L674.8,373.3 L670.9,368.8 L667.9,367.7 L665.8,365.7 L661.4,363.7 L659.6,364.1 L656.8,363.1 L653.5,361.7 L651.6,362.3 L646.0,361.8 L644.4,359.9 L643.2,360.0 L636.5,357.5 L635.6,356.2 L638.1,355.9 L637.8,353.8 L639.4,352.2 L642.7,351.9 L645.4,349.2 L648.0,347.0 L645.5,346.0 L646.8,343.5 L645.3,339.6 L646.7,338.5 L645.7,334.8 L643.0,332.6 L643.8,330.5 L646.0,330.8 L647.2,329.5 L645.7,327.0 L646.5,326.4 L649.9,326.5 L654.9,323.5 L657.6,323.1 L657.7,321.7 L658.9,318.0 L662.7,316.1 L666.9,316.0 L667.4,315.1 L672.6,315.4 L677.8,313.3 L680.4,312.3 L683.6,310.3 L685.9,310.5 L687.6,311.7 L686.4,313.1 L682.1,313.8 L680.4,315.9 L677.9,317.2 L675.9,318.8 L675.1,321.8 L673.3,324.3 L676.7,324.6 L677.6,326.6 L679.0,327.5 L679.5,329.2 L678.8,330.8 L679.0,331.7 L680.6,332.1 L682.2,333.6 L690.7,333.1 L694.6,333.7 L699.2,337.4 L701.9,336.9 L706.7,337.1 L710.4,336.7 L712.8,337.4 L711.6,339.7 L710.1,341.1 L709.6,344.2 L710.9,347.0 L712.8,348.3 L713.0,349.3 L709.7,351.4 L712.1,352.3 L713.8,353.8 L715.9,358.1 Z","cx":674.2,"cy":349.0},{"n":"Panama","dn":null,"d":"M646.5,326.4 L645.7,327.0 L647.2,329.5 L646.0,330.8 L643.8,330.5 L643.0,332.6 L640.8,331.3 L639.4,329.0 L641.0,327.9 L639.3,327.6 L638.1,326.2 L634.8,325.0 L631.9,325.3 L630.6,326.7 L627.9,327.8 L626.4,328.0 L625.8,328.9 L628.9,331.2 L627.1,331.7 L626.2,332.4 L623.1,332.6 L622.0,330.0 L621.1,330.7 L618.9,330.5 L617.6,328.8 L614.9,328.5 L613.1,328.0 L610.3,328.0 L610.1,328.9 L609.3,328.3 L609.7,327.4 L610.2,326.6 L610.0,325.8 L611.0,325.3 L609.6,324.6 L609.5,322.9 L612.1,322.5 L614.5,324.1 L614.3,325.0 L617.0,325.2 L617.6,324.8 L619.4,325.9 L622.7,325.6 L625.5,324.5 L629.5,323.6 L631.8,322.4 L635.4,322.6 L635.2,323.0 L638.9,323.2 L641.8,323.9 L644.0,325.2 L646.5,326.4 Z","cx":626.6,"cy":326.2},{"n":"Costa Rica","dn":null,"d":"M612.1,322.5 L609.5,322.9 L609.6,324.6 L611.0,325.3 L610.0,325.8 L610.2,326.6 L609.7,327.4 L609.3,328.3 L605.7,327.3 L604.4,326.4 L605.2,325.7 L604.9,324.7 L603.1,323.7 L600.5,322.9 L598.2,322.3 L597.8,321.1 L596.0,320.3 L596.4,321.6 L595.1,322.6 L593.6,321.4 L591.5,321.0 L590.6,320.1 L590.6,318.8 L591.5,317.5 L589.6,316.9 L591.1,316.0 L592.1,315.5 L596.5,316.6 L598.0,316.1 L600.1,316.4 L601.2,317.3 L603.2,317.6 L604.8,316.7 L606.4,319.0 L609.0,320.7 L612.1,322.5 Z","cx":602.0,"cy":320.4},{"n":"Nicaragua","dn":"Nicaragua","d":"M604.8,316.7 L603.2,317.6 L601.2,317.3 L600.1,316.4 L598.0,316.1 L596.5,316.6 L592.1,315.5 L591.1,316.0 L588.9,314.7 L585.8,313.0 L584.3,311.5 L581.5,310.2 L578.2,308.2 L578.9,307.6 L580.0,308.2 L580.5,307.9 L582.6,307.8 L583.4,306.8 L584.4,306.7 L584.2,304.6 L585.8,304.5 L587.2,304.6 L588.6,303.4 L590.6,304.3 L591.2,303.8 L592.5,303.2 L594.8,302.1 L594.9,301.2 L595.5,301.2 L596.4,300.2 L597.1,300.1 L598.2,300.7 L599.5,300.9 L601.0,300.4 L602.6,300.4 L604.9,299.8 L605.9,299.2 L608.1,299.3 L607.6,299.7 L607.2,300.7 L607.9,302.3 L606.4,303.7 L605.7,305.4 L605.4,307.3 L605.8,308.4 L606.0,310.3 L605.0,310.8 L604.3,312.6 L604.8,313.7 L603.4,314.8 L603.7,316.0 L604.8,316.7 Z","cx":595.4,"cy":309.3},{"n":"Honduras","dn":"Honduras","d":"M608.1,299.3 L605.9,299.2 L604.9,299.8 L602.6,300.4 L601.0,300.4 L599.5,300.9 L598.2,300.7 L597.1,300.1 L596.4,300.2 L595.5,301.2 L594.9,301.2 L594.8,302.1 L592.5,303.2 L591.2,303.8 L590.6,304.3 L588.6,303.4 L587.2,304.6 L585.8,304.5 L584.2,304.6 L584.4,306.7 L583.4,306.8 L582.6,307.8 L580.5,307.9 L579.4,306.6 L577.4,306.2 L577.8,304.5 L576.9,304.0 L575.6,303.7 L572.7,304.2 L572.4,303.7 L570.4,303.0 L569.0,302.1 L567.0,301.8 L568.4,300.7 L567.9,299.8 L568.4,299.0 L571.5,297.8 L574.5,296.2 L575.2,296.4 L576.7,295.6 L578.5,295.6 L579.2,295.9 L580.2,295.7 L583.3,296.1 L586.3,296.0 L588.5,295.5 L589.2,295.0 L591.3,295.2 L592.9,295.5 L594.7,295.4 L596.0,295.1 L599.0,295.6 L600.0,295.7 L602.1,296.5 L604.0,297.5 L606.4,298.2 L608.1,299.3 Z","cx":583.4,"cy":300.2},{"n":"El Salvador","dn":"El Salvador","d":"M567.0,301.8 L569.0,302.1 L570.4,303.0 L572.4,303.7 L572.7,304.2 L575.6,303.7 L576.9,304.0 L577.8,304.5 L577.4,306.2 L576.6,307.2 L572.8,307.2 L570.4,306.8 L567.7,305.9 L564.0,305.6 L562.1,304.7 L562.3,304.1 L564.6,303.0 L565.8,302.5 L565.5,302.0 L567.0,301.8 Z","cx":570.1,"cy":304.9},{"n":"Guatemala","dn":"Guatemala","d":"M548.0,301.3 L548.2,300.0 L548.9,299.0 L548.0,298.2 L551.2,294.7 L559.7,294.7 L559.9,293.3 L558.8,293.0 L558.0,292.1 L555.6,291.1 L553.1,289.7 L556.1,289.7 L556.1,287.3 L562.3,287.3 L568.4,287.3 L568.4,290.7 L567.9,295.5 L569.8,295.5 L572.0,296.3 L572.6,295.7 L574.5,296.2 L571.5,297.8 L568.4,299.0 L567.9,299.8 L568.4,300.7 L567.0,301.8 L565.5,302.0 L565.8,302.5 L564.6,303.0 L562.3,304.1 L562.1,304.7 L558.7,304.0 L554.6,303.9 L551.6,303.0 L548.0,301.3 Z","cx":559.5,"cy":299.4},{"n":"Belize","dn":null,"d":"M568.4,287.3 L568.4,286.7 L569.2,286.5 L570.4,287.0 L572.8,284.4 L574.0,284.3 L574.0,285.0 L575.3,285.0 L575.2,286.2 L574.1,288.0 L574.7,288.7 L574.0,290.2 L574.4,290.6 L573.6,292.8 L572.3,293.9 L571.2,294.0 L569.8,295.5 L567.9,295.5 L568.4,290.7 L568.4,287.3 Z","cx":571.3,"cy":289.9},{"n":"Venezuela","dn":null,"d":"M756.5,341.2 L757.4,342.4 L755.0,344.1 L747.6,345.7 L742.8,346.3 L740.9,347.3 L735.6,346.3 L730.7,345.7 L729.5,346.1 L732.5,347.2 L732.2,350.1 L733.1,352.8 L738.7,353.1 L739.1,354.0 L734.3,355.3 L733.6,357.1 L730.9,357.8 L725.9,358.8 L724.6,360.1 L719.5,360.4 L715.9,358.1 L713.8,353.8 L712.1,352.3 L709.7,351.4 L713.0,349.3 L712.8,348.3 L710.9,347.0 L709.6,344.2 L710.1,341.1 L711.6,339.7 L712.8,337.4 L710.4,336.7 L706.7,337.1 L701.9,336.9 L699.2,337.4 L694.6,333.7 L690.7,333.1 L682.2,333.6 L680.6,332.1 L679.0,331.7 L678.8,330.8 L679.5,329.2 L679.0,327.5 L677.6,326.6 L676.7,324.6 L673.3,324.3 L675.1,321.8 L675.9,318.8 L677.9,317.2 L680.4,315.9 L682.1,313.8 L686.4,313.1 L686.2,314.1 L682.3,314.6 L684.4,316.5 L684.4,318.8 L681.4,321.3 L683.9,324.7 L686.8,324.4 L688.3,321.3 L686.2,319.8 L685.9,316.5 L694.1,314.8 L693.2,312.8 L695.5,311.4 L697.9,314.4 L702.6,314.5 L706.9,316.9 L707.1,318.3 L713.1,318.4 L720.1,317.9 L723.9,319.8 L729.0,320.4 L732.7,319.0 L732.8,317.9 L741.0,317.7 L748.9,317.6 L743.3,318.9 L745.6,320.9 L750.9,321.2 L755.9,323.3 L756.9,326.8 L760.4,326.7 L763.0,327.7 L757.7,330.2 L757.2,331.7 L759.4,333.3 L757.8,334.1 L753.7,334.8 L753.8,336.8 L752.0,338.0 L756.5,341.2 Z","cx":730.9,"cy":332.7},{"n":"Guyana","dn":null,"d":"M784.3,355.3 L782.7,355.5 L779.0,355.1 L776.9,356.3 L773.9,357.0 L771.8,357.2 L771.0,358.0 L767.8,357.8 L763.7,355.8 L763.2,353.8 L761.5,351.7 L762.6,348.0 L764.4,346.5 L762.9,344.5 L760.6,343.9 L761.5,342.0 L760.0,341.0 L756.5,341.2 L752.0,338.0 L753.8,336.8 L753.7,334.8 L757.8,334.1 L759.4,333.3 L757.2,331.7 L757.7,330.2 L763.0,327.7 L767.3,329.2 L771.4,332.0 L771.6,334.2 L774.1,334.3 L777.7,336.4 L780.3,337.9 L779.2,341.8 L775.2,342.9 L775.5,343.9 L774.3,346.1 L777.3,349.2 L779.4,349.2 L780.2,351.6 L784.3,355.3 Z","cx":768.4,"cy":341.5},{"n":"Suriname","dn":null,"d":"M797.6,353.6 L793.8,352.7 L790.7,353.1 L788.0,352.7 L787.4,354.0 L788.5,354.8 L787.9,355.7 L784.3,355.3 L780.2,351.6 L779.4,349.2 L777.3,349.2 L774.3,346.1 L775.5,343.9 L775.2,342.9 L779.2,341.8 L780.3,337.9 L788.2,338.8 L788.9,338.0 L794.3,337.7 L801.4,338.8 L797.9,342.5 L798.5,345.4 L801.1,348.0 L799.9,349.8 L799.3,351.8 L797.6,353.6 Z","cx":788.5,"cy":345.7},{"n":"France","dn":null,"d":"M816.6,345.7 L812.7,349.6 L810.7,352.7 L808.1,354.4 L805.0,354.7 L804.1,353.5 L802.6,353.3 L800.5,354.4 L797.6,353.6 L799.3,351.8 L799.9,349.8 L801.1,348.0 L798.5,345.4 L797.9,342.5 L801.4,338.8 L803.6,339.3 L808.5,340.3 L815.5,343.9 L816.6,345.7 Z","cx":null,"cy":163.8},{"n":"Ecuador","dn":null,"d":"M659.6,364.1 L660.5,367.3 L658.5,370.1 L651.2,374.6 L643.3,376.3 L639.2,380.0 L638.0,382.9 L634.2,384.7 L631.4,382.5 L628.8,382.0 L626.0,382.4 L625.9,380.8 L627.7,379.8 L627.0,378.0 L630.5,374.8 L629.1,372.9 L626.5,374.9 L622.6,373.1 L623.9,371.9 L622.8,368.0 L625.1,367.3 L626.3,364.7 L628.8,361.9 L628.4,360.2 L632.0,359.2 L636.5,357.5 L643.2,360.0 L644.4,359.9 L646.0,361.8 L651.6,362.3 L653.5,361.7 L656.8,363.1 L659.6,364.1 Z","cx":641.0,"cy":368.8},{"n":"Puerto Rico","dn":null,"d":"M719.8,284.3 L723.2,284.7 L724.4,285.5 L722.7,286.6 L717.7,286.6 L713.8,286.7 L713.4,284.9 L714.4,284.3 L719.8,284.3 Z","cx":718.5,"cy":285.5},{"n":"Jamaica","dn":null,"d":"M645.1,284.4 L649.5,284.8 L653.0,285.8 L654.1,287.0 L649.5,287.0 L647.5,287.8 L643.8,287.1 L640.0,285.5 L640.8,284.5 L643.5,284.2 L645.1,284.4 Z","cx":646.7,"cy":285.9},{"n":"Cuba","dn":null,"d":"M613.9,264.3 L619.7,264.6 L624.9,264.7 L631.1,266.1 L633.7,267.7 L639.9,267.2 L642.3,268.2 L647.9,270.8 L652.0,272.8 L654.2,272.7 L658.1,273.6 L657.6,274.8 L662.5,275.0 L667.5,276.7 L666.7,277.7 L662.3,278.3 L657.9,278.5 L653.3,278.1 L643.8,278.5 L648.3,276.2 L645.6,275.1 L641.3,274.8 L639.0,273.5 L637.4,271.1 L633.7,271.3 L627.5,270.1 L625.5,269.2 L616.9,268.6 L614.6,267.7 L617.1,266.7 L610.6,266.4 L605.8,268.7 L603.1,268.7 L602.1,269.8 L598.9,270.2 L596.0,269.8 L599.5,268.5 L601.0,267.0 L604.0,266.0 L607.3,265.2 L612.3,264.8 L613.9,264.3 Z","cx":642.4,"cy":272.2},{"n":"Paraguay","dn":null,"d":"M773.5,449.7 L775.5,452.1 L775.0,457.9 L782.0,458.7 L784.7,457.9 L789.2,459.0 L790.4,460.3 L791.1,464.2 L791.8,465.9 L794.3,466.1 L796.8,465.4 L799.2,466.2 L799.2,468.5 L798.3,471.0 L797.0,473.5 L795.9,477.3 L789.9,480.6 L784.6,481.2 L777.2,480.6 L770.5,479.4 L777.0,472.9 L776.1,471.0 L769.3,469.4 L761.2,466.2 L755.8,465.6 L743.6,458.6 L746.2,453.5 L746.4,451.2 L749.6,447.4 L761.1,446.2 L767.2,446.2 L773.4,448.4 L773.5,449.7 Z","cx":760.4,"cy":456.1},{"n":"Trinidad and Tobago","dn":null,"d":"M750.3,317.4 L754.1,316.9 L755.5,317.0 L755.2,320.2 L749.7,320.7 L748.5,320.3 L750.4,319.1 L750.3,317.4 Z","cx":755.3,"cy":316.4}];
+
+  /* Callout offsets [dx, dy] from centroid */
+  var OFF={
+    'EUA':[-120,-60],'México':[-130,20],'Guatemala':[-110,70],
+    'Honduras':[100,30],'El Salvador':[-130,90],'Nicaragua':[110,60],
+    'República Dominicana':[110,-35],'Colombia':[120,60]
+  };
+
+  /* Zoom state */
+  var zoomLevel=1, panX=0, panY=0;
+  var vW=960, vH=620;
+  var isDrag=false, lastX=0, lastY=0;
+
+  function getViewBox(){
+    var w=vW/zoomLevel, h=vH/zoomLevel;
+    var cx=vW/2-panX, cy=vH/2-panY;
+    return (cx-w/2)+' '+(cy-h/2)+' '+w+' '+h;
+  }
+
+  function buildSVG(){
+    var parts=[];
+
+    /* Ocean */
+    parts.push('<rect width="960" height="620" fill="#DBEAFE"/>');
+
+    /* Graticule */
+    var lons=[-150,-120,-90,-60];
+    lons.forEach(function(ln){
+      var xs=((ln+175)/145*960).toFixed(1);
+      parts.push('<line x1="'+xs+'" y1="0" x2="'+xs+'" y2="620" stroke="#BFDBFE" stroke-width="0.5"/>');
+    });
+    var lats=[60,30,0,-30,-60];
+    lats.forEach(function(lt){
+      var ys=((85-lt)/145*620).toFixed(1);
+      parts.push('<line x1="0" y1="'+ys+'" x2="960" y2="'+ys+'" stroke="#BFDBFE" stroke-width="0.5"/>');
+      parts.push('<text x="6" y="'+(parseFloat(ys)+4)+'" font-size="9" fill="#93C5FD" font-weight="600">'+lt+'°</text>');
+    });
+
+    /* Countries */
+    AM.forEach(function(c){
+      var n=c.dn?counts[c.dn]||0:0;
+      var fill=c.dn?gc(n):'#D1D5DB';
+      var stroke=c.dn&&n>0?'#fff':'#9CA3AF';
+      var sw=c.dn&&n>0?1:0.3;
+      parts.push('<path d="'+c.d+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'">');
+      if(c.dn)parts.push('<title>'+c.dn+': '+(counts[c.dn]||0)+' tram.</title>');
+      parts.push('</path>');
+    });
+
+    /* Callouts */
+    AM.forEach(function(c){
+      if(!c.dn||!c.cx||!c.cy)return;
+      var n=counts[c.dn]||0;if(!n)return;
+      var off=OFF[c.dn]||[80,0];
+      var lx=c.cx+off[0], ly=c.cy+off[1];
+      var tw=Math.max(c.dn.length*5.8,56);
+      /* Line */
+      parts.push('<line x1="'+c.cx+'" y1="'+c.cy+'" x2="'+lx+'" y2="'+ly+'" stroke="#059669" stroke-width="1.2" stroke-dasharray="4,2" opacity="0.9"/>');
+      /* Dot */
+      parts.push('<circle cx="'+c.cx+'" cy="'+c.cy+'" r="5" fill="#059669" stroke="#fff" stroke-width="2"/>');
+      /* Bubble shadow */
+      parts.push('<rect x="'+(lx-tw/2-1)+'" y="'+(ly-25)+'" width="'+(tw+2)+'" height="35" rx="7" fill="rgba(0,0,0,0.08)"/>');
+      /* Bubble */
+      parts.push('<rect x="'+(lx-tw/2)+'" y="'+(ly-24)+'" width="'+tw+'" height="33" rx="6" fill="#fff" stroke="#059669" stroke-width="1.5"/>');
+      /* Name */
+      parts.push('<text x="'+lx+'" y="'+(ly-10)+'" text-anchor="middle" font-size="7" font-weight="700" fill="#374151" pointer-events="none">'+c.dn+'</text>');
+      /* Count */
+      parts.push('<text x="'+lx+'" y="'+(ly+5)+'" text-anchor="middle" font-size="11" font-weight="900" fill="#059669" pointer-events="none">'+n+' trám.</text>');
+    });
+
+    /* Legend */
+    var steps=[{v:0,c:'#E2E8F0'},{v:Math.round(maxC*.25),c:'#BBF7D0'},{v:Math.round(maxC*.5),c:'#4ADE80'},{v:Math.round(maxC*.75),c:'#16A34A'},{v:maxC,c:'#14532D'}];
+    parts.push('<rect x="6" y="560" width="260" height="48" rx="6" fill="rgba(255,255,255,0.85)"/>');
+    parts.push('<text x="16" y="577" font-size="9" fill="#475569" font-weight="700">Trámites:</text>');
+    steps.forEach(function(s,i){
+      parts.push('<rect x="'+(16+i*46)+'" y="582" width="44" height="12" rx="3" fill="'+s.c+'"/>');
+      parts.push('<text x="'+(38+i*46)+'" y="606" text-anchor="middle" font-size="8" fill="#64748B">'+s.v+'</text>');
+    });
+
+    return parts.join('');
+  }
+
+  /* Render container */
+  el.style.position='relative';
+  el.innerHTML=
+    '<div id="ri-map-ctrl" style="position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:4px;z-index:10">'+
+      '<button onclick="riZoom(1.4)" style="width:32px;height:32px;border-radius:6px;border:1px solid #CBD5E1;background:#fff;font-size:18px;font-weight:700;cursor:pointer;color:#1E293B;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.1)">+</button>'+
+      '<button onclick="riZoom(0.7)" style="width:32px;height:32px;border-radius:6px;border:1px solid #CBD5E1;background:#fff;font-size:18px;font-weight:700;cursor:pointer;color:#1E293B;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.1)">−</button>'+
+      '<button onclick="riReset()" style="width:32px;height:32px;border-radius:6px;border:1px solid #CBD5E1;background:#fff;font-size:10px;font-weight:700;cursor:pointer;color:#1E293B;box-shadow:0 1px 3px rgba(0,0,0,.1)" title="Resetear">⌂</button>'+
+    '</div>'+
+    '<svg id="ri-map-svg" viewBox="0 0 960 620" style="width:100%;height:auto;display:block;cursor:grab;border-radius:8px" xmlns="http://www.w3.org/2000/svg">'+
+      '<g id="ri-map-g">'+buildSVG()+'</g>'+
+    '</svg>';
+
+  var svg=document.getElementById('ri-map-svg');
+  var g=document.getElementById('ri-map-g');
+
+  function applyView(){svg.setAttribute('viewBox',getViewBox());}
+
+  /* Zoom controls */
+  window.riZoom=function(factor){
+    zoomLevel=Math.min(8,Math.max(0.8,zoomLevel*factor));
+    applyView();
+  };
+  window.riReset=function(){zoomLevel=1;panX=0;panY=0;applyView();};
+
+  /* Drag to pan */
+  svg.addEventListener('mousedown',function(e){isDrag=true;lastX=e.clientX;lastY=e.clientY;svg.style.cursor='grabbing';e.preventDefault();});
+  window.addEventListener('mousemove',function(e){
+    if(!isDrag)return;
+    var dx=(e.clientX-lastX)/zoomLevel;
+    var dy=(e.clientY-lastY)/zoomLevel;
+    lastX=e.clientX;lastY=e.clientY;
+    panX+=dx;panY+=dy;
+    applyView();
+  });
+  window.addEventListener('mouseup',function(){isDrag=false;svg.style.cursor='grab';});
+
+  /* Mouse wheel zoom */
+  svg.addEventListener('wheel',function(e){
+    e.preventDefault();
+    var factor=e.deltaY<0?1.2:0.85;
+    zoomLevel=Math.min(8,Math.max(0.8,zoomLevel*factor));
+    applyView();
+  },{passive:false});
+
+  /* Touch support */
+  var lastTouchDist=null;
+  svg.addEventListener('touchstart',function(e){
+    if(e.touches.length===1){isDrag=true;lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;}
+    else if(e.touches.length===2){
+      lastTouchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    }
+    e.preventDefault();
+  },{passive:false});
+  svg.addEventListener('touchmove',function(e){
+    if(e.touches.length===1&&isDrag){
+      var dx=(e.touches[0].clientX-lastX)/zoomLevel;
+      var dy=(e.touches[0].clientY-lastY)/zoomLevel;
+      lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;
+      panX+=dx;panY+=dy;applyView();
+    } else if(e.touches.length===2&&lastTouchDist){
+      var d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      zoomLevel=Math.min(8,Math.max(0.8,zoomLevel*(d/lastTouchDist)));
+      lastTouchDist=d;applyView();
+    }
+    e.preventDefault();
+  },{passive:false});
+  svg.addEventListener('touchend',function(){isDrag=false;lastTouchDist=null;});
+}
+function renderARIMes(){
+  var md=ARI.mes.filter(function(d){
+    return ARIF.some(function(r){return r.ap===d.y&&r.mp===d.m;});
+  }).map(function(d){
+    var sub=ARIF.filter(function(r){return r.ap===d.y&&r.mp===d.m;});
+    return Object.assign({},d,{
+      total:sub.length,
+      Aprobado:sub.filter(function(r){return r.cu==='Aprobado';}).length,
+      'En evaluacion':sub.filter(function(r){return r.cu==='En evaluacion';}).length,
+      Programado:sub.filter(function(r){return r.cu==='Programado';}).length,
+      Reprogramado:sub.filter(function(r){return r.cu==='Reprogramado';}).length,
+      Atrasado:sub.filter(function(r){return r.cu==='Atrasado';}).length,
+    });
+  });
+  dc('ri-mes');
+  var ctx=document.getElementById('ri-mes').getContext('2d');
+  CH['ri-mes']=new Chart(ctx,{type:'bar',
+    data:{labels:md.map(function(d){return d.label;}),
+      datasets:[
+        {label:'Aprobado',data:md.map(function(d){return d.Aprobado;}),backgroundColor:'#059669',stack:'a'},
+        {label:'En evaluacion',data:md.map(function(d){return d['En evaluacion'];}),backgroundColor:'#0891B2',stack:'a'},
+        {label:'Programado',data:md.map(function(d){return d.Programado;}),backgroundColor:'#3B82F6',stack:'a'},
+        {label:'Reprogramado',data:md.map(function(d){return d.Reprogramado;}),backgroundColor:'#7C3AED',stack:'a',borderRadius:{topLeft:4,topRight:4}},
+        {label:'Atrasado',data:md.map(function(d){return d.Atrasado;}),backgroundColor:'#DC2626',stack:'a'},
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},stacked:true,ticks:{font:{size:10},color:'#94A3B8'}}}}});
+}
+
+function renderARITipo(){
+  var tm={};ARIF.forEach(function(d){var t=(d.ti||'Sin dato').slice(0,35);tm[t]=(tm[t]||0)+1;});
+  var arr=Object.entries(tm).sort(function(a,b){return b[1]-a[1];});
+  var tot=ARIF.length;
+  var clrs=['#1E40AF','#059669','#DC2626','#7C3AED','#D97706','#0891B2','#6B7280','#BE185D'];
+  (document.getElementById('ri-tipo-bars')||{innerHTML:''}).innerHTML=arr.map(function(kv,i){
+    var p2=pct(kv[1],tot);
+    return'<div class="pr"><div class="pt">'+
+      '<span style="font-weight:700;font-size:11px">'+kv[0]+'</span>'+
+      '<span style="font-weight:800;color:'+clrs[i%8]+'">'+kv[1]+' <span style="font-size:9px;color:#94A3B8">('+p2+'%)</span></span>'+
+      '</div><div class="pb"><div class="pbf" style="width:'+p2+'%;background:'+clrs[i%8]+'"></div></div></div>';
+  }).join('');
+}
+
+function renderARINC(){
+  var nc={};ARIF.forEach(function(d){if(d.nc){nc[d.nc]=(nc[d.nc]||0)+1;}});
+  dc('ri-nc');
+  var ctx1=document.getElementById('ri-nc').getContext('2d');
+  CH['ri-nc']=new Chart(ctx1,{type:'doughnut',
+    data:{labels:Object.keys(nc),datasets:[{data:Object.values(nc),
+      backgroundColor:['#1E40AF','#059669'],borderWidth:3,borderColor:'#fff',hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      plugins:{legend:{position:'right',labels:{font:{size:10,weight:'bold'},boxWidth:10,padding:8}}}}});
+  var ym={};ARIF.forEach(function(d){if(d.ap){ym[d.ap]=(ym[d.ap]||0)+1;}});
+  dc('ri-anio');
+  var ctx2=document.getElementById('ri-anio').getContext('2d');
+  CH['ri-anio']=new Chart(ctx2,{type:'bar',
+    data:{labels:Object.keys(ym).sort(),datasets:[{data:Object.keys(ym).sort().map(function(k){return ym[k];}),
+      backgroundColor:['#E2E8F0','#93C5FD','#3B82F6'],borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'}}}}});
+}
+
+function renderARIPaisTabs(){
+  var pd=ARI.pais.filter(function(d){return ARIF.some(function(r){return r.pa===d.pa;});}).map(function(d){
+    var sub=ARIF.filter(function(r){return r.pa===d.pa;});
+    var ap=sub.filter(function(r){return r.cu==='Aprobado';}).length;
+    var ev=sub.filter(function(r){return r.cu==='En evaluacion';}).length;
+    var pr=sub.filter(function(r){return r.cu==='Programado';}).length;
+    var rp=sub.filter(function(r){return r.cu==='Reprogramado';}).length;
+    var ca=sub.filter(function(r){return r.cu==='Cancelado';}).length;
+    return Object.assign({},d,{total:sub.length,Aprobado:ap,'En evaluacion':ev,Programado:pr,Reprogramado:rp,Cancelado:ca});
+  });
+  dc('ri-pais2');
+  var c1=document.getElementById('ri-pais2').getContext('2d');
+  CH['ri-pais2']=new Chart(c1,{type:'bar',
+    data:{labels:pd.map(function(d){return d.pa;}),
+      datasets:[
+        {label:'Total',data:pd.map(function(d){return d.total;}),backgroundColor:'rgba(59,130,246,0.2)',borderColor:'#3B82F6',borderWidth:2,borderRadius:4},
+        {label:'Aprobados',data:pd.map(function(d){return d.Aprobado;}),backgroundColor:'#059669',borderRadius:4},
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'}}}}});
+  dc('ri-pais3');
+  var c2=document.getElementById('ri-pais3').getContext('2d');
+  CH['ri-pais3']=new Chart(c2,{type:'bar',
+    data:{labels:pd.map(function(d){return d.pa;}),
+      datasets:[
+        {label:'Aprobado',data:pd.map(function(d){return d.Aprobado;}),backgroundColor:'#059669',stack:'a'},
+        {label:'En evaluacion',data:pd.map(function(d){return d['En evaluacion'];}),backgroundColor:'#0891B2',stack:'a'},
+        {label:'Programado',data:pd.map(function(d){return d.Programado;}),backgroundColor:'#3B82F6',stack:'a'},
+        {label:'Reprogramado',data:pd.map(function(d){return d.Reprogramado;}),backgroundColor:'#7C3AED',stack:'a',borderRadius:{topLeft:4,topRight:4}},
+        {label:'Cancelado',data:pd.map(function(d){return d.Cancelado;}),backgroundColor:'#6B7280',stack:'a'},
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},stacked:true,ticks:{font:{size:9},color:'#94A3B8'}}}}});
+  var tot=ARIF.length;
+  (document.getElementById('ri-pais-bars')||{innerHTML:''}).innerHTML=pd.map(function(d){
+    var ejPct=d.total>0?pct(d.Aprobado,d.total):0;
+    var bc=ejPct>=60?'#059669':ejPct>=30?'#D97706':'#DC2626';
+    return'<div style="margin-bottom:14px">'+
+      '<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:11px">'+
+        '<span style="font-weight:700">'+d.pa+'</span>'+
+        '<span style="color:#64748B">'+
+          '<b style="color:#059669">'+d.Aprobado+' aprobados</b> / '+
+          '<b style="color:#0891B2">'+d['En evaluacion']+' en eval.</b> / '+
+          '<b style="color:#3B82F6">'+d.Programado+' prog.</b> / '+
+          '<b style="color:#7C3AED">'+d.Reprogramado+' reprog.</b> &nbsp;'+
+          '<b style="color:'+bc+'">'+ejPct+'% aprobacion</b>'+
+        '</span>'+
+      '</div>'+
+      '<div style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:#F1F5F9">'+
+        '<div style="background:#059669;width:'+pct(d.Aprobado,d.total)+'%"></div>'+
+        '<div style="background:#0891B2;width:'+pct(d['En evaluacion'],d.total)+'%"></div>'+
+        '<div style="background:#3B82F6;width:'+pct(d.Programado,d.total)+'%"></div>'+
+        '<div style="background:#7C3AED;width:'+pct(d.Reprogramado,d.total)+'%"></div>'+
+        '<div style="background:#6B7280;width:'+pct(d.Cancelado,d.total)+'%"></div>'+
+      '</div></div>';
+  }).join('');
+}
+
+function renderARITiempos(){
+  var con=ARIF.filter(function(d){return d.td;});
+  var avgD=con.length?Math.round(sum(con,'td')/con.length):0;
+  var minD=con.length?Math.min.apply(null,con.map(function(d){return d.td;})):0;
+  var maxD=con.length?Math.max.apply(null,con.map(function(d){return d.td;})):0;
+  (document.getElementById('ri-time-kpis')||{innerHTML:''}).innerHTML=[
+    {l:'Tramites con tiempo registrado',v:con.length,s:'de '+ARIF.length+' total',c:'#3B82F6'},
+    {l:'Promedio dias naturales',v:avgD+'d',s:'tiempo de evaluacion',c:'#1E40AF'},
+    {l:'Rango',v:minD+'d - '+maxD+'d',s:'min a max registrado',c:'#7C3AED'},
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join('');
+
+  var td=ARI.timing.filter(function(d){return d.avgD;}).sort(function(a,b){return b.avgD-a.avgD;});
+  dc('ri-timing');
+  var ctx=document.getElementById('ri-timing').getContext('2d');
+  CH['ri-timing']=new Chart(ctx,{type:'bar',
+    data:{labels:td.map(function(d){return d.ti.length>20?d.ti.slice(0,20)+'...':d.ti;}),
+      datasets:[
+        {label:'Minimo',data:td.map(function(d){return d.minD||0;}),backgroundColor:'#059669',borderRadius:3},
+        {label:'Promedio',data:td.map(function(d){return d.avgD||0;}),backgroundColor:'#3B82F6',borderRadius:3},
+        {label:'Maximo',data:td.map(function(d){return d.maxD||0;}),backgroundColor:'#DC2626',borderRadius:{topLeft:4,topRight:4}},
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'},
+                 title:{display:true,text:'Dias naturales',color:'#94A3B8',font:{size:9}}}}}});
+
+  var buckets={'0-30':0,'31-90':0,'91-180':0,'181-365':0,'>365':0};
+  con.forEach(function(d){
+    var v=d.td;
+    if(v<=30)buckets['0-30']++;else if(v<=90)buckets['31-90']++;
+    else if(v<=180)buckets['91-180']++;else if(v<=365)buckets['181-365']++;else buckets['>365']++;
+  });
+  dc('ri-tdist');
+  var ctx2=document.getElementById('ri-tdist').getContext('2d');
+  CH['ri-tdist']=new Chart(ctx2,{type:'bar',
+    data:{labels:Object.keys(buckets),datasets:[{data:Object.values(buckets),
+      backgroundColor:['#059669','#65A30D','#D97706','#DC2626','#7C3AED'],borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:function(c){return c.parsed.y+' tramites';} }}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'}}}}});
+
+  (document.getElementById('ri-time-body')||{innerHTML:''}).innerHTML=con.sort(function(a,b){return b.td-a.td;}).slice(0,30).map(function(d,i){
+    var col=d.td>365?'#7C3AED':d.td>180?'#DC2626':d.td>90?'#D97706':'#059669';
+    return'<tr><td style="font-weight:700">'+d.pr+'</td><td style="font-size:10px">'+d.pa+'</td>'+
+      '<td style="font-size:9px">'+d.ti+'</td>'+
+      '<td>'+dbadge(d.cu)+'</td>'+
+      '<td style="font-family:monospace;font-size:10px;color:#64748B">'+(d.fr||'--')+'</td>'+
+      '<td style="font-family:monospace;font-size:10px;color:#059669">'+(d.fres||'--')+'</td>'+
+      '<td style="font-weight:900;color:'+col+'">'+d.td+'d</td>'+
+      '<td style="color:#64748B">'+(d.th?d.th+'d':'--')+'</td>'+
+      '<td style="text-align:center;color:#D97706">'+(d.npv?d.npv:'0')+'</td></tr>';
+  }).join('');
+}
+
+function renderARIAlertas(){
+  var t=ARIF.length;
+  var atrasados=ARIF.filter(function(d){return d.cu==='Atrasado';});
+  var prevs=ARIF.filter(function(d){return d.cu==='Prevenido';});
+  var reprog=ARIF.filter(function(d){return d.cu==='Reprogramado';});
+  var cancelados=ARIF.filter(function(d){return d.cu==='Cancelado';});
+  (document.getElementById('ri-al-kpis')||{innerHTML:''}).innerHTML=[
+    {l:'Atrasados (fecha vencida)',v:atrasados.length,s:'no sometidos a tiempo',c:'#DC2626'},
+    {l:'Prevenidos activos',v:prevs.length,s:'pendiente contestar',c:'#D97706'},
+    {l:'Reprogramados',v:reprog.length,s:pct(reprog.length,t)+'% del plan',c:'#7C3AED'},
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join('');
+
+  (document.getElementById('ri-al-atrasado')||{innerHTML:''}).innerHTML=atrasados.sort(function(a,b){return (a.fp||'z')>(b.fp||'z')?1:-1;}).map(function(d,i){
+    var df=d.fp?Math.round((new Date(TODAY_ARI)-new Date(d.fp))/86400000):null;
+    return'<tr style="background:#FFF5F5"><td style="font-weight:800;color:#DC2626">'+(i+1)+'</td>'+
+      '<td style="font-weight:700">'+d.pr+'</td>'+
+      '<td style="font-size:10px">'+d.pa+'</td>'+
+      '<td style="font-size:9px">'+d.ti+'</td>'+
+      '<td><span class="badge" style="background:#DBEAFE;color:#1D4ED8">'+(d.nc||'--')+'</span></td>'+
+      '<td style="font-family:monospace;font-size:10px;color:#DC2626">'+(d.fp||'--')+'</td>'+
+      '<td style="font-weight:900;color:#DC2626">'+(df?'+'+df+'d':'--')+'</td>'+
+      '<td style="font-size:10px;color:#64748B;max-width:180px">'+(d.co?d.co.slice(0,80):'--')+'</td></tr>';
+  }).join('')||'<tr><td colspan="8" style="text-align:center;color:#94A3B8;padding:20px">Sin atrasados</td></tr>';
+
+  (document.getElementById('ri-al-prev')||{innerHTML:''}).innerHTML=prevs.map(function(d,i){
+    return'<tr style="background:#FFFBEB"><td style="font-weight:800;color:#D97706">'+(i+1)+'</td>'+
+      '<td style="font-weight:700">'+d.pr+'</td>'+
+      '<td style="font-size:10px">'+d.pa+'</td>'+
+      '<td style="font-size:9px">'+d.ti+'</td>'+
+      '<td style="font-family:monospace;font-size:10px;color:#1E40AF">'+(d.ni||'--')+'</td>'+
+      '<td>'+dbadge(d.cu)+'</td>'+
+      '<td style="font-size:10px;color:#64748B;max-width:200px">'+(d.co?d.co.slice(0,100):'--')+'</td></tr>';
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:#94A3B8;padding:20px">Sin prevenidos activos</td></tr>';
+
+  var upcoming=ARIF.filter(function(d){
+    return d.cu==='Programado'&&d.fp&&d.fp>=TODAY_ARI;
+  }).sort(function(a,b){return a.fp>b.fp?1:-1;}).slice(0,10);
+  (document.getElementById('ri-upcoming')||{innerHTML:''}).innerHTML=upcoming.map(function(d){
+    var df=Math.round((new Date(d.fp)-new Date(TODAY_ARI))/86400000);
+    var uc=df<=14?'#DC2626':df<=30?'#D97706':'#059669';
+    return'<div class="uc-item" style="border-left-color:'+uc+'">'+
+      '<div style="background:'+uc+'22;border-radius:8px;width:50px;height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">'+
+        '<div style="font-size:17px;font-weight:900;color:'+uc+';line-height:1">'+df+'</div>'+
+        '<div style="font-size:8px;color:'+uc+';font-weight:800">DIAS</div>'+
+      '</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-weight:700;font-size:12px">'+d.pr+'</div>'+
+        '<div style="font-size:10px;color:#64748B;margin-top:2px">'+d.pa+' · '+d.ti+'</div>'+
+      '</div>'+
+      '<div style="text-align:right;flex-shrink:0">'+
+        '<div style="font-size:10px;color:#94A3B8;font-family:monospace">'+d.fp+'</div>'+
+        '<span class="badge" style="background:#DBEAFE;color:#1D4ED8;margin-top:3px">'+d.nc+'</span>'+
+      '</div></div>';
+  }).join('')||'<div style="text-align:center;color:#94A3B8;padding:16px">Sin proximos sometimientos programados</div>';
+
+  var byPais={};ARIF.forEach(function(d){
+    var p=d.pa||'Sin dato';
+    if(!byPais[p])byPais[p]={pa:p,total:0,reprog:0};
+    byPais[p].total++;
+    if(d.cu==='Reprogramado')byPais[p].reprog++;
+  });
+  var reprogByPais=Object.values(byPais).filter(function(x){return x.reprog>0;}).sort(function(a,b){return b.reprog-a.reprog;});
+  (document.getElementById('ri-al-reprog')||{innerHTML:''}).innerHTML=reprogByPais.map(function(d){
+    var p2=pct(d.reprog,d.total);var col=p2>=60?'#DC2626':p2>=40?'#D97706':'#7C3AED';
+    return'<tr><td style="font-weight:700">'+d.pa+'</td>'+
+      '<td style="font-weight:900;color:'+col+'">'+d.reprog+'</td>'+
+      '<td style="font-weight:700;color:'+col+'">'+p2+'%</td>'+
+      '<td style="min-width:120px"><div style="background:#F1F5F9;border-radius:4px;height:8px;overflow:hidden">'+
+        '<div style="background:'+col+';height:8px;border-radius:4px;width:'+p2+'%"></div></div></td></tr>';
+  }).join('');
+}
+
+function renderARIDet(){
+  var q=(document.getElementById('ri-srch').value||'').toLowerCase();
+  var data=ARIF.filter(function(d){
+    return!q||(d.pr||'').toLowerCase().indexOf(q)>=0||
+      (d.pa||'').toLowerCase().indexOf(q)>=0||
+      (d.ti||'').toLowerCase().indexOf(q)>=0||
+      (d.dic||'').toLowerCase().indexOf(q)>=0;
+  });
+  setTC('ri-det-cnt',data.length+' tramites');
+  (document.getElementById('ri-det-body')||{innerHTML:''}).innerHTML=data.map(function(d,i){
+    var cf=DCFG[d.cu]||DCFG['Otro'];
+    return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'">'+
+      '<td style="font-weight:700;color:#94A3B8;font-size:10px">'+d.no+'</td>'+
+      '<td style="font-weight:700;max-width:120px">'+d.pr+'</td>'+
+      '<td><span class="badge" style="background:'+pclr(d.pa)+'22;color:'+pclr(d.pa)+'">'+d.pa+'</span></td>'+
+      '<td style="font-size:9px;color:#64748B;max-width:100px">'+d.ti+'</td>'+
+      '<td style="font-size:10px;color:#64748B">'+d.de+'</td>'+
+      '<td><span class="badge" style="background:#DBEAFE;color:#1D4ED8">'+(d.nc||'--')+'</span></td>'+
+      '<td><span class="badge" style="background:'+cf.bg+';color:'+cf.c+'">'+d.cu+'</span></td>'+
+      '<td style="font-family:monospace;font-size:10px;color:#64748B;white-space:nowrap">'+(d.fp||'--')+'</td>'+
+      '<td style="font-family:monospace;font-size:10px;color:'+(d.fr?'#1D4ED8':'#CBD5E1')+';white-space:nowrap">'+(d.fr||'--')+'</td>'+
+      '<td style="font-family:monospace;font-size:10px;color:'+(d.fres?'#059669':'#CBD5E1')+';white-space:nowrap">'+(d.fres||'--')+'</td>'+
+      '<td style="font-family:monospace;font-size:10px;color:#64748B">'+(d.ni||'--')+'</td>'+
+      '<td style="font-weight:700;color:'+(d.td?'#1E40AF':'#CBD5E1')+'">'+(d.td?d.td+'d':'--')+'</td>'+
+      '<td style="color:#64748B">'+(d.th?d.th+'d':'--')+'</td>'+
+      '<td style="font-size:10px;color:#64748B;max-width:150px" title="'+(d.co||'').replace(/"/g,"'")+'">'+(d.co?d.co.slice(0,60)+(d.co.length>60?'...':''):'--')+'</td></tr>';
+  }).join('');
+}
+
+/* Init ARI info */
+/* ri-info set after live load */
+</script>
+<script>
+/* ════════════════════════════════════════════════════════════
+   CAPA DE DATOS EN VIVO — Silanes Dashboard
+   Trae datos del Cloudflare Worker y los transforma al formato
+   que el dashboard espera (replica la logica que hacia Python)
+   ════════════════════════════════════════════════════════════ */
+
+var WORKER_URL = "https://silanes-smartsheet.oefierros.workers.dev";
+var TODAY_STR = new Date().toISOString().slice(0,10);
+
+/* Variables globales que el dashboard usa */
+var D, P, ARI;
+
+/* ── Helpers de limpieza ── */
+function _clean(v){
+  if(v===null||v===undefined) return null;
+  var s = String(v).trim();
+  if(s===''||s==='#INVALID DATA TYPE'||s==='#NO MATCH'||s==='#INVALID OPERATION'||s.toLowerCase()==='nan') return null;
+  return s;
+}
+function _money(v){
+  var s=_clean(v);
+  if(!s) return null;
+  // Quita MX$, USD, $, comas y espacios
+  var n=parseFloat(s.replace(/MX\$|USD|\$|,|\s/g,''));
+  return isNaN(n)?null:n;
+}
+function _int(v){
+  var s=_clean(v);
+  if(!s) return null;
+  var n=parseInt(parseFloat(s),10);
+  return isNaN(n)?null:n;
+}
+function _float(v){
+  var s=_clean(v);
+  if(!s) return null;
+  var n=parseFloat(String(s).replace(/,/g,''));
+  return isNaN(n)?null:n;
+}
+function _date(v){
+  var s=_clean(v);
+  if(!s) return null;
+  // Smartsheet entrega YYYY-MM-DD; si viene con hora, corta
+  var m=s.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return m[1]+'-'+m[2]+'-'+m[3];
+  // Intenta parsear otros formatos
+  var d=new Date(s);
+  if(!isNaN(d.getTime())) return d.toISOString().slice(0,10);
+  return null;
+}
+function _year(v){
+  var d=_date(v);
+  if(d) return parseInt(d.slice(0,4),10);
+  var n=_int(v);
+  if(n && n>1990 && n<2100) return n;
+  return null;
+}
+function _daysBetween(a,b){
+  if(!a||!b) return null;
+  var r=Math.round((new Date(b)-new Date(a))/86400000);
+  return isNaN(r)?null:r;
+}
+
+/* ════════════════════════════════════════
+   TRANSFORMAR ARN
+   ════════════════════════════════════════ */
+function transformARN(rows){
+  var records = [];
+  var currentYear = null;
+
+  rows.forEach(function(r){
+    var rs = _clean(r['RS']);
+    // Las filas de año son solo "2025", "2026" etc en RS
+    if(rs && /^\d{4}$/.test(rs)){
+      currentYear = parseInt(rs,10);
+      return; // no es trámite, es encabezado de año
+    }
+    var prod = _clean(r['Producto / Actividad']);
+    if(!prod || prod==='#NO MATCH') return; // fila vacía
+
+    var fp = _date(r['Fecha planeada']);
+    var fi = _date(r['Fecha Ingreso']);
+    var fr = _date(r['Fecha de Resolución']);
+    var estado = _clean(r['Estado']) || '';
+
+    // Cumplimiento (misma lógica Python)
+    var c;
+    var fpok = !!fp, frok = !!fr;
+    if(estado==='Aprobado'){
+      if(fpok && frok) c = (fr <= fp) ? 'A tiempo' : 'Atrasado resuelto';
+      else c = 'Aprobado s/fecha';
+    } else if(estado==='Cancelado'){ c='Cancelado'; }
+    else if(estado==='Planeado'||estado==='Nuevo'||estado==='No planeado'){
+      c = (fpok && fp < TODAY_STR) ? 'Atrasado pendiente' : 'Pendiente';
+    } else if(estado==='Reprogramado'){ c='Reprogramado'; }
+    else if(estado==='Sometido'||estado==='Evaluación'||estado==='Prevenido contestado'||estado==='Prevenido por responder'){
+      c = (fpok && fp < TODAY_STR) ? 'Atrasado en proceso' : 'En proceso';
+    } else { c='Otro'; }
+
+    records.push({
+      rs: rs, p: prod,
+      ff: _clean(r['Forma farmacéutica']),
+      e: estado,
+      t: _clean(r['Tipo de Tramite']),
+      d: _clean(r['Descripción del Tramite']),
+      det: _clean(r['Detalle']),
+      r: _clean(r['Responsable']),
+      fp: fp, fi: fi, fr: fr,
+      presupuestado: _clean(r['Presupuestado']),
+      monto: _money(r['Monto']),
+      internacional: _clean(r['¿Impacta a Internacional?']),
+      comentarios: _clean(r['Comentarios']),
+      y: currentYear,
+      c: c
+    });
+  });
+
+  // Timing por tipo
+  var tipos = {};
+  records.forEach(function(r){ if(r.t) tipos[r.t]=1; });
+  var timing = [];
+  Object.keys(tipos).sort().forEach(function(t){
+    var ds = records.filter(function(r){return r.t===t && r.fi && r.fr;})
+      .map(function(r){return _daysBetween(r.fi,r.fr);})
+      .filter(function(x){return x!==null && x>=0;});
+    if(ds.length){
+      timing.push({tipo:t,n:ds.length,
+        min:Math.min.apply(null,ds),max:Math.max.apply(null,ds),
+        avg:Math.round(ds.reduce(function(a,b){return a+b;},0)/ds.length)});
+    }
+  });
+
+  // Responsables
+  var respNames=['Ivan Torres Martinez','Itzel Flores Portilla','Karla Cristina Jiménez García','Monica Mezquita Alcocer','Alejandro Oviedo Becerril'];
+  var respData=[];
+  respNames.forEach(function(rn){
+    var sub=records.filter(function(r){return r.r===rn;});
+    if(!sub.length) return;
+    var parts=rn.split(' ');
+    respData.push({
+      name:rn, short:parts[0]+' '+parts[1][0]+'.',
+      initials:parts[0][0]+(parts[1]?parts[1][0]:''),
+      total:sub.length,
+      aTiempo:sub.filter(function(r){return r.c==='A tiempo';}).length,
+      atrasado:sub.filter(function(r){return r.c.indexOf('Atrasado')===0;}).length,
+      pendiente:sub.filter(function(r){return r.c==='Pendiente'||r.c==='En proceso';}).length,
+      cancelado:sub.filter(function(r){return r.c==='Cancelado';}).length
+    });
+  });
+
+  return {records:records, timing:timing, respData:respData};
+}
+
+/* ════════════════════════════════════════
+   TRANSFORMAR PAGOS
+   ════════════════════════════════════════ */
+function transformPagos(rows){
+  var records=[];
+  rows.forEach(function(r){
+    var monto=_money(r['Monto']);
+    var resp=_clean(r['Responsable']);
+    if(monto===null||monto<=0||!resp) return; // solo filas válidas con monto
+
+    var llave=_clean(r['Llave Pago']);
+    var num=_clean(r['Num Entrada']);
+    var status;
+    if(llave && num) status='Real';
+    else if(llave && !num) status='Planeado';
+    else status='Sin datos';
+
+    records.push({
+      orden:_int(r['Orden de P']),
+      resp:resp,
+      prod:_clean(r['Producto']),
+      tramite:_clean(r['Trámite']),
+      dir:_clean(r['Dirección']),
+      desc:_clean(r['Descripción']),
+      monto:monto,
+      cc:_clean(r['Centro de costos']),
+      fSol:_date(r['Solicitado a Finanzas']),
+      mesSol:_int(r['MES SOL.']),
+      anioSol:_int(r['AÑO SOL.']),
+      fEnt:_date(r['Fecha Entregado']),
+      mesEnt:_int(r['Mes E.']),
+      numEnt:num,
+      llave:llave,
+      conf:_clean(r['CONFIRMACION LLAVE UTILIZADA']),
+      coment:_clean(r['Comentarios']),
+      status:status
+    });
+  });
+
+  // Marcar duplicados de llave
+  var llaveCount={};
+  records.forEach(function(r){ if(r.llave){llaveCount[r.llave]=(llaveCount[r.llave]||0)+1;} });
+  records.forEach(function(r){ r.isDup = r.llave ? (llaveCount[r.llave]>1) : false; });
+
+  // Mensual / resp / tram (precalculados, aunque el dashboard recalcula con filtros)
+  return {records:records};
+}
+
+/* ════════════════════════════════════════
+   TRANSFORMAR ARI
+   ════════════════════════════════════════ */
+function transformARI(rows){
+  var records=[];
+  var MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  rows.forEach(function(r){
+    var no=_int(r['No.']);
+    if(no===null) return; // fila sin número = vacía
+
+    var dic=_clean(r['DICTAMEN']) || 'SIN DATO';
+    var fp=_date(r['FECHA PROGRAMADA SOMETIMIENTO INICIAL']);
+    var fr=_date(r['FECHA REAL SOMETIMIENTO INICIAL']);
+
+    // Cumplimiento
+    var cu;
+    var dicU=dic.toUpperCase();
+    if(dic==='APROBADO / CONCLUIDO') cu='Aprobado';
+    else if(dic==='CANCELADO') cu='Cancelado';
+    else if(dic==='RECHAZADO') cu='Rechazado';
+    else if(dicU.indexOf('EN EVALUACION')>=0||dicU.indexOf('EN EVALUACIÓN')>=0||dic==='SOMETIDO') cu='En evaluacion';
+    else if(dicU.indexOf('PREVENIDO')>=0) cu='Prevenido';
+    else if(dic==='REPROGRAMADO') cu='Reprogramado';
+    else if(dic==='PAGADO') cu='Pagado';
+    else if(dic==='PROGRAMADO') cu=(fp && fp < TODAY_STR)?'Atrasado':'Programado';
+    else cu='Otro';
+
+    records.push({
+      no:no,
+      pa:_clean(r['PAÍS']),
+      pr:_clean(r['PRODUCTO']),
+      ff:_clean(r['FORMA FARMACEÚTICA']),
+      ti:_clean(r['TIPO DE TRÁMITE/ ACTIVIDAD']),
+      de:_clean(r['DESCRIPCIÓN']),
+      nc:_clean(r['NUEVOS / CONTINUACIÓN']),
+      fp:fp,
+      ap:_year(r['AÑO PROG.']),
+      mp:_int(r['MES PROG.']),
+      fr:fr,
+      ar:_year(r['AÑO R.']),
+      ni:_clean(r['NO. INGRESO INICIAL']),
+      ei:_clean(r['ESTATUS INICIAL']),
+      fp2:_date(r['FECHA DE EMISIÓN DE PREVENCIÓN']),
+      fres:_date(r['FECHA DE EMISIÓN DE RESOLUCIÓN']),
+      ar2:_year(r['AÑO RESOLUCIÓN']),
+      npv:_int(r['NO. TOTAL DE PREVENCIONES']),
+      dic:dic,
+      co:_clean(r['COMENTARIOS']),
+      td:_float(r['TIEMPO DE EVALUACIÓN ( DÍAS NATURALES)']),
+      th:_float(r['TIEMPO DE EVALUACIÓN (DÍAS HÁBILES)']),
+      cu:cu
+    });
+  });
+
+  // Pais aggregates
+  var paisMap={};
+  records.forEach(function(r){
+    var p=r.pa||'Sin dato';
+    if(!paisMap[p]) paisMap[p]={pa:p,total:0,Aprobado:0,'En evaluacion':0,Programado:0,Reprogramado:0,Cancelado:0,Atrasado:0,Prevenido:0,Rechazado:0,Otro:0};
+    paisMap[p].total++;
+    if(paisMap[p][r.cu]!==undefined) paisMap[p][r.cu]++; else paisMap[p].Otro++;
+  });
+  var pais=Object.keys(paisMap).map(function(k){return paisMap[k];}).sort(function(a,b){return b.total-a.total;});
+
+  // Mes aggregates
+  var mesMap={};
+  records.forEach(function(r){
+    if(r.ap && r.mp){
+      var k=r.ap+'-'+(r.mp<10?'0':'')+r.mp;
+      if(!mesMap[k]) mesMap[k]={k:k,y:r.ap,m:r.mp,label:MESES[r.mp-1]+' '+r.ap,total:0,Aprobado:0,'En evaluacion':0,Programado:0,Reprogramado:0,Atrasado:0};
+      mesMap[k].total++;
+      if(mesMap[k][r.cu]!==undefined) mesMap[k][r.cu]++;
+    }
+  });
+  var mes=Object.keys(mesMap).map(function(k){return mesMap[k];}).sort(function(a,b){return a.k>b.k?1:-1;});
+
+  // Timing por tipo
+  var tipoMap={};
+  records.forEach(function(r){
+    var t=(r.ti||'Sin dato').slice(0,30);
+    if(!tipoMap[t]) tipoMap[t]={ti:t,cnt:0,dn:[]};
+    tipoMap[t].cnt++;
+    if(r.td) tipoMap[t].dn.push(r.td);
+  });
+  var timing=[];
+  Object.keys(tipoMap).forEach(function(t){
+    var v=tipoMap[t];var e={ti:t,cnt:v.cnt};
+    if(v.dn.length){e.minD=Math.min.apply(null,v.dn);e.maxD=Math.max.apply(null,v.dn);e.avgD=Math.round(v.dn.reduce(function(a,b){return a+b;},0)/v.dn.length);}
+    timing.push(e);
+  });
+
+  return {records:records, pais:pais, mes:mes, timing:timing, today:TODAY_STR};
+}
+
+/* ════════════════════════════════════════
+   CARGAR TODO Y DIBUJAR
+   ════════════════════════════════════════ */
+function actualizarSello(ok){
+  var el=document.getElementById('sello-actualizacion');
+  if(!el) return;
+  if(ok){
+    var ahora=new Date();
+    var hh=String(ahora.getHours()).padStart(2,'0');
+    var mm=String(ahora.getMinutes()).padStart(2,'0');
+    el.innerHTML='&#9679; Datos en vivo &middot; Actualizado '+ahora.toLocaleDateString('es-MX')+' '+hh+':'+mm;
+    el.style.color='#86EFAC';
+  } else {
+    el.innerHTML='&#9888; Error al cargar datos';
+    el.style.color='#FCA5A5';
+  }
+}
+
+function mostrarCargando(estado){
+  var btn=document.getElementById('btn-actualizar');
+  if(btn){ btn.disabled=estado; btn.textContent=estado?'⏳ Cargando...':'🔄 Actualizar'; }
+}
+
+function cargarDatosEnVivo(){
+  mostrarCargando(true);
+  var sello=document.getElementById('sello-actualizacion');
+  if(sello){sello.innerHTML='&#8987; Cargando datos de Smartsheet...';sello.style.color='#FCD34D';}
+
+  return Promise.all([
+    fetch(WORKER_URL+'/?sheet=arn').then(function(r){return r.json();}),
+    fetch(WORKER_URL+'/?sheet=pagos').then(function(r){return r.json();}),
+    fetch(WORKER_URL+'/?sheet=ari').then(function(r){return r.json();})
+  ]).then(function(results){
+    D   = transformARN(results[0].rows||[]);
+    P   = transformPagos(results[1].rows||[]);
+    ARI = transformARI(results[2].rows||[]);
+
+    // Resetear render flags y datos filtrados
+    if(typeof AFILTERED!=='undefined') AFILTERED=D.records.slice();
+    if(typeof PFILTERED!=='undefined') PFILTERED=P.records.slice();
+    if(typeof ARIF!=='undefined') ARIF=ARI.records.slice();
+
+    // Re-renderizar el universo visible
+    _rendered={arn:false,pag:false,ari:false};
+    var activeUni='arn';
+    document.querySelectorAll('.universe').forEach(function(u){
+      if(u.classList.contains('on')) activeUni=u.id.replace('uni-','');
+    });
+    _rendered[activeUni]=true;
+    if(activeUni==='arn'&&typeof renderARN==='function') renderARN();
+    else if(activeUni==='pag'&&typeof renderPAG==='function') renderPAG();
+    else if(activeUni==='ari'&&typeof renderARI==='function') renderARI();
+
+    actualizarSello(true);
+    mostrarCargando(false);
+  }).catch(function(err){
+    actualizarSello(false);
+    mostrarCargando(false);
+    var sello=document.getElementById('sello-actualizacion');
+    if(sello){sello.innerHTML='&#9888; Error: '+err.message;}
+    console.error('Error cargando datos:',err);
+  });
+}
+
+
+
+/* ── Arranque: cargar datos en vivo al abrir ── */
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',cargarDatosEnVivo);
+} else {
+  cargarDatosEnVivo();
+}
+</script>
+
+</body>
+</html>
