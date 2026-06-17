@@ -671,7 +671,11 @@ function applyARN(){
   var fr=document.getElementById('a-fr').value;
   var fry=document.getElementById('a-fry').value;
   AFILTERED=D.records.filter(function(d){
-    if(fy&&String(d.y)!==fy)return false;
+    if(fy){
+      // El año se rige por la Fecha de Ingreso; si no hay ingreso, por la Fecha planeada
+      var anioRef = d.fi ? d.fi.slice(0,4) : (d.fp ? d.fp.slice(0,4) : null);
+      if(anioRef!==fy) return false;
+    }
     if(ft&&d.t!==ft)return false;
     if(fr&&d.r!==fr)return false;
     if(fry){
