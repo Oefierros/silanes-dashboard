@@ -672,8 +672,8 @@ function applyARN(){
   var fry=document.getElementById('a-fry').value;
   AFILTERED=D.records.filter(function(d){
     if(fy){
-      // El año se rige por la Fecha de Ingreso; si no hay ingreso, por la Fecha planeada
-      var anioRef = d.fi ? d.fi.slice(0,4) : (d.fp ? d.fp.slice(0,4) : null);
+      // El año se rige por la Fecha PLANEADA (coherente con la gráfica por año de plan)
+      var anioRef = d.fp ? d.fp.slice(0,4) : null;
       if(anioRef!==fy) return false;
     }
     if(ft&&d.t!==ft)return false;
@@ -746,7 +746,7 @@ function renderARNCumpl(){
 
 function renderARNYear(){
   var yrs=['2025','2026','2027','2028','2029','2030'];
-  function yd(key,color){return{label:key,data:yrs.map(function(y){var s=AFILTERED.filter(function(r){return String(r.y)===y;});if(key==='A tiempo')return s.filter(function(r){return r.c==='A tiempo';}).length;if(key==='Atrasado')return s.filter(function(r){return r.c==='Atrasado';}).length;if(key==='Reprogramado')return s.filter(function(r){return r.c==='Reprogramado';}).length;if(key==='Pendiente')return s.filter(function(r){return r.c==='Pendiente';}).length;if(key==='Cancelado')return s.filter(function(r){return r.c==='Cancelado';}).length;return 0;}),backgroundColor:color,stack:'a'};}
+  function yd(key,color){return{label:key,data:yrs.map(function(y){var s=AFILTERED.filter(function(r){return r.fp && r.fp.slice(0,4)===y;});if(key==='A tiempo')return s.filter(function(r){return r.c==='A tiempo';}).length;if(key==='Atrasado')return s.filter(function(r){return r.c==='Atrasado';}).length;if(key==='Reprogramado')return s.filter(function(r){return r.c==='Reprogramado';}).length;if(key==='Pendiente')return s.filter(function(r){return r.c==='Pendiente';}).length;if(key==='Cancelado')return s.filter(function(r){return r.c==='Cancelado';}).length;return 0;}),backgroundColor:color,stack:'a'};}
   dc('a-year');var ctx=document.getElementById('a-year').getContext('2d');
   CH['a-year']=new Chart(ctx,{type:'bar',data:{labels:yrs,datasets:[yd('A tiempo','#059669'),yd('Atrasado','#DC2626'),yd('Reprogramado','#7C3AED'),yd('Pendiente','#2563EB'),yd('Cancelado','#9CA3AF')]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'}}}}});
 }
