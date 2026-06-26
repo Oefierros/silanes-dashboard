@@ -71,6 +71,14 @@ tr:hover td{background:#F8FAFC}
 .sf:focus{outline:none;border-color:#3B82F6}
 .uc-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:#F8FAFC;border-radius:10px;margin-bottom:8px;border-left:4px solid}
 @media(max-width:600px){.g2,.g3,.sm{grid-template-columns:1fr}}
+
+/* ── Tooltip de ayuda en gráficas ── */
+.ct{position:relative;}
+.help-ico{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#CBD5E1;color:#fff;font-size:10px;font-weight:800;font-style:normal;cursor:help;margin-left:6px;vertical-align:middle;transition:background .15s;font-family:Georgia,serif;}
+.help-ico:hover{background:#2563EB;}
+.help-tip{position:absolute;left:0;top:calc(100% + 8px);width:300px;max-width:85vw;background:rgba(15,23,42,0.95);color:#F1F5F9;padding:11px 13px;border-radius:9px;font-size:11px;font-weight:400;line-height:1.5;letter-spacing:0;text-transform:none;z-index:1000;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .18s,transform .18s,visibility .18s;box-shadow:0 8px 28px rgba(0,0,0,.28);pointer-events:none;backdrop-filter:blur(2px);}
+.help-ico:hover + .help-tip{opacity:1;visibility:visible;transform:translateY(0);}
+.help-tip::before{content:'';position:absolute;bottom:100%;left:14px;border:6px solid transparent;border-bottom-color:rgba(15,23,42,0.95);}
 </style>
 </head>
 <body>
@@ -143,7 +151,7 @@ tr:hover td{background:#F8FAFC}
     <div class="g4" id="a-kpis"></div>
     <div class="g2">
       <div class="card">
-        <div class="ct">Índice de Salud Regulatoria</div>
+        <div class="ct">Índice de Salud Regulatoria<span class="help-ico">i</span><span class="help-tip">Mide el desempeño global del plan ARN. Calcula el porcentaje de trámites 'A tiempo' sobre el total filtrado. Verde alto = sano; ámbar/rojo = en riesgo.</span></div>
         <div style="display:flex;flex-direction:column;align-items:center">
           <canvas id="a-gauge" width="220" height="130"></canvas>
           <div id="a-gauge-txt" style="font-size:12px;color:#64748B;margin-top:6px;text-align:center"></div>
@@ -151,22 +159,22 @@ tr:hover td{background:#F8FAFC}
         <div class="g3" id="a-gauge-stats" style="gap:8px;margin-top:12px"></div>
       </div>
       <div class="card">
-        <div class="ct">Cumplimiento General</div>
+        <div class="ct">Cumplimiento General<span class="help-ico">i</span><span class="help-tip">Distribución de todos los trámites según su estatus de cumplimiento: A tiempo, Ingresado tarde, Atrasado, Pendiente, Reprogramado y Cancelado. Se calcula con la regla de Fecha planeada vs Fecha de ingreso.</span></div>
         <div style="height:190px"><canvas id="a-cumpl">Cumplimiento</canvas></div>
         <div id="a-cumpl-lg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:8px"></div>
       </div>
     </div>
     <div class="card">
-      <div class="ct">Trámites por año de plan</div>
+      <div class="ct">Trámites por año de plan<span class="help-ico">i</span><span class="help-tip">Agrupa los trámites por el año de su Fecha planeada. Cada barra apila los estatus de ese año. Al filtrar un año, solo aparece la barra de ese año.</span></div>
       <div style="height:210px"><canvas id="a-year">Año</canvas></div>
     </div>
     <div class="g2">
       <div class="card">
-        <div class="ct">Por tipo de trámite</div>
+        <div class="ct">Por tipo de trámite<span class="help-ico">i</span><span class="help-tip">Cuenta cuántos trámites hay de cada tipo (MCR, Prórroga, Renovación, etc.), tomado de la columna 'Tipo de Tramite'.</span></div>
         <div id="a-tipo-bars"></div>
       </div>
       <div class="card">
-        <div class="ct">Por estado</div>
+        <div class="ct">Por estado<span class="help-ico">i</span><span class="help-tip">Distribución según la columna 'Estado' de Smartsheet (Aprobado, Planeado, Sometido, Cancelado, Reprogramado, etc.).</span></div>
         <div style="height:240px"><canvas id="a-estado">Estado</canvas></div>
       </div>
     </div>
@@ -175,20 +183,20 @@ tr:hover td{background:#F8FAFC}
   <div id="a-pg-an" class="pg hidden">
     <div class="g2">
       <div class="card">
-        <div class="ct">MCR por complejidad</div>
+        <div class="ct">MCR por complejidad<span class="help-ico">i</span><span class="help-tip">De los trámites tipo MCR, los desglosa por complejidad (Mayor, Moderada, Menor) según la columna 'Descripción del Tramite'.</span></div>
         <div style="height:210px"><canvas id="a-mcr">MCR</canvas></div>
       </div>
       <div class="card">
-        <div class="ct">Tiempos de resolución (días: Ingreso → Resolución)</div>
+        <div class="ct">Tiempos de resolución (días: Ingreso → Resolución)<span class="help-ico">i</span><span class="help-tip">Mide los días naturales entre Fecha de Ingreso y Fecha de Resolución, por tipo de trámite. Solo incluye trámites que ya tienen ambas fechas.</span></div>
         <div style="height:210px"><canvas id="a-timing">Tiempos</canvas></div>
       </div>
     </div>
     <div class="card">
-      <div class="ct">Cumplimiento cruzado por tipo</div>
+      <div class="ct">Cumplimiento cruzado por tipo<span class="help-ico">i</span><span class="help-tip">Cruza el tipo de trámite con su estatus de cumplimiento, para ver qué tipos concentran más atrasos o aprobaciones.</span></div>
       <div style="height:250px"><canvas id="a-ct">Cumpl tipo</canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Presupuestados vs No Presupuestados</div>
+      <div class="ct">Presupuestados vs No Presupuestados<span class="help-ico">i</span><span class="help-tip">Separa los trámites según la columna 'Presupuestado' (Sí/No), para ver cuántos están dentro del presupuesto planeado.</span></div>
       <div style="height:170px"><canvas id="a-pr">Presup</canvas></div>
     </div>
   </div>
@@ -196,11 +204,11 @@ tr:hover td{background:#F8FAFC}
   <div id="a-pg-eq" class="pg hidden">
     <div class="g2">
       <div class="card">
-        <div class="ct">Carga total por responsable</div>
+        <div class="ct">Carga total por responsable<span class="help-ico">i</span><span class="help-tip">Reparte el total de trámites entre los responsables del equipo, mostrando la carga de trabajo de cada uno.</span></div>
         <div style="height:250px"><canvas id="a-resp">Resp</canvas></div>
       </div>
       <div class="card">
-        <div class="ct">Cumplimiento por responsable</div>
+        <div class="ct">Cumplimiento por responsable<span class="help-ico">i</span><span class="help-tip">Para cada responsable, apila sus trámites por estatus: A tiempo, Ingresado tarde, Atrasado y Pendiente. Permite comparar desempeño individual.</span></div>
         <div style="height:250px"><canvas id="a-rc">Resp cumpl</canvas></div>
       </div>
     </div>
@@ -217,11 +225,11 @@ tr:hover td{background:#F8FAFC}
       <span id="a-al-cnt" style="margin-left:auto;font-size:11px;font-weight:700;color:#64748B"></span>
     </div>
     <div id="a-av-at" class="card">
-      <div class="ct" style="color:#059669">✓ Trámites A Tiempo</div>
+      <div class="ct" style="color:#059669">✓ Trámites A Tiempo<span class="help-ico">i</span><span class="help-tip">Lista los trámites que se ingresaron en o antes de su Fecha planeada (ganaron días). La columna Δ muestra cuántos días se adelantaron.</span></div>
       <div class="tw"><table><thead><tr><th>#</th><th>Producto</th><th>Tipo</th><th>Responsable</th><th>F.Planeada</th><th>F.Ingreso</th><th>F.Resolución</th><th>Δ Días Plan/Ingreso</th><th>Monto</th></tr></thead><tbody id="a-bd-at"></tbody></table></div>
     </div>
     <div id="a-av-re" class="card hidden">
-      <div class="ct" style="color:#DC2626">⚠ Trámites por estatus de ingreso</div>
+      <div class="ct" style="color:#DC2626">⚠ Trámites por estatus de ingreso<span class="help-ico">i</span><span class="help-tip">Tabla filtrable: Atrasados (vencidos sin ingresar), Ingresados tarde (ingreso posterior a lo planeado) y A tiempo (ganaron días). La columna Δ muestra días ganados o perdidos.</span></div>
       <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
         <button class="stgl on" id="a-sub-all" onclick="setSV('all')" style="background:#FEF3C7;color:#92400E;border:1.5px solid #D97706">Atrasados (sin ingresar)</button>
         <button class="stgl" id="a-sub-tarde" onclick="setSV('tarde')" style="background:#FEE2E2;color:#991B1B;border:1.5px solid #DC2626">Ingresados tarde</button>
@@ -230,12 +238,12 @@ tr:hover td{background:#F8FAFC}
       <div class="tw"><table><thead><tr><th>#</th><th>Producto</th><th>RS</th><th>Tipo</th><th>Responsable</th><th>Cumplimiento</th><th>F.Planeada</th><th>F.Ingreso</th><th>F.Resolución</th><th>Δ Días Plan/Ingreso</th></tr></thead><tbody id="a-bd-re"></tbody></table></div>
     </div>
     <div id="a-av-rp" class="card hidden">
-      <div class="ct" style="color:#7C3AED">↺ Trámites Reprogramados</div>
+      <div class="ct" style="color:#7C3AED">↺ Trámites Reprogramados<span class="help-ico">i</span><span class="help-tip">Lista los trámites cuyo estado es 'Reprogramado', es decir, cuya fecha planeada fue modificada.</span></div>
       <p style="font-size:11px;color:#64748B;margin-bottom:10px">Fecha planeada actual del plan. Motivo en columna comentarios.</p>
       <div class="tw"><table><thead><tr><th>#</th><th>Producto</th><th>RS</th><th>Tipo</th><th>Descripción</th><th>Responsable</th><th>Nueva Fecha Planeada</th><th>Estado</th><th>Motivo / Comentario</th></tr></thead><tbody id="a-bd-rp"></tbody></table></div>
     </div>
     <div class="card">
-      <div class="ct" style="color:#1D4ED8">📅 Próximos Vencimientos</div>
+      <div class="ct" style="color:#1D4ED8">📅 Próximos Vencimientos<span class="help-ico">i</span><span class="help-tip">Trámites cuya Fecha planeada está por llegar y aún no se ingresan, ordenados por urgencia (días restantes).</span></div>
       <div id="a-upcoming"></div>
     </div>
   </div>
@@ -336,26 +344,26 @@ tr:hover td{background:#F8FAFC}
     </div>
     <!-- Grafica planeado vs real por mes -->
     <div class="card">
-      <div class="ct">Planeado vs Real por mes (monto $)</div>
+      <div class="ct">Planeado vs Real por mes (monto $)<span class="help-ico">i</span><span class="help-tip">Compara el presupuesto total planeado (todo lo cargado) contra el gasto real ejecutado (con llave + número de entrada), mes a mes.</span></div>
       <div style="height:230px"><canvas id="p-pvrmes">PvR mes</canvas></div>
     </div>
     <div class="g2">
-      <div class="card"><div class="ct">Monto por tipo de trámite</div><div style="height:220px"><canvas id="p-tramite">Tram</canvas></div></div>
-      <div class="card"><div class="ct">Por dirección (PLANTA vs REGULATORIO)</div><div style="height:220px"><canvas id="p-dir">Dir</canvas></div></div>
+      <div class="card"><div class="ct">Monto por tipo de trámite<span class="help-ico">i</span><span class="help-tip">Suma el monto de los pagos agrupados por tipo de trámite.</span></div><div style="height:220px"><canvas id="p-tramite">Tram</canvas></div></div>
+      <div class="card"><div class="ct">Por dirección (PLANTA vs REGULATORIO)<span class="help-ico">i</span><span class="help-tip">Reparte el monto de los pagos según la columna 'Dirección' que indica el área que originó el gasto.</span></div><div style="height:220px"><canvas id="p-dir">Dir</canvas></div></div>
     </div>
   </div>
   <!-- Pagos: Por Mes -->
   <div id="p-pg-mes" class="pg hidden">
     <div class="card">
-      <div class="ct">Real vs Planeado por mes - Monto ($)</div>
+      <div class="ct">Real vs Planeado por mes - Monto ($)<span class="help-ico">i</span><span class="help-tip">Por mes: el monto total planeado (todo lo cargado) vs el real ejecutado. Real = pagos con llave Y número de entrada.</span></div>
       <div style="height:230px"><canvas id="p-mes2">Mes m</canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Real vs Planeado por mes - Cantidad de pagos</div>
+      <div class="ct">Real vs Planeado por mes - Cantidad de pagos<span class="help-ico">i</span><span class="help-tip">Igual que el anterior pero contando número de pagos en lugar de monto.</span></div>
       <div style="height:210px"><canvas id="p-mes3">Mes c</canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Detalle mensual - Planeado vs Real</div>
+      <div class="ct">Detalle mensual - Planeado vs Real<span class="help-ico">i</span><span class="help-tip">Tabla con el desglose mensual: pagos y montos planeados vs reales, con su porcentaje de ejecución.</span></div>
       <div class="tw"><table><thead><tr>
         <th>Mes</th><th>Año</th>
         <th style="color:#059669">Pagos Reales</th><th style="color:#059669">Monto Real</th>
@@ -367,18 +375,18 @@ tr:hover td{background:#F8FAFC}
   <!-- Pagos: Por Trámite -->
   <div id="p-pg-tram" class="pg hidden">
     <div class="card">
-      <div class="ct">Real vs Planeado por tipo de tramite ($)</div>
+      <div class="ct">Real vs Planeado por tipo de tramite ($)<span class="help-ico">i</span><span class="help-tip">Por cada tipo de trámite: monto total planeado vs monto real ejecutado.</span></div>
       <div style="height:260px"><canvas id="p-tr2">T m</canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Desglose completo por tramite</div>
+      <div class="ct">Desglose completo por tramite<span class="help-ico">i</span><span class="help-tip">Barra de progreso por tipo de trámite mostrando qué porcentaje del presupuesto ya se ejecutó (real sobre planeado).</span></div>
       <div id="p-tram-bars"></div>
     </div>
   </div>
   <!-- Pagos: Por Responsable -->
   <div id="p-pg-resp" class="pg hidden">
     <div class="card">
-      <div class="ct">Real vs Planeado por responsable ($)</div>
+      <div class="ct">Real vs Planeado por responsable ($)<span class="help-ico">i</span><span class="help-tip">Por responsable: monto total planeado vs monto real ejecutado.</span></div>
       <div style="height:260px"><canvas id="p-r2">R m</canvas></div>
     </div>
     <div class="g2" id="p-resp-cards"></div>
@@ -388,24 +396,24 @@ tr:hover td{background:#F8FAFC}
     <div class="g4" id="p-llaves-kpis"></div>
     <div class="g2">
       <div class="card">
-        <div class="ct">Distribucion de llaves de pago</div>
+        <div class="ct">Distribucion de llaves de pago<span class="help-ico">i</span><span class="help-tip">Clasifica las llaves de pago en: Real (con número de entrada), Planeado (con llave pero sin número de entrada) y Sin datos.</span></div>
         <div style="height:220px"><canvas id="p-llaves-donut">Llaves</canvas></div>
         <div id="p-llaves-leg" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
       </div>
       <div class="card">
-        <div class="ct">Monto por estado de llave ($)</div>
+        <div class="ct">Monto por estado de llave ($)<span class="help-ico">i</span><span class="help-tip">Suma los montos según el estado de la llave: Real, Planeado o Sin datos.</span></div>
         <div style="height:220px"><canvas id="p-llaves-monto">Monto llaves</canvas></div>
       </div>
     </div>
     <div class="card">
-      <div class="ct" style="color:#059669">Gasto Real - tienen Llave + Num. de Entrada (208)</div>
+      <div class="ct" style="color:#059669">Gasto Real - tienen Llave + Num. de Entrada (208)<span class="help-ico">i</span><span class="help-tip">Lista los pagos ya ejecutados: tienen tanto llave de pago como número de entrada, lo que confirma que el trámite se realizó.</span></div>
       <div class="tw"><table><thead><tr>
         <th>#</th><th>Producto</th><th>Tramite</th><th>Responsable</th><th>Monto</th>
         <th>Llave Pago</th><th>Num Entrada</th><th>F.Solicitado</th><th>Comentario</th>
       </tr></thead><tbody id="p-usadas-body"></tbody></table></div>
     </div>
     <div class="card">
-      <div class="ct" style="color:#D97706">Planeado sin ejecutar - tienen Llave pero SIN Num. de Entrada (122)</div>
+      <div class="ct" style="color:#D97706">Planeado sin ejecutar - tienen Llave pero SIN Num. de Entrada (122)<span class="help-ico">i</span><span class="help-tip">Pagos con llave asignada pero sin número de entrada: presupuesto disponible aún no ejecutado.</span></div>
       <p style="font-size:11px;color:#64748B;margin-bottom:10px">Pagos realizados sin tramite asociado aun. Presupuesto disponible.</p>
       <div class="tw"><table><thead><tr>
         <th>#</th><th>Producto</th><th>Tramite</th><th>Responsable</th><th>Monto</th>
@@ -413,7 +421,7 @@ tr:hover td{background:#F8FAFC}
       </tr></thead><tbody id="p-disp-body"></tbody></table></div>
     </div>
     <div class="card">
-      <div class="ct" style="color:#DC2626">Llaves Duplicadas - misma llave en varios registros</div>
+      <div class="ct" style="color:#DC2626">Llaves Duplicadas - misma llave en varios registros<span class="help-ico">i</span><span class="help-tip">Detecta llaves de pago que aparecen en más de un registro, para revisar si son pagos complementarios o duplicados por error.</span></div>
       <p style="font-size:11px;color:#64748B;margin-bottom:10px">Revisar si son pagos complementarios o duplicados erroneos.</p>
       <div class="tw"><table><thead><tr>
         <th>Llave Pago</th><th>Veces</th><th>Producto</th><th>Tramite</th><th>Responsable</th>
@@ -479,28 +487,28 @@ tr:hover td{background:#F8FAFC}
     <div class="g4" id="ri-kpis"></div>
     <div class="g2">
       <div class="card">
-        <div class="ct">Distribución por Dictamen (estatus actual)</div>
+        <div class="ct">Distribución por Dictamen (estatus actual)<span class="help-ico">i</span><span class="help-tip">Distribución de los trámites internacionales según la columna DICTAMEN, que indica el estatus actual de cada uno.</span></div>
         <div style="height:200px"><canvas id="ri-donut">Dictamen</canvas></div>
         <div id="ri-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
       </div>
       <div class="card">
-        <div class="ct">Trámites por País</div>
+        <div class="ct">Trámites por País<span class="help-ico">i</span><span class="help-tip">Mapa de las Américas coloreado por volumen de trámites por país (más oscuro = más trámites). Usa zoom y arrastre para navegar.</span></div>
         <div id="ri-pais-map" style="width:100%;overflow:hidden;border-radius:8px;background:#EFF6FF;min-height:200px"></div>
       </div>
     </div>
     <div class="card">
-      <div class="ct">Volumen por mes programado y estatus</div>
+      <div class="ct">Volumen por mes programado y estatus<span class="help-ico">i</span><span class="help-tip">Agrupa los trámites internacionales por mes de sometimiento programado, apilando su estatus actual.</span></div>
       <div style="height:220px"><canvas id="ri-mes">Mes</canvas></div>
     </div>
     <div class="g2">
       <div class="card">
-        <div class="ct">Por tipo de trámite</div>
+        <div class="ct">Por tipo de trámite<span class="help-ico">i</span><span class="help-tip">Cuenta cuántos trámites internacionales hay de cada tipo de actividad (Modificación, Nuevo registro, Renovación, etc.).</span></div>
         <div id="ri-tipo-bars"></div>
       </div>
       <div class="card">
-        <div class="ct">Nuevos vs Continuación</div>
+        <div class="ct">Nuevos vs Continuación<span class="help-ico">i</span><span class="help-tip">Separa los trámites según la columna 'Nuevos / Continuación' para ver la proporción de registros nuevos contra renovaciones.</span></div>
         <div style="height:180px"><canvas id="ri-nc">NC</canvas></div>
-        <div class="ct" style="margin-top:14px">Por año programado</div>
+        <div class="ct" style="margin-top:14px">Por año programado<span class="help-ico">i</span><span class="help-tip">Cuenta los trámites internacionales según el año programado de sometimiento.</span></div>
         <div style="height:120px"><canvas id="ri-anio">Anio</canvas></div>
       </div>
     </div>
@@ -509,15 +517,15 @@ tr:hover td{background:#F8FAFC}
   <!-- ARI: POR PAÍS -->
   <div id="ri-pg-pais" class="pg hidden">
     <div class="card">
-      <div class="ct">Aprobados vs Total por país</div>
+      <div class="ct">Aprobados vs Total por país<span class="help-ico">i</span><span class="help-tip">Compara, por país, el total de trámites contra cuántos están aprobados.</span></div>
       <div style="height:260px"><canvas id="ri-pais2">País2</canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Cumplimiento por país (apilado)</div>
+      <div class="ct">Cumplimiento por país (apilado)<span class="help-ico">i</span><span class="help-tip">Para cada país, apila los trámites según su estatus (Aprobado, En evaluación, Programado, Reprogramado, Cancelado).</span></div>
       <div style="height:260px"><canvas id="ri-pais3">País3</canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Desglose por país</div>
+      <div class="ct">Desglose por país<span class="help-ico">i</span><span class="help-tip">Barra de progreso por país mostrando su porcentaje de aprobación y el detalle de cada estatus.</span></div>
       <div id="ri-pais-bars"></div>
     </div>
   </div>
@@ -526,15 +534,15 @@ tr:hover td{background:#F8FAFC}
   <div id="ri-pg-tiempos" class="pg hidden">
     <div class="g3" id="ri-time-kpis"></div>
     <div class="card">
-      <div class="ct">Tiempo de evaluación por tipo (días naturales: mín / prom / máx)</div>
+      <div class="ct">Tiempo de evaluación por tipo (días naturales: mín / prom / máx)<span class="help-ico">i</span><span class="help-tip">Por tipo de trámite internacional, muestra el tiempo mínimo, promedio y máximo de evaluación en días naturales.</span></div>
       <div style="height:230px"><canvas id="ri-timing">Timing</canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Distribución de tiempos (días naturales) — trámites resueltos</div>
+      <div class="ct">Distribución de tiempos (días naturales) — trámites resueltos<span class="help-ico">i</span><span class="help-tip">Histograma que agrupa los trámites resueltos por rangos de días de evaluación (0-30, 31-90, etc.).</span></div>
       <div style="height:210px"><canvas id="ri-tdist">Dist</canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Detalle de tiempos por trámite</div>
+      <div class="ct">Detalle de tiempos por trámite<span class="help-ico">i</span><span class="help-tip">Tabla con los trámites de mayor tiempo de evaluación, mostrando fechas y número de prevenciones.</span></div>
       <div class="tw"><table><thead><tr>
         <th>Producto</th><th>País</th><th>Tipo</th><th>Dictamen</th>
         <th>F.Sometimiento Real</th><th>F.Resolución</th>
@@ -547,25 +555,25 @@ tr:hover td{background:#F8FAFC}
   <div id="ri-pg-alertas" class="pg hidden">
     <div class="g3" id="ri-al-kpis"></div>
     <div class="card">
-      <div class="ct" style="color:#DC2626">⚠️ Programados con fecha vencida (sin someter)</div>
+      <div class="ct" style="color:#DC2626">⚠️ Programados con fecha vencida (sin someter)<span class="help-ico">i</span><span class="help-tip">Trámites internacionales en estado Programado cuya fecha de sometimiento ya pasó y aún no se han sometido.</span></div>
       <div class="tw"><table><thead><tr>
         <th>#</th><th>Producto</th><th>País</th><th>Tipo</th><th>Nuevo/Cont.</th>
         <th>F.Programada</th><th>Días vencido</th><th>Comentario</th>
       </tr></thead><tbody id="ri-al-atrasado"></tbody></table></div>
     </div>
     <div class="card">
-      <div class="ct" style="color:#D97706">🔔 Prevenidos por contestar</div>
+      <div class="ct" style="color:#D97706">🔔 Prevenidos por contestar<span class="help-ico">i</span><span class="help-tip">Trámites con una prevención (requerimiento de la autoridad) pendiente de responder.</span></div>
       <div class="tw"><table><thead><tr>
         <th>#</th><th>Producto</th><th>País</th><th>Tipo</th><th>No.Ingreso</th>
         <th>Dictamen</th><th>Comentario</th>
       </tr></thead><tbody id="ri-al-prev"></tbody></table></div>
     </div>
     <div class="card">
-      <div class="ct" style="color:#3B82F6">📅 Próximos sometimientos programados (siguientes 90 días)</div>
+      <div class="ct" style="color:#3B82F6">📅 Próximos sometimientos programados (siguientes 90 días)<span class="help-ico">i</span><span class="help-tip">Trámites programados para someterse en los próximos 90 días, ordenados por fecha con cuenta regresiva.</span></div>
       <div id="ri-upcoming"></div>
     </div>
     <div class="card">
-      <div class="ct" style="color:#7C3AED">🔄 Reprogramados — mayor concentración</div>
+      <div class="ct" style="color:#7C3AED">🔄 Reprogramados — mayor concentración<span class="help-ico">i</span><span class="help-tip">Países con más trámites reprogramados, mostrando el porcentaje sobre el total de cada país.</span></div>
       <div class="tw"><table><thead><tr>
         <th>País</th><th>Reprogramados</th><th>% del país</th><th>Barra</th>
       </tr></thead><tbody id="ri-al-reprog"></tbody></table></div>
@@ -2109,6 +2117,22 @@ if(document.readyState==='loading'){
 } else {
   cargarDatosEnVivo();
 }
+
+/* Ajuste de tooltips para que no se salgan de la pantalla */
+document.addEventListener('mouseover',function(e){
+  if(e.target&&e.target.classList&&e.target.classList.contains('help-ico')){
+    var tip=e.target.nextElementSibling;
+    if(tip&&tip.classList.contains('help-tip')){
+      tip.style.left='0';tip.style.right='auto';
+      setTimeout(function(){
+        var r=tip.getBoundingClientRect();
+        if(r.right>window.innerWidth-12){
+          tip.style.left='auto';tip.style.right='0';
+        }
+      },0);
+    }
+  }
+});
 </script>
 
 </body>
