@@ -363,7 +363,7 @@ tr:hover td{background:#F8FAFC}
       <div style="height:210px"><canvas id="p-mes3">Mes c</canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Detalle mensual - Planeado vs Real<span class="help-ico">i</span><span class="help-tip">Tabla con el desglose mensual: pagos y montos planeados vs reales, con su porcentaje de ejecución.</span></div>
+      <div class="ct">Detalle mensual - Planeado vs Real<span class="help-ico">i</span><span class="help-tip">Desglose mensual. Planeado = pagos solicitados ese mes (col. Solicitado a Finanzas). Real = pagos entregados ese mes (col. Fecha Entregado) con número de entrada válido y llave. El % puede superar 100% si se entregó más de lo solicitado en el mes.</span></div>
       <div class="tw"><table><thead><tr>
         <th>Mes</th><th>Año</th>
         <th style="color:#059669">Pagos Reales</th><th style="color:#059669">Monto Real</th>
@@ -396,7 +396,7 @@ tr:hover td{background:#F8FAFC}
     <div class="g4" id="p-llaves-kpis"></div>
     <div class="g2">
       <div class="card">
-        <div class="ct">Distribucion de llaves de pago<span class="help-ico">i</span><span class="help-tip">Clasifica las llaves de pago en: Real (con número de entrada), Planeado (con llave pero sin número de entrada) y Sin datos.</span></div>
+        <div class="ct">Distribucion de llaves de pago<span class="help-ico">i</span><span class="help-tip">Clasifica los pagos en Real (entregado + número de entrada válido + llave) y Planeado (todo lo demás cargado, aún no ejecutado).</span></div>
         <div style="height:220px"><canvas id="p-llaves-donut">Llaves</canvas></div>
         <div id="p-llaves-leg" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
       </div>
@@ -924,7 +924,7 @@ function renderPAGOv(){
   CH['p-pvrmes']=new Chart(ctx,{type:'bar',
     data:{labels:md.map(function(d){return d.label;}),
       datasets:[
-        {label:'Total Planeado',data:md.map(function(d){return d.montoTotal;}),
+        {label:'Total Planeado',data:md.map(function(d){return d.montoPlan;}),
          backgroundColor:'rgba(59,130,246,0.25)',borderColor:'#3B82F6',borderWidth:2,
          borderRadius:4,type:'bar',order:2},
         {label:'Gasto Real',data:md.map(function(d){return d.montoReal;}),
@@ -934,7 +934,7 @@ function renderPAGOv(){
       plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:12,boxHeight:12}},
                tooltip:{callbacks:{label:function(c){
                  var v=c.parsed.y;
-                 var total=md[c.dataIndex]?md[c.dataIndex].montoTotal:1;
+                 var total=md[c.dataIndex]?md[c.dataIndex].montoPlan:1;
                  var pctV=total>0?pct(c.parsed.y,total):0;
                  return c.dataset.label+': '+fmt(v)+(c.datasetIndex===1?' ('+pctV+'% ejec.)':'');
                }}}},
@@ -975,18 +975,27 @@ function renderPAGOv(){
 
 function getPMesData(){
   var mp={};
+  function ensure(y,m){
+    var k=y+'-'+(m<10?'0':'')+m;
+    if(!mp[k])mp[k]={k:k,y:y,m:m,label:MESES[m-1]+' '+y,
+      montoPlan:0,cntPlan:0,montoReal:0,cntReal:0};
+    return mp[k];
+  }
   PFILTERED.forEach(function(d){
-    if(!d.anioSol||!d.mesSol)return;
-    var k=d.anioSol+'-'+(d.mesSol<10?'0':'')+d.mesSol;
-    if(!mp[k])mp[k]={k:k,y:d.anioSol,m:d.mesSol,
-      label:MESES[d.mesSol-1]+' '+d.anioSol,
-      montoTotal:0,cntTotal:0,montoReal:0,cntReal:0};
-    mp[k].montoTotal+=d.monto;   /* todos = planeado */
-    mp[k].cntTotal++;
-    if(d.status==='Real'){mp[k].montoReal+=d.monto;mp[k].cntReal++;}
+    // PLANEADO: se cuenta en el mes en que se SOLICITÓ (Solicitado a Finanzas)
+    if(d.anioSol&&d.mesSol){
+      var p=ensure(d.anioSol,d.mesSol);
+      p.montoPlan+=d.monto; p.cntPlan++;
+    }
+    // REAL: se cuenta en el mes en que se ENTREGÓ (Fecha Entregado), si es pago real
+    if(d.status==='Real'&&d.anioEnt&&d.mesEnt){
+      var rr=ensure(d.anioEnt,d.mesEnt);
+      rr.montoReal+=d.monto; rr.cntReal++;
+    }
   });
   return Object.values(mp).sort(function(a,b){return a.k>b.k?1:-1;});
 }
+
 
 function renderPAGMesTabs(){
   var md=getPMesData();
@@ -995,7 +1004,7 @@ function renderPAGMesTabs(){
   CH['p-mes2']=new Chart(c1,{type:'bar',
     data:{labels:md.map(function(d){return d.label;}),
       datasets:[
-        {label:'Total Planeado',data:md.map(function(d){return d.montoTotal;}),
+        {label:'Total Planeado',data:md.map(function(d){return d.montoPlan;}),
          backgroundColor:'rgba(59,130,246,0.2)',borderColor:'#3B82F6',
          borderWidth:2,borderRadius:4},
         {label:'Gasto Real',data:md.map(function(d){return d.montoReal;}),
@@ -1012,7 +1021,7 @@ function renderPAGMesTabs(){
   CH['p-mes3']=new Chart(c2,{type:'bar',
     data:{labels:md.map(function(d){return d.label;}),
       datasets:[
-        {label:'Total registros',data:md.map(function(d){return d.cntTotal;}),
+        {label:'Total registros',data:md.map(function(d){return d.cntPlan;}),
          backgroundColor:'rgba(59,130,246,0.2)',borderColor:'#3B82F6',borderWidth:2,borderRadius:4},
         {label:'Ejecutados',data:md.map(function(d){return d.cntReal;}),
          backgroundColor:'#059669',borderRadius:4},
@@ -1022,13 +1031,13 @@ function renderPAGMesTabs(){
       scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
               y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'}}}}});
   (document.getElementById('p-mes-body')||{innerHTML:''}).innerHTML=md.map(function(d){
-    var ejPct=d.montoTotal>0?pct(d.montoReal,d.montoTotal):0;
+    var ejPct=d.montoPlan>0?pct(d.montoReal,d.montoPlan):0;
     var bc=ejPct>=80?'#059669':ejPct>=50?'#D97706':'#DC2626';
     return'<tr>'+
       '<td style="font-weight:700">'+MESES[d.m-1]+'</td>'+
       '<td>'+d.y+'</td>'+
-      '<td style="font-weight:700;color:#3B82F6">'+d.cntTotal+'</td>'+
-      '<td style="font-weight:800;color:#3B82F6">'+fmt(d.montoTotal)+'</td>'+
+      '<td style="font-weight:700;color:#3B82F6">'+d.cntPlan+'</td>'+
+      '<td style="font-weight:800;color:#3B82F6">'+fmt(d.montoPlan)+'</td>'+
       '<td style="font-weight:700;color:#059669">'+d.cntReal+'</td>'+
       '<td style="font-weight:800;color:#059669">'+fmt(d.montoReal)+'</td>'+
       '<td><div style="display:flex;align-items:center;gap:8px">'+
@@ -1907,17 +1916,42 @@ function transformARN(rows){
    ════════════════════════════════════════ */
 function transformPagos(rows){
   var records=[];
+
+  // Detecta si un Num Entrada es un código válido (numérico) y no una leyenda de texto
+  function numEntradaValido(s){
+    if(!s) return false;
+    var str = String(s).trim();
+    if(str==='') return false;
+    // Cuenta dígitos; un código de entrada real es mayormente numérico
+    var digits = (str.match(/[0-9]/g)||[]).length;
+    var letters = (str.match(/[a-zA-ZáéíóúÁÉÍÓÚñÑ]/g)||[]).length;
+    // Válido si tiene al menos 4 dígitos y los dígitos dominan sobre las letras
+    return digits >= 4 && digits >= letters;
+  }
+
   rows.forEach(function(r){
     var monto=_money(r['Monto']);
     var resp=_clean(r['Responsable']);
     if(monto===null||monto<=0||!resp) return; // solo filas válidas con monto
 
     var llave=_clean(r['Llave Pago']);
-    var num=_clean(r['Num Entrada']);
+    var numRaw=_clean(r['Num Entrada']);
+    var numValido=numEntradaValido(numRaw);
+    var fEnt=_date(r['Fecha Entregado']);
+    var fSol=_date(r['Solicitado a Finanzas']);
+
+    // REAL = entregado + num entrada válido (numérico) + llave de pago
+    // Todo lo demás cargado = Planeado (presupuesto que aún no se ejecuta)
     var status;
-    if(llave && num) status='Real';
-    else if(llave && !num) status='Planeado';
-    else status='Sin datos';
+    if(fEnt && numValido && llave) status='Real';
+    else status='Planeado';
+
+    // Mes/Año PLANEADO viene de "Solicitado a Finanzas"
+    var anioPlan = fSol ? parseInt(fSol.slice(0,4),10) : _int(r['AÑO SOL.']);
+    var mesPlan  = fSol ? parseInt(fSol.slice(5,7),10) : _int(r['MES SOL.']);
+    // Mes/Año REAL viene de "Fecha Entregado"
+    var anioReal = fEnt ? parseInt(fEnt.slice(0,4),10) : null;
+    var mesReal  = fEnt ? parseInt(fEnt.slice(5,7),10) : _int(r['Mes E.']);
 
     records.push({
       orden:_int(r['Orden de P']),
@@ -1928,12 +1962,14 @@ function transformPagos(rows){
       desc:_clean(r['Descripción']),
       monto:monto,
       cc:_clean(r['Centro de costos']),
-      fSol:_date(r['Solicitado a Finanzas']),
-      mesSol:_int(r['MES SOL.']),
-      anioSol:_int(r['AÑO SOL.']),
-      fEnt:_date(r['Fecha Entregado']),
-      mesEnt:_int(r['Mes E.']),
-      numEnt:num,
+      fSol:fSol,
+      mesSol:mesPlan,
+      anioSol:anioPlan,
+      fEnt:fEnt,
+      mesEnt:mesReal,
+      anioEnt:anioReal,
+      numEnt:numRaw,
+      numValido:numValido,
       llave:llave,
       conf:_clean(r['CONFIRMACION LLAVE UTILIZADA']),
       coment:_clean(r['Comentarios']),
@@ -1946,7 +1982,6 @@ function transformPagos(rows){
   records.forEach(function(r){ if(r.llave){llaveCount[r.llave]=(llaveCount[r.llave]||0)+1;} });
   records.forEach(function(r){ r.isDup = r.llave ? (llaveCount[r.llave]>1) : false; });
 
-  // Mensual / resp / tram (precalculados, aunque el dashboard recalcula con filtros)
   return {records:records};
 }
 
