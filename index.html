@@ -105,6 +105,7 @@ tr:hover td{background:#F8FAFC}
     <button class="main-tab on" onclick="showUniverse('arn',this)">📋 Plan de Trabajo ARN</button>
     <button class="main-tab" onclick="showUniverse('pag',this)">💳 Registro de Pagos</button>
     <button class="main-tab" onclick="showUniverse('ari',this)">🌎 Plan de Trabajo ARI</button>
+    <button class="main-tab" onclick="showUniverse('rn',this)">🧪 Análisis de Registros Nuevos</button>
   </div>
 </div>
 
@@ -596,6 +597,154 @@ tr:hover td{background:#F8FAFC}
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     UNIVERSO 4: ANÁLISIS DE REGISTROS NUEVOS
+══════════════════════════════════════ -->
+<div id="uni-rn" class="universe">
+  <div class="sub-hdr">
+    <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
+    <select id="rn-fy" onchange="applyRN()">
+      <option value="">Todos los años</option>
+    </select>
+    <select id="rn-fybase" onchange="applyRN()">
+      <option value="aprob">Año: Aprobación</option>
+      <option value="srn">Año: SRN (ingreso)</option>
+    </select>
+    <select id="rn-fo" onchange="applyRN()">
+      <option value="">Todos los orígenes</option>
+      <option>Organico</option><option>Inorganico</option>
+    </select>
+    <select id="rn-fe" onchange="applyRN()">
+      <option value="">Todos los estatus</option>
+      <option>Aprobado</option><option>Evaluación</option>
+      <option>Prevenido Contestado</option><option>Desecho</option>
+    </select>
+    <select id="rn-ff" onchange="applyRN()">
+      <option value="">Todas las formas</option>
+      <option>Tableta</option><option>Capsula</option><option>Suspensión</option>
+      <option>Solución</option><option>Granulado</option><option>Sol. Inyectable</option>
+    </select>
+    <span class="info" id="rn-info">42 proyectos</span>
+  </div>
+  <div class="sec-tabs">
+    <button class="sec-tab on" onclick="showRNTab('ov',this)">📊 Resumen Ejecutivo</button>
+    <button class="sec-tab" onclick="showRNTab('tiempos',this)">⏱️ Tiempos del Proceso</button>
+    <button class="sec-tab" onclick="showRNTab('cmn',this)">🔬 CMN</button>
+    <button class="sec-tab" onclick="showRNTab('reing',this)">🔄 Reingresos y Origen</button>
+    <button class="sec-tab" onclick="showRNTab('det',this)">📋 Detalle</button>
+  </div>
+
+  <!-- RN: RESUMEN -->
+  <div id="rn-pg-ov" class="pg">
+    <div class="g4" id="rn-kpis"></div>
+    <div class="card">
+      <div class="ct">Embudo del proceso regulatorio<span class="help-ico">i</span><span class="help-tip">Muestra cuántos proyectos avanzan por cada etapa: Total → Pasaron CMN → Ingreso RN → Con prevención → Aprobados. Los Desechos aparecen como salida del proceso (1er intento no otorgado).</span></div>
+      <div id="rn-funnel"></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Distribución por estatus (RN Resultado)<span class="help-ico">i</span><span class="help-tip">Clasifica los proyectos según su resultado actual: Aprobado, Evaluación, Prevenido Contestado o Desecho (1er intento no otorgado).</span></div>
+        <div style="height:210px"><canvas id="rn-donut">Estatus</canvas></div>
+        <div id="rn-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Resultado del CMN<span class="help-ico">i</span><span class="help-tip">De los proyectos que pasaron por el Comité de Moléculas Nuevas, muestra cuántos obtuvieron dictamen Favorable vs No Favorable.</span></div>
+        <div style="height:210px"><canvas id="rn-cmn-donut">CMN</canvas></div>
+        <div id="rn-cmn-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Aprobaciones por año<span class="help-ico">i</span><span class="help-tip">Cuenta los proyectos aprobados según su año de aprobación, para ver la tendencia de registros logrados.</span></div>
+      <div style="height:210px"><canvas id="rn-anio">Año</canvas></div>
+    </div>
+  </div>
+
+  <!-- RN: TIEMPOS -->
+  <div id="rn-pg-tiempos" class="pg hidden">
+    <div class="g3" id="rn-time-kpis"></div>
+    <div class="card">
+      <div class="ct">Etapas del proceso (meses: mín / prom / máx)<span class="help-ico">i</span><span class="help-tip">Compara el tiempo (en meses) de cada etapa: Evaluación CMN, Evaluación Inicial, respuesta de Silanes, Evaluación de prevención y Evaluación RN.</span></div>
+      <div style="height:250px"><canvas id="rn-etapas">Etapas</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Tiempo total del proceso por año de aprobación (meses)<span class="help-ico">i</span><span class="help-tip">Promedio de meses que tomó el proceso completo (incluyendo CMN) para los proyectos aprobados en cada año. Permite ver si el proceso se acelera o se alarga.</span></div>
+      <div style="height:210px"><canvas id="rn-ttotal">Total</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Proyectos por duración total del proceso<span class="help-ico">i</span><span class="help-tip">Tabla de proyectos ordenada por el tiempo total del proceso, con el desglose de tiempos de cada etapa.</span></div>
+      <div class="tw"><table><thead><tr>
+        <th>Proyecto</th><th>Producto</th><th>Estatus</th>
+        <th>T. Eval. CMN</th><th>T. Eval. Inicial</th><th>T. Eval. RN</th><th>T. Total (meses)</th>
+      </tr></thead><tbody id="rn-time-body"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- RN: CMN -->
+  <div id="rn-pg-cmn" class="pg hidden">
+    <div class="g3" id="rn-cmn-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Resultado CMN por año de presentación<span class="help-ico">i</span><span class="help-tip">Para los proyectos que pasaron por CMN, apila los resultados Favorable/No Favorable según el año en que se presentaron al comité.</span></div>
+        <div style="height:230px"><canvas id="rn-cmn-anio">CMN año</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Tiempo de evaluación CMN (meses)<span class="help-ico">i</span><span class="help-tip">Los proyectos con mayor tiempo de evaluación en el Comité de Moléculas Nuevas.</span></div>
+        <div style="height:230px"><canvas id="rn-cmn-tiempo">CMN t</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">¿El resultado CMN influye en la aprobación final?<span class="help-ico">i</span><span class="help-tip">Compara qué porcentaje de proyectos con CMN Favorable vs No Favorable terminaron aprobados en el registro.</span></div>
+      <div id="rn-cmn-rel"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Detalle de proyectos con CMN<span class="help-ico">i</span><span class="help-tip">Tabla con los proyectos que pasaron por el Comité de Moléculas Nuevas, sus tiempos y resultado.</span></div>
+      <div class="tw"><table><thead><tr>
+        <th>Proyecto</th><th>Producto</th><th>Resultado CMN</th><th>Año Pres.</th>
+        <th>Meses a Reunión</th><th>T. Eval. CMN</th><th>Estatus RN</th>
+      </tr></thead><tbody id="rn-cmn-body"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- RN: REINGRESOS Y ORIGEN -->
+  <div id="rn-pg-reing" class="pg hidden">
+    <div class="g3" id="rn-reing-kpis"></div>
+    <div class="card">
+      <div class="ct">Reingresos (2º intento) — primer resultado vs resultado actual<span class="help-ico">i</span><span class="help-tip">Productos que se sometieron una segunda vez (marcados con (2) en su nombre). Muestra que su primer intento fue Desecho y cuál es su resultado en el segundo intento.</span></div>
+      <div class="g2" id="rn-reing-cards"></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Orgánico vs Inorgánico — volumen y éxito<span class="help-ico">i</span><span class="help-tip">Compara los dos orígenes de producto por volumen total y cuántos fueron aprobados.</span></div>
+        <div style="height:230px"><canvas id="rn-origen">Origen</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Distribución por forma farmacéutica<span class="help-ico">i</span><span class="help-tip">Cuenta los proyectos según su forma farmacéutica (Tableta, Cápsula, Suspensión, etc.).</span></div>
+        <div style="height:230px"><canvas id="rn-ff">FF</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Tasa de éxito por origen<span class="help-ico">i</span><span class="help-tip">Porcentaje de aprobación de cada origen (Orgánico/Inorgánico).</span></div>
+      <div id="rn-origen-bars"></div>
+    </div>
+  </div>
+
+  <!-- RN: DETALLE -->
+  <div id="rn-pg-det" class="pg hidden">
+    <div class="card">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <input class="sf" id="rn-srch" placeholder="Buscar proyecto, producto, origen..." oninput="renderRNDet()">
+        <span id="rn-det-cnt" style="font-size:11px;font-weight:700;color:#2563EB"></span>
+      </div>
+      <div class="tw"><table><thead><tr>
+        <th>Proyecto</th><th>Producto</th><th>Origen</th><th>F.F</th><th>Concentración</th>
+        <th>Resultado CMN</th><th>Estatus RN</th><th>Año SRN</th><th>Ingreso RN</th>
+        <th>Año Aprob.</th><th>T. Total</th><th>Reingreso</th>
+      </tr></thead><tbody id="rn-det-body"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+
 <script>
 /* ── Error catcher visible en pantalla ── */
 window.onerror=function(msg,src,line,col,err){
@@ -640,7 +789,7 @@ var AFILTERED=[], PFILTERED=[];
 var CUR_AV='at', CUR_SV='all';
 
 /* ── NAVEGACIÓN PRINCIPAL ── */
-var _rendered={arn:false,pag:false,ari:false};
+var _rendered={arn:false,pag:false,ari:false,rn:false};
 function showUniverse(id,btn){
   document.querySelectorAll('.universe').forEach(function(u){u.classList.remove('on');});
   document.querySelectorAll('.main-tab').forEach(function(b){b.classList.remove('on');});
@@ -651,6 +800,7 @@ function showUniverse(id,btn){
     if(id==='arn') renderARN();
     else if(id==='pag') renderPAG();
     else if(id==='ari') renderARI();
+    else if(id==='rn') renderRN();
   }
 }
 
@@ -1741,6 +1891,423 @@ function renderARIDet(){
   }).join('');
 }
 
+
+
+/* ══════════════════════════════════════
+   LÓGICA ANÁLISIS DE REGISTROS NUEVOS
+══════════════════════════════════════ */
+var RNF = [];
+var RNCFG = {
+  'Aprobado':             {bg:'#DCFCE7',c:'#15803D',bar:'#059669'},
+  'Evaluación':           {bg:'#CFFAFE',c:'#155E75',bar:'#0891B2'},
+  'Prevenido Contestado': {bg:'#FEF3C7',c:'#92400E',bar:'#D97706'},
+  'Desecho':              {bg:'#FEE2E2',c:'#991B1B',bar:'#DC2626'},
+  'Sin dato':             {bg:'#F1F5F9',c:'#64748B',bar:'#94A3B8'}
+};
+function rnclr(e){return (RNCFG[e]||RNCFG['Sin dato']).bar;}
+function rnbadge(e){var cf=RNCFG[e]||RNCFG['Sin dato'];return '<span class="badge" style="background:'+cf.bg+';color:'+cf.c+'">'+e+'</span>';}
+
+function showRNTab(id,btn){
+  ['ov','tiempos','cmn','reing','det'].forEach(function(x){
+    var el=document.getElementById('rn-pg-'+x); if(el)el.classList.add('hidden');});
+  document.querySelectorAll('#uni-rn .sec-tab').forEach(function(b){b.classList.remove('on');});
+  var pg=document.getElementById('rn-pg-'+id); if(pg)pg.classList.remove('hidden');
+  btn.classList.add('on');
+}
+
+function applyRN(){
+  var fy=getEl('rn-fy')?document.getElementById('rn-fy').value:'';
+  var fybase=document.getElementById('rn-fybase').value;
+  var fo=document.getElementById('rn-fo').value;
+  var fe=document.getElementById('rn-fe').value;
+  var ff=document.getElementById('rn-ff').value;
+  RNF=RN.records.filter(function(d){
+    if(fy){
+      var yr = fybase==='srn' ? d.anioSRN : d.anioAprob;
+      if(String(yr)!==fy) return false;
+    }
+    if(fo && d.origen!==fo) return false;
+    if(fe && d.estatus!==fe) return false;
+    if(ff && d.ff!==ff) return false;
+    return true;
+  });
+  setTC('rn-info',RNF.length+' proyectos');
+  renderRN();
+}
+
+function renderRN(){
+  renderRNKPIs();renderRNFunnel();renderRNDonut();renderRNCmnDonut();renderRNAnio();
+  renderRNTiempos();renderRNCmn();renderRNReing();renderRNDet();
+}
+
+function renderRNKPIs(){
+  var t=RNF.length;
+  var aprob=RNF.filter(function(d){return d.estatus==='Aprobado';}).length;
+  var eval2=RNF.filter(function(d){return d.estatus==='Evaluación';}).length;
+  var prev=RNF.filter(function(d){return d.estatus==='Prevenido Contestado';}).length;
+  var des=RNF.filter(function(d){return d.estatus==='Desecho';}).length;
+  var reing=RNF.filter(function(d){return d.esReingreso;}).length;
+  var conCMN=RNF.filter(function(d){return d.tieneCMN;}).length;
+  var tiempos=RNF.filter(function(d){return d.tTotal&&d.tTotal>0;}).map(function(d){return d.tTotal;});
+  var tProm=tiempos.length?Math.round(tiempos.reduce(function(a,b){return a+b;},0)/tiempos.length):0;
+  var items=[
+    {l:'Total Proyectos',v:t,s:'registros nuevos',c:'#1E40AF',p:100},
+    {l:'Aprobados',v:aprob,s:pct(aprob,t)+'% tasa aprobación',c:'#059669',p:pct(aprob,t)},
+    {l:'Desechos',v:des,s:pct(des,t)+'% 1er intento no otorgado',c:'#DC2626',p:pct(des,t)},
+    {l:'En Evaluación',v:eval2,s:'en proceso',c:'#0891B2',p:pct(eval2,t)},
+    {l:'Prevenidos',v:prev,s:'contestados',c:'#D97706',p:pct(prev,t)},
+    {l:'Reingresos (2º)',v:reing,s:'2do intento',c:'#7C3AED',p:pct(reing,t)},
+    {l:'Con CMN',v:conCMN,s:pct(conCMN,t)+'% pasó comité',c:'#BE185D',p:pct(conCMN,t)},
+    {l:'Tiempo Prom.',v:tProm+'m',s:'proceso total',c:'#64748B',p:0}
+  ];
+  setHTML('rn-kpis',items.map(function(k){
+    return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div>'+
+      '<div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div>'+
+      '<div class="kb"><div class="kbf" style="width:'+k.p+'%;background:'+k.c+'"></div></div></div>';
+  }).join(''));
+}
+
+function renderRNFunnel(){
+  var t=RNF.length;
+  var conCMN=RNF.filter(function(d){return d.tieneCMN;}).length;
+  var ingreso=RNF.filter(function(d){return d.ingresoRN;}).length;
+  var prev=RNF.filter(function(d){return d.obtPrev;}).length;
+  var aprob=RNF.filter(function(d){return d.estatus==='Aprobado';}).length;
+  var des=RNF.filter(function(d){return d.estatus==='Desecho';}).length;
+
+  var stages=[
+    {l:'Total proyectos',v:t,c:'#1E40AF'},
+    {l:'Pasaron CMN',v:conCMN,c:'#BE185D'},
+    {l:'Ingreso RN',v:ingreso,c:'#7C3AED'},
+    {l:'Con prevención',v:prev,c:'#D97706'},
+    {l:'Aprobados',v:aprob,c:'#059669'}
+  ];
+  var maxV=t||1;
+  var html='<div style="display:flex;flex-direction:column;gap:8px;padding:8px 0">';
+  stages.forEach(function(s){
+    var w=Math.round(s.v/maxV*100);
+    html+='<div style="display:flex;align-items:center;gap:12px">'+
+      '<div style="width:130px;font-size:12px;font-weight:700;color:#374151;text-align:right;flex-shrink:0">'+s.l+'</div>'+
+      '<div style="flex:1;background:#F1F5F9;border-radius:8px;height:34px;position:relative;overflow:hidden">'+
+        '<div style="background:'+s.c+';height:100%;width:'+w+'%;border-radius:8px;transition:width .5s;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;min-width:44px">'+
+          '<span style="color:#fff;font-weight:800;font-size:13px">'+s.v+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div style="width:44px;font-size:11px;color:#94A3B8;font-weight:700">'+w+'%</div>'+
+    '</div>';
+  });
+  // Salida de desechos
+  html+='<div style="display:flex;align-items:center;gap:12px;margin-top:4px;padding-top:10px;border-top:1px dashed #E2E8F0">'+
+    '<div style="width:130px;font-size:12px;font-weight:700;color:#DC2626;text-align:right;flex-shrink:0">⤷ Desechos (salida)</div>'+
+    '<div style="flex:1;background:#FEE2E2;border-radius:8px;height:28px;position:relative;overflow:hidden">'+
+      '<div style="background:#DC2626;height:100%;width:'+Math.round(des/maxV*100)+'%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:10px;min-width:44px">'+
+        '<span style="color:#fff;font-weight:800;font-size:12px">'+des+'</span>'+
+      '</div>'+
+    '</div>'+
+    '<div style="width:44px;font-size:11px;color:#DC2626;font-weight:700">'+pct(des,t)+'%</div>'+
+  '</div>';
+  html+='</div>';
+  setHTML('rn-funnel',html);
+}
+
+function renderRNDonut(){
+  var cc={};RNF.forEach(function(d){cc[d.estatus]=(cc[d.estatus]||0)+1;});
+  var labels=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];});
+  var vals=labels.map(function(l){return cc[l];});
+  var colors=labels.map(function(l){return rnclr(l);});
+  dc('rn-donut');
+  var ctx=document.getElementById('rn-donut').getContext('2d');
+  CH['rn-donut']=new Chart(ctx,{type:'doughnut',
+    data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,RNF.length)+'%)';}}}}}});
+  setHTML('rn-donut-leg',labels.map(function(l,i){
+    return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+      '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
+  }).join(''));
+}
+
+function renderRNCmnDonut(){
+  var cc={};RNF.forEach(function(d){if(d.cmn)cc[d.cmn]=(cc[d.cmn]||0)+1;});
+  var labels=Object.keys(cc);
+  if(!labels.length){setHTML('rn-cmn-leg','<span style="font-size:11px;color:#94A3B8">Sin datos de CMN en este filtro</span>');dc('rn-cmn-donut');return;}
+  var vals=labels.map(function(l){return cc[l];});
+  var cmap={'FAVORABLE':'#059669','COMPLETADO FAVORABLE':'#15803D','NO FAVORABLE':'#DC2626'};
+  var colors=labels.map(function(l){return cmap[l]||'#94A3B8';});
+  dc('rn-cmn-donut');
+  var ctx=document.getElementById('rn-cmn-donut').getContext('2d');
+  CH['rn-cmn-donut']=new Chart(ctx,{type:'doughnut',
+    data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed;}}}}}});
+  setHTML('rn-cmn-leg',labels.map(function(l,i){
+    return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+      '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
+  }).join(''));
+}
+
+function renderRNAnio(){
+  var ym={};
+  RNF.forEach(function(d){if(d.anioAprob&&d.estatus==='Aprobado')ym[d.anioAprob]=(ym[d.anioAprob]||0)+1;});
+  var yrs=Object.keys(ym).sort();
+  dc('rn-anio');
+  var ctx=document.getElementById('rn-anio').getContext('2d');
+  CH['rn-anio']=new Chart(ctx,{type:'bar',
+    data:{labels:yrs,datasets:[{label:'Aprobados',data:yrs.map(function(y){return ym[y];}),
+      backgroundColor:'#059669',borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'}}}}});
+}
+
+function renderRNTiempos(){
+  var withT=RNF.filter(function(d){return d.tTotal&&d.tTotal>0;});
+  var tt=withT.map(function(d){return d.tTotal;});
+  var prom=tt.length?Math.round(tt.reduce(function(a,b){return a+b;},0)/tt.length):0;
+  var mn=tt.length?Math.min.apply(null,tt):0;
+  var mx=tt.length?Math.max.apply(null,tt):0;
+  setHTML('rn-time-kpis',[
+    {l:'Proyectos con tiempo',v:withT.length,s:'de '+RNF.length,c:'#3B82F6'},
+    {l:'Tiempo total prom.',v:prom+'m',s:'proceso completo',c:'#1E40AF'},
+    {l:'Rango',v:mn+' - '+mx+'m',s:'mín a máx',c:'#7C3AED'}
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+
+  // Etapas: min/prom/max de cada tiempo
+  var etapas=[
+    {k:'tEvalCMN',n:'Eval. CMN'},
+    {k:'tEvalInicial',n:'Eval. Inicial'},
+    {k:'tSilanesResp',n:'Silanes Resp.'},
+    {k:'tEvalPrev',n:'Eval. Prevención'},
+    {k:'tEvalRN',n:'Eval. RN'}
+  ];
+  var mins=[],proms=[],maxs=[],labels=[];
+  etapas.forEach(function(e){
+    var vals=RNF.map(function(d){return d[e.k];}).filter(function(x){return x!==null&&x!==undefined&&x>0;});
+    labels.push(e.n);
+    if(vals.length){
+      mins.push(Math.min.apply(null,vals).toFixed(1));
+      proms.push((vals.reduce(function(a,b){return a+b;},0)/vals.length).toFixed(1));
+      maxs.push(Math.max.apply(null,vals).toFixed(1));
+    } else {mins.push(0);proms.push(0);maxs.push(0);}
+  });
+  dc('rn-etapas');
+  var ctx=document.getElementById('rn-etapas').getContext('2d');
+  CH['rn-etapas']=new Chart(ctx,{type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'Mínimo',data:mins,backgroundColor:'#059669',borderRadius:3},
+      {label:'Promedio',data:proms,backgroundColor:'#3B82F6',borderRadius:3},
+      {label:'Máximo',data:maxs,backgroundColor:'#DC2626',borderRadius:{topLeft:4,topRight:4}}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'},title:{display:true,text:'Meses',color:'#94A3B8',font:{size:9}}}}}});
+
+  // Tiempo total por año aprobación
+  var ym={};
+  RNF.forEach(function(d){if(d.anioAprob&&d.tTotal&&d.tTotal>0){if(!ym[d.anioAprob])ym[d.anioAprob]=[];ym[d.anioAprob].push(d.tTotal);}});
+  var yrs=Object.keys(ym).sort();
+  dc('rn-ttotal');
+  var ctx2=document.getElementById('rn-ttotal').getContext('2d');
+  CH['rn-ttotal']=new Chart(ctx2,{type:'bar',
+    data:{labels:yrs,datasets:[{label:'Meses promedio',
+      data:yrs.map(function(y){return (ym[y].reduce(function(a,b){return a+b;},0)/ym[y].length).toFixed(1);}),
+      backgroundColor:'#7C3AED',borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:function(c){return c.parsed.y+' meses prom.';}}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'}}}}});
+
+  // Tabla ordenada por tiempo total
+  var sorted=withT.slice().sort(function(a,b){return b.tTotal-a.tTotal;});
+  setHTML('rn-time-body',sorted.map(function(d){
+    return'<tr><td style="font-weight:700;font-size:10px">'+(d.proyecto||'--')+'</td>'+
+      '<td style="max-width:160px">'+(d.prod||'--')+'</td>'+
+      '<td>'+rnbadge(d.estatus)+'</td>'+
+      '<td style="color:#64748B">'+(d.tEvalCMN?d.tEvalCMN.toFixed(1):'--')+'</td>'+
+      '<td style="color:#64748B">'+(d.tEvalInicial?d.tEvalInicial.toFixed(1):'--')+'</td>'+
+      '<td style="color:#64748B">'+(d.tEvalRN?d.tEvalRN.toFixed(1):'--')+'</td>'+
+      '<td style="font-weight:800;color:#7C3AED">'+d.tTotal.toFixed(1)+'m</td></tr>';
+  }).join(''));
+}
+
+function renderRNCmn(){
+  var conCMN=RNF.filter(function(d){return d.tieneCMN;});
+  var fav=conCMN.filter(function(d){return d.cmn&&d.cmn.indexOf('FAVORABLE')>=0&&d.cmn.indexOf('NO')<0;}).length;
+  var nofav=conCMN.filter(function(d){return d.cmn==='NO FAVORABLE';}).length;
+  var tCMN=conCMN.filter(function(d){return d.tEvalCMN;}).map(function(d){return d.tEvalCMN;});
+  var promCMN=tCMN.length?(tCMN.reduce(function(a,b){return a+b;},0)/tCMN.length).toFixed(1):0;
+  setHTML('rn-cmn-kpis',[
+    {l:'Proyectos con CMN',v:conCMN.length,s:'pasaron comité',c:'#BE185D'},
+    {l:'CMN Favorable',v:fav,s:pct(fav,conCMN.length)+'% favorable',c:'#059669'},
+    {l:'Tiempo eval. CMN',v:promCMN+'m',s:'promedio',c:'#0891B2'}
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+
+  // CMN por año presentación (favorable vs no)
+  var ym={};
+  conCMN.forEach(function(d){
+    var y=d.anioPresCMN||d.anioCMN;if(!y)return;
+    if(!ym[y])ym[y]={fav:0,nofav:0};
+    if(d.cmn==='NO FAVORABLE')ym[y].nofav++;else if(d.cmn)ym[y].fav++;
+  });
+  var yrs=Object.keys(ym).sort();
+  dc('rn-cmn-anio');
+  var ctx=document.getElementById('rn-cmn-anio').getContext('2d');
+  CH['rn-cmn-anio']=new Chart(ctx,{type:'bar',
+    data:{labels:yrs,datasets:[
+      {label:'Favorable',data:yrs.map(function(y){return ym[y].fav;}),backgroundColor:'#059669',stack:'a'},
+      {label:'No favorable',data:yrs.map(function(y){return ym[y].nofav;}),backgroundColor:'#DC2626',stack:'a',borderRadius:{topLeft:4,topRight:4}}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},stacked:true,ticks:{font:{size:9},color:'#94A3B8'}}}}});
+
+  // Tiempo eval CMN por proyecto (top)
+  var withTCMN=conCMN.filter(function(d){return d.tEvalCMN;}).sort(function(a,b){return b.tEvalCMN-a.tEvalCMN;}).slice(0,10);
+  dc('rn-cmn-tiempo');
+  var ctx2=document.getElementById('rn-cmn-tiempo').getContext('2d');
+  CH['rn-cmn-tiempo']=new Chart(ctx2,{type:'bar',
+    data:{labels:withTCMN.map(function(d){var p=d.prod||d.proyecto||'';return p.length>18?p.slice(0,18)+'…':p;}),
+      datasets:[{label:'Meses',data:withTCMN.map(function(d){return d.tEvalCMN.toFixed(1);}),
+        backgroundColor:'#0891B2',borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'}},
+              y:{grid:{display:false},ticks:{font:{size:8},color:'#374151'}}}}});
+
+  // Relación CMN favorable → aprobación
+  var favAprob=conCMN.filter(function(d){return d.cmn&&d.cmn.indexOf('FAVORABLE')>=0&&d.cmn.indexOf('NO')<0&&d.estatus==='Aprobado';}).length;
+  var favTotal=conCMN.filter(function(d){return d.cmn&&d.cmn.indexOf('FAVORABLE')>=0&&d.cmn.indexOf('NO')<0;}).length;
+  var nofavAprob=conCMN.filter(function(d){return d.cmn==='NO FAVORABLE'&&d.estatus==='Aprobado';}).length;
+  var nofavTotal=conCMN.filter(function(d){return d.cmn==='NO FAVORABLE';}).length;
+  setHTML('rn-cmn-rel',
+    '<div style="display:flex;gap:16px;flex-wrap:wrap">'+
+    '<div style="flex:1;min-width:200px;background:#F0FDF4;border-radius:10px;padding:16px;border-left:4px solid #059669">'+
+      '<div style="font-size:11px;color:#15803D;font-weight:800;text-transform:uppercase;margin-bottom:6px">CMN Favorable</div>'+
+      '<div style="font-size:28px;font-weight:900;color:#059669">'+pct(favAprob,favTotal)+'%</div>'+
+      '<div style="font-size:12px;color:#64748B">'+favAprob+' de '+favTotal+' llegaron a aprobación</div>'+
+    '</div>'+
+    '<div style="flex:1;min-width:200px;background:#FEF2F2;border-radius:10px;padding:16px;border-left:4px solid #DC2626">'+
+      '<div style="font-size:11px;color:#991B1B;font-weight:800;text-transform:uppercase;margin-bottom:6px">CMN No Favorable</div>'+
+      '<div style="font-size:28px;font-weight:900;color:#DC2626">'+pct(nofavAprob,nofavTotal)+'%</div>'+
+      '<div style="font-size:12px;color:#64748B">'+nofavAprob+' de '+nofavTotal+' llegaron a aprobación</div>'+
+    '</div>'+
+    '</div>');
+
+  // Tabla CMN
+  setHTML('rn-cmn-body',conCMN.map(function(d){
+    var cmnColor=d.cmn==='NO FAVORABLE'?'#DC2626':'#059669';
+    return'<tr><td style="font-weight:700;font-size:10px">'+(d.proyecto||'--')+'</td>'+
+      '<td style="max-width:150px">'+(d.prod||'--')+'</td>'+
+      '<td><span style="font-weight:700;color:'+cmnColor+';font-size:11px">'+(d.cmn||'--')+'</span></td>'+
+      '<td>'+(d.anioPresCMN||d.anioCMN||'--')+'</td>'+
+      '<td style="color:#64748B">'+(d.mesesReunion?d.mesesReunion.toFixed(1):'--')+'</td>'+
+      '<td style="color:#64748B">'+(d.tEvalCMN?d.tEvalCMN.toFixed(1):'--')+'</td>'+
+      '<td>'+rnbadge(d.estatus)+'</td></tr>';
+  }).join(''));
+}
+
+function renderRNReing(){
+  var reing=RNF.filter(function(d){return d.esReingreso;});
+  var reingAprob=reing.filter(function(d){return d.estatus==='Aprobado';}).length;
+  var des=RNF.filter(function(d){return d.estatus==='Desecho';}).length;
+  setHTML('rn-reing-kpis',[
+    {l:'Reingresos (2º intento)',v:reing.length,s:'productos resometidos',c:'#7C3AED'},
+    {l:'Reingresos Aprobados',v:reingAprob,s:pct(reingAprob,reing.length)+'% éxito en 2do',c:'#059669'},
+    {l:'Desechos (1er intento)',v:des,s:'candidatos a reingreso',c:'#DC2626'}
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+
+  // Tarjetas de reingresos
+  setHTML('rn-reing-cards',reing.length?reing.map(function(d){
+    var cf=RNCFG[d.estatus]||RNCFG['Sin dato'];
+    return'<div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:5px solid '+cf.bar+'">'+
+      '<div style="font-weight:800;font-size:13px;margin-bottom:8px">'+(d.prod||'--')+'</div>'+
+      '<div style="display:flex;gap:10px;align-items:center">'+
+        '<div style="flex:1;background:#FEE2E2;border-radius:8px;padding:8px;text-align:center">'+
+          '<div style="font-size:9px;color:#991B1B;font-weight:800;text-transform:uppercase">1er intento</div>'+
+          '<div style="font-size:13px;font-weight:900;color:#DC2626">Desecho</div>'+
+        '</div>'+
+        '<div style="color:#94A3B8;font-size:18px">→</div>'+
+        '<div style="flex:1;background:'+cf.bg+';border-radius:8px;padding:8px;text-align:center">'+
+          '<div style="font-size:9px;color:'+cf.c+';font-weight:800;text-transform:uppercase">2do intento</div>'+
+          '<div style="font-size:13px;font-weight:900;color:'+cf.c+'">'+d.estatus+'</div>'+
+        '</div>'+
+      '</div></div>';
+  }).join(''):'<div style="padding:16px;color:#94A3B8;font-size:12px">Sin reingresos en este filtro</div>');
+
+  // Origen
+  var om={};RNF.forEach(function(d){var o=d.origen||'Sin dato';if(!om[o])om[o]={total:0,aprob:0};om[o].total++;if(d.estatus==='Aprobado')om[o].aprob++;});
+  var origs=Object.keys(om);
+  dc('rn-origen');
+  var ctx=document.getElementById('rn-origen').getContext('2d');
+  CH['rn-origen']=new Chart(ctx,{type:'bar',
+    data:{labels:origs,datasets:[
+      {label:'Total',data:origs.map(function(o){return om[o].total;}),backgroundColor:'rgba(59,130,246,0.25)',borderColor:'#3B82F6',borderWidth:2,borderRadius:4},
+      {label:'Aprobados',data:origs.map(function(o){return om[o].aprob;}),backgroundColor:'#059669',borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'}}}}});
+
+  // FF
+  var fm={};RNF.forEach(function(d){var f=d.ff||'Sin dato';fm[f]=(fm[f]||0)+1;});
+  var ffs=Object.entries(fm).sort(function(a,b){return b[1]-a[1];});
+  dc('rn-ff');
+  var clrs=['#1E40AF','#059669','#7C3AED','#D97706','#DC2626','#0891B2','#BE185D'];
+  var ctx2=document.getElementById('rn-ff').getContext('2d');
+  CH['rn-ff']=new Chart(ctx2,{type:'doughnut',
+    data:{labels:ffs.map(function(x){return x[0];}),datasets:[{data:ffs.map(function(x){return x[1];}),
+      backgroundColor:clrs,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      plugins:{legend:{position:'right',labels:{font:{size:10,weight:'bold'},boxWidth:10,padding:6}}}}});
+
+  // Tasa éxito por origen
+  setHTML('rn-origen-bars',origs.map(function(o){
+    var d=om[o];var p=pct(d.aprob,d.total);var bc=p>=50?'#059669':p>=30?'#D97706':'#DC2626';
+    return'<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">'+
+      '<span style="font-weight:700">'+o+'</span>'+
+      '<span style="color:#64748B"><b style="color:'+bc+'">'+d.aprob+'/'+d.total+' aprobados ('+p+'%)</b></span></div>'+
+      '<div style="background:#F1F5F9;border-radius:5px;height:10px;overflow:hidden"><div style="background:'+bc+';height:10px;width:'+p+'%;border-radius:5px"></div></div></div>';
+  }).join(''));
+}
+
+function renderRNDet(){
+  var q=(getEl('rn-srch')?document.getElementById('rn-srch').value:'').toLowerCase();
+  var data=RNF.filter(function(d){
+    return !q||(d.prod||'').toLowerCase().indexOf(q)>=0||(d.proyecto||'').toLowerCase().indexOf(q)>=0||(d.origen||'').toLowerCase().indexOf(q)>=0;
+  });
+  setTC('rn-det-cnt',data.length+' proyectos');
+  setHTML('rn-det-body',data.map(function(d,i){
+    return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'">'+
+      '<td style="font-weight:700;font-size:10px">'+(d.proyecto||'--')+'</td>'+
+      '<td style="font-weight:600;max-width:150px">'+(d.prod||'--')+'</td>'+
+      '<td style="font-size:10px">'+(d.origen||'--')+'</td>'+
+      '<td style="font-size:10px">'+(d.ff||'--')+'</td>'+
+      '<td style="font-size:10px;color:#64748B">'+(d.conc||'--')+'</td>'+
+      '<td style="font-size:9px;color:'+(d.cmn==='NO FAVORABLE'?'#DC2626':'#059669')+'">'+(d.cmn||'--')+'</td>'+
+      '<td>'+rnbadge(d.estatus)+'</td>'+
+      '<td>'+(d.anioSRN||'--')+'</td>'+
+      '<td style="font-family:monospace;font-size:10px;color:#64748B">'+(d.ingresoRN||'--')+'</td>'+
+      '<td>'+(d.anioAprob||'--')+'</td>'+
+      '<td style="font-weight:700;color:#7C3AED">'+(d.tTotal?d.tTotal.toFixed(1)+'m':'--')+'</td>'+
+      '<td style="text-align:center">'+(d.esReingreso?'<span class="badge" style="background:#EDE9FE;color:#5B21B6">2º</span>':'--')+'</td></tr>';
+  }).join(''));
+}
+
+/* Poblar dropdown de años dinámicamente */
+function poblarAniosRN(){
+  var sel=document.getElementById('rn-fy');if(!sel)return;
+  var base=document.getElementById('rn-fybase').value;
+  var years={};
+  RN.records.forEach(function(d){var y=base==='srn'?d.anioSRN:d.anioAprob;if(y)years[y]=1;});
+  var yrs=Object.keys(years).sort();
+  var cur=sel.value;
+  sel.innerHTML='<option value="">Todos los años</option>'+yrs.map(function(y){return'<option>'+y+'</option>';}).join('');
+  if(yrs.indexOf(cur)>=0)sel.value=cur;
+}
+
+
 /* Init ARI info */
 /* ri-info set after live load */
 </script>
@@ -1755,7 +2322,7 @@ var WORKER_URL = "https://silanes-smartsheet.oefierros.workers.dev";
 var TODAY_STR = new Date().toISOString().slice(0,10);
 
 /* Variables globales que el dashboard usa */
-var D, P, ARI;
+var D, P, ARI, RN;
 
 /* ── Helpers de limpieza ── */
 function _clean(v){
@@ -2103,6 +2670,69 @@ function mostrarCargando(estado){
   if(btn){ btn.disabled=estado; btn.textContent=estado?'⏳ Cargando...':'🔄 Actualizar'; }
 }
 
+/* ════════════════════════════════════════════════════════════
+   TRANSFORMAR ANÁLISIS DE REGISTROS NUEVOS (RN)
+   ════════════════════════════════════════════════════════════ */
+function transformRN(rows){
+  var records=[];
+
+  function esReingreso(prod){
+    if(!prod) return false;
+    return /\([0-9]+\)\s*$/.test(String(prod).trim());
+  }
+  function numIntento(prod){
+    if(!prod) return 1;
+    var m=String(prod).trim().match(/\(([0-9]+)\)\s*$/);
+    return m?parseInt(m[1],10):1;
+  }
+
+  rows.forEach(function(r){
+    var proyecto=_clean(r['NÚMERO DE PROYECTO']);
+    var prod=_clean(r['Producto']);
+    if(!proyecto && !prod) return; // fila vacía
+
+    var estatus=_clean(r['RN Resultado']) || 'Sin dato';
+    var cmn=_clean(r['Resultado CMN']);
+    var solCMN=_date(r['solicitud CMN Real']);
+
+    records.push({
+      proyecto:proyecto,
+      origen:_clean(r['Origen']),
+      prod:prod,
+      ff:_clean(r['F.F']),
+      conc:_clean(r['Concentración']),
+      cmn:cmn,
+      estatus:estatus,
+      anioCMN:_year(r['Año CMN']),
+      solCMN:solCMN,
+      anioPresCMN:_year(r['Año Presentación CMN']),
+      reunionCMN:_date(r['Reunión CMN Real']),
+      oficioCMN:_date(r['Obtención de Oficio de CMN Real']),
+      mesesReunion:_float(r['Meses Obtención de Reunión']),
+      mesesOficio:_float(r['Meses Totales Oficio']),
+      tEvalCMN:_float(r['Tiempo Evaluación CMN']),
+      anioSRN:_year(r['Año SRN']),
+      pdt:_clean(r['PDT']),
+      ingresoRN:_date(r['Ingreso RN Real']),
+      obtPrev:_date(r['Obtención Prevención Real']),
+      respPrev:_date(r['Respuesta Prevención Real']),
+      obtResp:_date(r['Obtención de Respuesta Real']),
+      anioAprob:_year(r['Año Aprobación']),
+      tEvalInicial:_float(r['Tiempo Evaluación Inicial']),
+      tSilanesResp:_float(r['Tiempo SILANES Evaluación RESP prevención']),
+      tEvalPrev:_float(r['Tiempo Evaluación Prevención']),
+      tEvalRN:_float(r['Tiempo Evaluación RN']),
+      tTotal:_float(r['Tiempo Total Proceso Incluyendo CMN']),
+      esReingreso:esReingreso(prod),
+      numIntento:numIntento(prod),
+      tieneCMN:!!solCMN
+    });
+  });
+
+  return {records:records};
+}
+
+
 function cargarDatosEnVivo(){
   mostrarCargando(true);
   var sello=document.getElementById('sello-actualizacion');
@@ -2111,19 +2741,23 @@ function cargarDatosEnVivo(){
   return Promise.all([
     fetch(WORKER_URL+'/?sheet=arn').then(function(r){return r.json();}),
     fetch(WORKER_URL+'/?sheet=pagos').then(function(r){return r.json();}),
-    fetch(WORKER_URL+'/?sheet=ari').then(function(r){return r.json();})
+    fetch(WORKER_URL+'/?sheet=ari').then(function(r){return r.json();}),
+    fetch(WORKER_URL+'/?sheet=rn').then(function(r){return r.json();}).catch(function(){return {rows:[]};})
   ]).then(function(results){
     D   = transformARN(results[0].rows||[]);
     P   = transformPagos(results[1].rows||[]);
     ARI = transformARI(results[2].rows||[]);
+    RN  = transformRN((results[3]&&results[3].rows)||[]);
 
     // Resetear render flags y datos filtrados
     if(typeof AFILTERED!=='undefined') AFILTERED=D.records.slice();
     if(typeof PFILTERED!=='undefined') PFILTERED=P.records.slice();
     if(typeof ARIF!=='undefined') ARIF=ARI.records.slice();
+    if(typeof RNF!=='undefined') RNF=RN.records.slice();
+    if(typeof poblarAniosRN==='function') poblarAniosRN();
 
     // Re-renderizar el universo visible
-    _rendered={arn:false,pag:false,ari:false};
+    _rendered={arn:false,pag:false,ari:false,rn:false};
     var activeUni='arn';
     document.querySelectorAll('.universe').forEach(function(u){
       if(u.classList.contains('on')) activeUni=u.id.replace('uni-','');
@@ -2132,6 +2766,7 @@ function cargarDatosEnVivo(){
     if(activeUni==='arn'&&typeof renderARN==='function') renderARN();
     else if(activeUni==='pag'&&typeof renderPAG==='function') renderPAG();
     else if(activeUni==='ari'&&typeof renderARI==='function') renderARI();
+    else if(activeUni==='rn'&&typeof renderRN==='function') renderRN();
 
     actualizarSello(true);
     mostrarCargando(false);
