@@ -601,6 +601,19 @@ tr:hover td{background:#F8FAFC}
      UNIVERSO 4: ANÁLISIS DE REGISTROS NUEVOS
 ══════════════════════════════════════ -->
 <div id="uni-rn" class="universe">
+  <!-- Capa de bloqueo por contraseña -->
+  <div id="rn-lock" style="display:none;position:relative;padding:60px 20px;text-align:center">
+    <div style="max-width:420px;margin:0 auto;background:#fff;border-radius:16px;padding:36px 30px;box-shadow:0 4px 24px rgba(0,0,0,.10);border-top:5px solid #7C3AED">
+      <div style="font-size:40px;margin-bottom:10px">&#128274;</div>
+      <div style="font-size:19px;font-weight:800;color:#1E293B;margin-bottom:6px">Contenido protegido</div>
+      <div style="font-size:13px;color:#64748B;margin-bottom:22px;line-height:1.5">El universo <b>An&aacute;lisis de Registros Nuevos</b> contiene informaci&oacute;n confidencial. Ingresa la contrase&ntilde;a para continuar.</div>
+      <input type="password" id="rn-pass" placeholder="Contrase&ntilde;a" onkeydown="if(event.key==='Enter')validarRN()" style="width:100%;padding:12px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:14px;margin-bottom:10px;box-sizing:border-box;outline:none" />
+      <div id="rn-pass-err" style="display:none;color:#DC2626;font-size:12px;font-weight:600;margin-bottom:10px">Contrase&ntilde;a incorrecta</div>
+      <button onclick="validarRN()" style="width:100%;background:#7C3AED;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">Desbloquear</button>
+    </div>
+  </div>
+  <!-- Contenido real (se oculta hasta desbloquear) -->
+  <div id="rn-content">
   <div class="sub-hdr">
     <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
     <select id="rn-fy" onchange="applyRN()">
@@ -742,6 +755,7 @@ tr:hover td{background:#F8FAFC}
       </tr></thead><tbody id="rn-det-body"></tbody></table></div>
     </div>
   </div>
+  </div><!-- /rn-content -->
 </div>
 
 
@@ -795,6 +809,17 @@ function showUniverse(id,btn){
   document.querySelectorAll('.main-tab').forEach(function(b){b.classList.remove('on');});
   document.getElementById('uni-'+id).classList.add('on');
   btn.classList.add('on');
+  if(id==='rn'){
+    /* Universo protegido: exigir contraseña */
+    if(!RN_UNLOCKED){
+      rnLockShow(true);
+      var pi=document.getElementById('rn-pass'); if(pi)setTimeout(function(){pi.focus();},100);
+      return;
+    } else {
+      rnLockShow(false);
+      rnResetInactividad();
+    }
+  }
   if(!_rendered[id]){
     _rendered[id]=true;
     if(id==='arn') renderARN();
@@ -803,6 +828,69 @@ function showUniverse(id,btn){
     else if(id==='rn') renderRN();
   }
 }
+
+/* ══════════════════════════════════════
+   CAPA DE SEGURIDAD — Universo RN
+   Contraseña + bloqueo por inactividad 30 min
+══════════════════════════════════════ */
+var RN_PASS = "Regulatorios CMN";
+var RN_UNLOCKED = false;
+var RN_INACT_TIMER = null;
+var RN_INACT_MS = 30*60*1000; /* 30 minutos */
+
+function rnLockShow(locked){
+  var lock=document.getElementById('rn-lock');
+  var content=document.getElementById('rn-content');
+  if(!lock||!content)return;
+  if(locked){
+    lock.style.display='block';
+    content.style.display='none';
+  } else {
+    lock.style.display='none';
+    content.style.display='block';
+  }
+}
+
+function validarRN(){
+  var inp=document.getElementById('rn-pass');
+  var err=document.getElementById('rn-pass-err');
+  if(!inp)return;
+  if(inp.value===RN_PASS){
+    RN_UNLOCKED=true;
+    if(err)err.style.display='none';
+    inp.value='';
+    rnLockShow(false);
+    /* Renderizar ahora que está desbloqueado */
+    if(!_rendered.rn){_rendered.rn=true;}
+    if(typeof renderRN==='function'&&typeof RN!=='undefined'&&RN)renderRN();
+    rnResetInactividad();
+  } else {
+    if(err)err.style.display='block';
+    inp.value='';
+    inp.focus();
+  }
+}
+
+function rnBloquear(){
+  RN_UNLOCKED=false;
+  rnLockShow(true);
+  if(RN_INACT_TIMER){clearTimeout(RN_INACT_TIMER);RN_INACT_TIMER=null;}
+}
+
+function rnResetInactividad(){
+  if(!RN_UNLOCKED)return;
+  if(RN_INACT_TIMER)clearTimeout(RN_INACT_TIMER);
+  RN_INACT_TIMER=setTimeout(function(){
+    /* Solo bloquear si el universo RN está visible */
+    rnBloquear();
+  }, RN_INACT_MS);
+}
+
+/* Detectar actividad del usuario para reiniciar el contador (solo cuenta si RN está desbloqueado) */
+['mousemove','keydown','click','scroll','touchstart'].forEach(function(ev){
+  document.addEventListener(ev, function(){ if(RN_UNLOCKED) rnResetInactividad(); }, {passive:true});
+});
+
 
 /* ── NAVEGACIÓN ARN ── */
 function showARNTab(id,btn){
@@ -2766,7 +2854,7 @@ function cargarDatosEnVivo(){
     if(activeUni==='arn'&&typeof renderARN==='function') renderARN();
     else if(activeUni==='pag'&&typeof renderPAG==='function') renderPAG();
     else if(activeUni==='ari'&&typeof renderARI==='function') renderARI();
-    else if(activeUni==='rn'&&typeof renderRN==='function') renderRN();
+    else if(activeUni==='rn'&&typeof renderRN==='function'){ if(RN_UNLOCKED) renderRN(); else rnLockShow(true); }
 
     actualizarSello(true);
     mostrarCargando(false);
@@ -2780,6 +2868,9 @@ function cargarDatosEnVivo(){
 }
 
 
+
+/* ── Bloquear universo RN al inicio ── */
+if(typeof rnLockShow==='function') rnLockShow(true);
 
 /* ── Arranque: cargar datos en vivo al abrir ── */
 if(document.readyState==='loading'){
