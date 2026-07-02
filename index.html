@@ -719,7 +719,7 @@ tr:hover td{background:#F8FAFC}
       </div>
       <div class="card">
         <div class="ct">Distribución por forma farmacéutica<span class="help-ico">i</span><span class="help-tip">Cuenta los proyectos según su forma farmacéutica (Tableta, Cápsula, Suspensión, etc.).</span></div>
-        <div style="height:230px"><canvas id="rn-ff">FF</canvas></div>
+        <div style="height:230px"><canvas id="rn-ffchart">FF</canvas></div>
       </div>
     </div>
     <div class="card">
@@ -2253,10 +2253,10 @@ function renderRNReing(){
   // FF
   var fm={};RNF.forEach(function(d){var f=d.ff||'Sin dato';fm[f]=(fm[f]||0)+1;});
   var ffs=Object.entries(fm).sort(function(a,b){return b[1]-a[1];});
-  dc('rn-ff');
+  dc('rn-ffchart');
   var clrs=['#1E40AF','#059669','#7C3AED','#D97706','#DC2626','#0891B2','#BE185D'];
-  var ctx2=document.getElementById('rn-ff').getContext('2d');
-  CH['rn-ff']=new Chart(ctx2,{type:'doughnut',
+  var ctx2=document.getElementById('rn-ffchart').getContext('2d');
+  CH['rn-ffchart']=new Chart(ctx2,{type:'doughnut',
     data:{labels:ffs.map(function(x){return x[0];}),datasets:[{data:ffs.map(function(x){return x[1];}),
       backgroundColor:clrs,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
