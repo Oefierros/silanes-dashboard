@@ -363,11 +363,11 @@ tr:hover td{background:#F8FAFC}
       <div style="height:210px"><canvas id="p-mes3">Mes c</canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Detalle mensual - Planeado vs Real<span class="help-ico">i</span><span class="help-tip">Desglose mensual. Planeado = pagos solicitados ese mes (col. Solicitado a Finanzas). Real = pagos entregados ese mes (col. Fecha Entregado) con número de entrada válido y llave. El % puede superar 100% si se entregó más de lo solicitado en el mes.</span></div>
+      <div class="ct">Detalle mensual - Planeado vs Real<span class="help-ico">i</span><span class="help-tip">Desglose mensual. Planeado = pagos solicitados ese mes (col. Solicitado a Finanzas). Real = pagos entregados ese mes (col. Fecha Entregado) con número de entrada válido y llave. % Ejecución = Pagos Reales / Pagos Planeados del mes (por cantidad). Puede superar 100% si se entregaron más pagos de los solicitados ese mes.</span></div>
       <div class="tw"><table><thead><tr>
         <th>Mes</th><th>Año</th>
+        <th style="color:#3B82F6">Pagos Plan.</th><th style="color:#3B82F6">Monto Planeado</th>
         <th style="color:#059669">Pagos Reales</th><th style="color:#059669">Monto Real</th>
-        <th style="color:#D97706">Pagos Plan.</th><th style="color:#D97706">Monto Planeado</th>
         <th>% Ejecucion</th>
       </tr></thead><tbody id="p-mes-body"></tbody></table></div>
     </div>
@@ -1031,7 +1031,7 @@ function renderPAGMesTabs(){
       scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
               y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'}}}}});
   (document.getElementById('p-mes-body')||{innerHTML:''}).innerHTML=md.map(function(d){
-    var ejPct=d.montoPlan>0?pct(d.montoReal,d.montoPlan):0;
+    var ejPct=d.cntPlan>0?pct(d.cntReal,d.cntPlan):0;
     var bc=ejPct>=80?'#059669':ejPct>=50?'#D97706':'#DC2626';
     return'<tr>'+
       '<td style="font-weight:700">'+MESES[d.m-1]+'</td>'+
