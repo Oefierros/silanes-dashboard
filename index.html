@@ -654,6 +654,7 @@ tr:hover td{background:#F8FAFC}
 
   <!-- RN: RESUMEN -->
   <div id="rn-pg-ov" class="pg">
+    <div id="rn-periodo" style="font-size:13px;font-weight:800;color:#065A62;margin-bottom:14px;padding:8px 14px;background:#E0F2F3;border-radius:8px;border-left:4px solid #087A84;display:inline-block"></div>
     <div class="g4" id="rn-kpis"></div>
     <div class="card">
       <div class="ct">Embudo del proceso regulatorio<span class="help-ico">i</span><span class="help-tip">Muestra cuántos proyectos avanzan por cada etapa: Total → Pasaron CMN → Ingreso RN → Con prevención → Aprobados. Los Desechos aparecen como salida del proceso (1er intento no otorgado).</span></div>
@@ -2024,7 +2025,9 @@ function applyRN(){
     if(ff && d.ff!==ff) return false;
     return true;
   });
-  setTC('rn-info',RNF.length+' proyectos');
+  var unicos=RNF.filter(function(d){return d.numIntento===1;}).length;
+  var reing=RNF.filter(function(d){return d.numIntento>=2;}).length;
+  setTC('rn-info',RNF.length+' ingresos ('+unicos+' únicos + '+reing+' reingresos)');
   renderRN();
 }
 
@@ -2035,23 +2038,34 @@ function renderRN(){
 
 function renderRNKPIs(){
   var t=RNF.length;
+  var unicos=RNF.filter(function(d){return d.numIntento===1;}).length;
+  var reing2=RNF.filter(function(d){return d.numIntento===2;}).length;
+  var reing3=RNF.filter(function(d){return d.numIntento>=3;}).length;
   var aprob=RNF.filter(function(d){return d.estatus==='Aprobado';}).length;
   var eval2=RNF.filter(function(d){return d.estatus==='Evaluación';}).length;
   var prev=RNF.filter(function(d){return d.estatus==='Prevenido Contestado';}).length;
   var des=RNF.filter(function(d){return d.estatus==='Desecho';}).length;
-  var reing=RNF.filter(function(d){return d.esReingreso;}).length;
   var conCMN=RNF.filter(function(d){return d.tieneCMN;}).length;
   var tiempos=RNF.filter(function(d){return d.tTotal&&d.tTotal>0;}).map(function(d){return d.tTotal;});
   var tProm=tiempos.length?Math.round(tiempos.reduce(function(a,b){return a+b;},0)/tiempos.length):0;
+
+  /* Título dinámico del periodo */
+  actualizarPeriodoRN();
+
+  var reingTxt='';
+  if(reing2)reingTxt+=reing2+' de 2\u00aa vez';
+  if(reing3)reingTxt+=(reingTxt?', ':'')+reing3+' de 3\u00aa vez';
+  if(!reingTxt)reingTxt='sin reingresos';
+
   var items=[
-    {l:'Total Proyectos',v:t,s:'registros nuevos',c:'#065A62',p:100},
-    {l:'Aprobados',v:aprob,s:pct(aprob,t)+'% tasa aprobación',c:'#059669',p:pct(aprob,t)},
+    {l:'Total Ingresos',v:t,s:unicos+' \u00fanicos + '+(reing2+reing3)+' reingresos',c:'#065A62',p:100},
+    {l:'Proyectos \u00danicos',v:unicos,s:'1er intento (sin repetir)',c:'#087A84',p:pct(unicos,t)},
+    {l:'Reingresos',v:reing2+reing3,s:reingTxt,c:'#7C3AED',p:pct(reing2+reing3,t)},
+    {l:'Aprobados',v:aprob,s:pct(aprob,t)+'% tasa aprobaci\u00f3n',c:'#059669',p:pct(aprob,t)},
     {l:'Desechos',v:des,s:pct(des,t)+'% 1er intento no otorgado',c:'#DC2626',p:pct(des,t)},
-    {l:'En Evaluación',v:eval2,s:'en proceso',c:'#0891B2',p:pct(eval2,t)},
+    {l:'En Evaluaci\u00f3n',v:eval2,s:'en proceso',c:'#0891B2',p:pct(eval2,t)},
     {l:'Prevenidos',v:prev,s:'contestados',c:'#D97706',p:pct(prev,t)},
-    {l:'Reingresos (2º)',v:reing,s:'2do intento',c:'#7C3AED',p:pct(reing,t)},
-    {l:'Con CMN',v:conCMN,s:pct(conCMN,t)+'% pasó comité',c:'#BE185D',p:pct(conCMN,t)},
-    {l:'Tiempo Prom.',v:tProm+'m',s:'proceso total',c:'#64748B',p:0}
+    {l:'Con CMN',v:conCMN,s:pct(conCMN,t)+'% pas\u00f3 comit\u00e9',c:'#BE185D',p:pct(conCMN,t)}
   ];
   setHTML('rn-kpis',items.map(function(k){
     return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div>'+
@@ -2060,8 +2074,37 @@ function renderRNKPIs(){
   }).join(''));
 }
 
+/* Título dinámico: muestra de qué años son los datos filtrados */
+function actualizarPeriodoRN(){
+  var el=document.getElementById('rn-periodo');
+  if(!el)return;
+  var fy=getEl('rn-fy')?document.getElementById('rn-fy').value:'';
+  var fybase=getEl('rn-fybase')?document.getElementById('rn-fybase').value:'aprob';
+  var baseTxt=fybase==='srn'?'a\u00f1o de ingreso (SRN)':'a\u00f1o de aprobaci\u00f3n';
+  var txt;
+  if(fy){
+    txt='\ud83d\udcc5 Mostrando datos de '+fy+' \u00b7 por '+baseTxt;
+  } else {
+    /* Rango completo de años presentes */
+    var years={};
+    RNF.forEach(function(d){var y=fybase==='srn'?d.anioSRN:d.anioAprob;if(y)years[y]=1;});
+    var yrs=Object.keys(years).sort();
+    if(yrs.length>=2){
+      txt='\ud83d\udcc5 Mostrando todos los a\u00f1os ('+yrs[0]+'\u2013'+yrs[yrs.length-1]+') \u00b7 por '+baseTxt;
+    } else if(yrs.length===1){
+      txt='\ud83d\udcc5 Mostrando '+yrs[0]+' \u00b7 por '+baseTxt;
+    } else {
+      txt='\ud83d\udcc5 Mostrando todos los registros';
+    }
+  }
+  el.textContent=txt;
+}
+
 function renderRNFunnel(){
   var t=RNF.length;
+  var unicos=RNF.filter(function(d){return d.numIntento===1;}).length;
+  var reing2=RNF.filter(function(d){return d.numIntento===2;}).length;
+  var reing3=RNF.filter(function(d){return d.numIntento>=3;}).length;
   var conCMN=RNF.filter(function(d){return d.tieneCMN;}).length;
   var ingreso=RNF.filter(function(d){return d.ingresoRN;}).length;
   var prev=RNF.filter(function(d){return d.obtPrev;}).length;
@@ -2069,7 +2112,7 @@ function renderRNFunnel(){
   var des=RNF.filter(function(d){return d.estatus==='Desecho';}).length;
 
   var stages=[
-    {l:'Total proyectos',v:t,c:'#065A62'},
+    {l:'Total Ingresos',v:t,c:'#065A62'},
     {l:'Pasaron CMN',v:conCMN,c:'#BE185D'},
     {l:'Ingreso RN',v:ingreso,c:'#7C3AED'},
     {l:'Con prevención',v:prev,c:'#D97706'},
@@ -2077,6 +2120,27 @@ function renderRNFunnel(){
   ];
   var maxV=t||1;
   var html='<div style="display:flex;flex-direction:column;gap:8px;padding:8px 0">';
+
+  // Tarjeta de desglose de ingresos (arriba del embudo)
+  html+='<div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">'+
+    '<div style="flex:1;min-width:120px;background:#0A9AA615;border-radius:8px;padding:10px 12px;border-left:3px solid #065A62">'+
+      '<div style="font-size:10px;color:#065A62;font-weight:800;text-transform:uppercase">Total Ingresos</div>'+
+      '<div style="font-size:22px;font-weight:900;color:#065A62">'+t+'</div>'+
+    '</div>'+
+    '<div style="flex:1;min-width:120px;background:#087A8415;border-radius:8px;padding:10px 12px;border-left:3px solid #087A84">'+
+      '<div style="font-size:10px;color:#087A84;font-weight:800;text-transform:uppercase">Proyectos únicos</div>'+
+      '<div style="font-size:22px;font-weight:900;color:#087A84">'+unicos+'</div>'+
+    '</div>'+
+    '<div style="flex:1;min-width:120px;background:#7C3AED15;border-radius:8px;padding:10px 12px;border-left:3px solid #7C3AED">'+
+      '<div style="font-size:10px;color:#7C3AED;font-weight:800;text-transform:uppercase">Reingreso 2ª vez</div>'+
+      '<div style="font-size:22px;font-weight:900;color:#7C3AED">'+reing2+'</div>'+
+    '</div>'+
+    '<div style="flex:1;min-width:120px;background:#BE185D15;border-radius:8px;padding:10px 12px;border-left:3px solid #BE185D">'+
+      '<div style="font-size:10px;color:#BE185D;font-weight:800;text-transform:uppercase">Reingreso 3ª vez</div>'+
+      '<div style="font-size:22px;font-weight:900;color:#BE185D">'+reing3+'</div>'+
+    '</div>'+
+  '</div>';
+
   stages.forEach(function(s){
     var w=Math.round(s.v/maxV*100);
     html+='<div style="display:flex;align-items:center;gap:12px">'+
