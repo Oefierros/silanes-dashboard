@@ -1,14 +1,4 @@
-<
-
-/* Año de aprobación: solo válido si la fecha que lo respalda NO es hoy (=TODAY = en proceso) */
-function _yearProc(fechaResp, anioCol){
-  var d=_dateProc(fechaResp); /* si es hoy, devuelve null */
-  /* Si la fecha de respaldo es hoy (en proceso), no hay año de aprobación aún */
-  if(_date(fechaResp) && !d) return null;
-  /* Si hay fecha real (no hoy), usa su año; si no, cae al valor de la columna Año */
-  if(d) return parseInt(d.slice(0,4),10);
-  return _year(anioCol);
-}!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -691,6 +681,11 @@ tr:hover td{background:#F8FAFC}
   <!-- RN: TIEMPOS -->
   <div id="rn-pg-tiempos" class="pg hidden">
     <div class="g3" id="rn-time-kpis"></div>
+    <div class="card">
+      <div class="ct">Duración del proceso por producto (meses por etapa)<span class="help-ico">i</span><span class="help-tip">Tiempo acumulado en meses de cada etapa del proceso, por producto. Muestra solo la última entrada de cada uno (el reingreso más reciente o el único intento). Si una fecha es hoy (=TODAY), ese proceso sigue en curso y el tiempo mostrado es lo que lleva hasta hoy. Usa los botones para filtrar por forma farmacéutica.</span></div>
+      <div id="rn-dur-filtros" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
+      <div style="height:auto;min-height:200px"><canvas id="rn-duracion">Duración</canvas></div>
+    </div>
     <div class="card">
       <div class="ct">Etapas del proceso (meses: mín / prom / máx)<span class="help-ico">i</span><span class="help-tip">Compara el tiempo (en meses) de cada etapa: Evaluación CMN, Evaluación Inicial, respuesta de Silanes, Evaluación de prevención y Evaluación RN.</span></div>
       <div style="height:250px"><canvas id="rn-etapas">Etapas</canvas></div>
@@ -2043,7 +2038,7 @@ function applyRN(){
 
 function renderRN(){
   renderRNKPIs();renderRNFunnel();renderRNDonut();renderRNCmnDonut();renderRNAnio();
-  renderRNTiempos();renderRNCmn();renderRNReing();renderRNDet();
+  renderRNDuracion();renderRNTiempos();renderRNCmn();renderRNReing();renderRNDet();
 }
 
 function renderRNKPIs(){
@@ -2226,6 +2221,91 @@ function renderRNAnio(){
       scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
               y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'}}}}});
 }
+
+var RN_DUR_FF = ''; /* filtro forma farmacéutica del gráfico de duración */
+
+/* Devuelve el nombre base del producto sin el (2)/(3er) para agrupar reingresos */
+function rnNombreBase(prod){
+  if(!prod) return '';
+  return String(prod).replace(/\(\s*[0-9]+\s*(?:er|ra|da|do|va|ta|ma|na|\u00aa|\u00ba)?\s*\)\s*$/i,'').trim();
+}
+
+/* Meses entre dos fechas (o desde inicio hasta hoy si sigue en proceso) */
+function rnMesesEntre(desde, hasta){
+  if(!desde) return 0;
+  var fin = hasta ? new Date(hasta) : new Date(); /* si no hay fin, cuenta hasta hoy (en proceso) */
+  var ini = new Date(desde);
+  var m = (fin.getFullYear()-ini.getFullYear())*12 + (fin.getMonth()-ini.getMonth());
+  return m>0 ? m : 0;
+}
+
+function renderRNDuracion(){
+  /* Solo la última entrada de cada producto (el reingreso más reciente o el único) */
+  var base={};
+  RNF.forEach(function(d){
+    var nb=rnNombreBase(d.prod);
+    if(!nb) return;
+    if(!base[nb] || d.numIntento > base[nb].numIntento){ base[nb]=d; }
+  });
+  var lista=Object.keys(base).map(function(k){return base[k];});
+
+  /* Filtro por forma farmacéutica */
+  if(RN_DUR_FF) lista=lista.filter(function(d){return d.ff===RN_DUR_FF;});
+
+  /* Calcular tiempo por etapa de cada producto */
+  var items=lista.map(function(d){
+    var tIni = d.tEvalInicial || rnMesesEntre(d.ingresoRN, d.obtPrev);
+    var tSil = d.tSilanesResp || rnMesesEntre(d.obtPrev, d.respPrev);
+    var tPrev= d.tEvalPrev || rnMesesEntre(d.respPrev, d.obtResp);
+    var total = (tIni||0)+(tSil||0)+(tPrev||0);
+    /* En proceso si alguna fecha clave falta (=TODAY la volvió null) */
+    var enProceso = !d.obtResp;
+    return {prod:d.prod, ff:d.ff, estatus:d.estatus, tIni:tIni||0, tSil:tSil||0, tPrev:tPrev||0, total:total, enProceso:enProceso};
+  }).filter(function(x){return x.total>0;});
+
+  /* Ordenar por total ascendente (como la imagen) */
+  items.sort(function(a,b){return a.total-b.total;});
+
+  /* Botones de filtro por forma farmacéutica */
+  var formas={};RNF.forEach(function(d){if(d.ff)formas[d.ff]=1;});
+  var formasArr=Object.keys(formas).sort();
+  var btns='<button onclick="setRNDurFF(\'\')" class="rndur-btn" style="padding:5px 12px;border-radius:7px;border:1.5px solid '+(RN_DUR_FF===''?'#087A84':'#E2E8F0')+';background:'+(RN_DUR_FF===''?'#E0F2F3':'#fff')+';color:'+(RN_DUR_FF===''?'#065A62':'#64748B')+';font-size:11px;font-weight:700;cursor:pointer">Todas</button>';
+  formasArr.forEach(function(f){
+    var on=RN_DUR_FF===f;
+    btns+='<button onclick="setRNDurFF(\''+f.replace(/'/g,"\\'")+'\')" class="rndur-btn" style="padding:5px 12px;border-radius:7px;border:1.5px solid '+(on?'#087A84':'#E2E8F0')+';background:'+(on?'#E0F2F3':'#fff')+';color:'+(on?'#065A62':'#64748B')+';font-size:11px;font-weight:700;cursor:pointer">'+f+'</button>';
+  });
+  setHTML('rn-dur-filtros',btns);
+
+  /* Altura dinámica según número de barras */
+  var canvas=document.getElementById('rn-duracion');
+  if(canvas){ canvas.parentNode.style.height=Math.max(200,items.length*38+60)+'px'; }
+
+  dc('rn-duracion');
+  if(!items.length){ return; }
+  var ctx=canvas.getContext('2d');
+  var labels=items.map(function(x){
+    var p=x.prod.length>32?x.prod.slice(0,32)+'…':x.prod;
+    return x.enProceso ? '⏳ '+p : p;
+  });
+  CH['rn-duracion']=new Chart(ctx,{type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'Evaluación Inicial',data:items.map(function(x){return x.tIni;}),backgroundColor:'#8B0000',borderRadius:2,stack:'a'},
+      {label:'Respuesta Silanes',data:items.map(function(x){return x.tSil;}),backgroundColor:'#DC2626',borderRadius:2,stack:'a'},
+      {label:'Evaluación Prevención',data:items.map(function(x){return x.tPrev;}),backgroundColor:'#F87171',borderRadius:{topRight:4,bottomRight:4},stack:'a'}
+    ]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}},
+        tooltip:{callbacks:{
+          afterLabel:function(c){var it=items[c.dataIndex];return it.enProceso?'(en proceso)':'';},
+          footer:function(items2){var it=items[items2[0].dataIndex];return 'Total: '+it.total+' meses';}
+        }}},
+      scales:{
+        x:{stacked:true,grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'},title:{display:true,text:'Meses',color:'#94A3B8',font:{size:10}}},
+        y:{stacked:true,grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}}
+      }}});
+}
+
+function setRNDurFF(f){ RN_DUR_FF=f; renderRNDuracion(); }
 
 function renderRNTiempos(){
   var withT=RNF.filter(function(d){return d.tTotal&&d.tTotal>0;});
