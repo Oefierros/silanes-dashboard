@@ -1,4 +1,14 @@
-<!DOCTYPE html>
+<
+
+/* Año de aprobación: solo válido si la fecha que lo respalda NO es hoy (=TODAY = en proceso) */
+function _yearProc(fechaResp, anioCol){
+  var d=_dateProc(fechaResp); /* si es hoy, devuelve null */
+  /* Si la fecha de respaldo es hoy (en proceso), no hay año de aprobación aún */
+  if(_date(fechaResp) && !d) return null;
+  /* Si hay fecha real (no hoy), usa su año; si no, cae al valor de la columna Año */
+  if(d) return parseInt(d.slice(0,4),10);
+  return _year(anioCol);
+}!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -2185,7 +2195,7 @@ function renderRNDonut(){
 }
 
 function renderRNCmnDonut(){
-  var cc={};RNF.forEach(function(d){if(d.cmn)cc[d.cmn]=(cc[d.cmn]||0)+1;});
+  var cc={};RNF.forEach(function(d){if(d.cmn&&String(d.cmn).trim().toUpperCase()!=='NA')cc[d.cmn]=(cc[d.cmn]||0)+1;});
   var labels=Object.keys(cc);
   if(!labels.length){setHTML('rn-cmn-leg','<span style="font-size:11px;color:#94A3B8">Sin datos de CMN en este filtro</span>');dc('rn-cmn-donut');return;}
   var vals=labels.map(function(l){return cc[l];});
@@ -2531,6 +2541,24 @@ function _daysBetween(a,b){
   return isNaN(r)?null:r;
 }
 
+/* Fecha que trata "hoy" como vacía = aún en proceso (columnas con =TODAY() en Smartsheet) */
+function _dateProc(v){
+  var d=_date(v);
+  if(!d) return null;
+  var hoy=new Date().toISOString().slice(0,10);
+  if(d===hoy) return null;
+  return d;
+}
+
+/* Año de aprobación: solo válido si la fecha que lo respalda NO es hoy (=TODAY = en proceso) */
+function _yearProc(fechaResp, anioCol){
+  var raw=_date(fechaResp);
+  var d=_dateProc(fechaResp);
+  if(raw && !d) return null; /* la fecha es hoy → en proceso, sin año de aprobación */
+  if(d) return parseInt(d.slice(0,4),10);
+  return _year(anioCol);
+}
+
 /* ════════════════════════════════════════
    TRANSFORMAR ARN
    ════════════════════════════════════════ */
@@ -2835,11 +2863,12 @@ function transformRN(rows){
 
   function esReingreso(prod){
     if(!prod) return false;
-    return /\([0-9]+\)\s*$/.test(String(prod).trim());
+    /* Detecta (2), (3), (3er), (2da), (3ra), etc. al final */
+    return /\(\s*[0-9]+\s*(?:er|ra|da|do|va|ta|ma|na|\u00aa|\u00ba)?\s*\)\s*$/i.test(String(prod).trim());
   }
   function numIntento(prod){
     if(!prod) return 1;
-    var m=String(prod).trim().match(/\(([0-9]+)\)\s*$/);
+    var m=String(prod).trim().match(/\(\s*([0-9]+)\s*(?:er|ra|da|do|va|ta|ma|na|\u00aa|\u00ba)?\s*\)\s*$/i);
     return m?parseInt(m[1],10):1;
   }
 
@@ -2863,18 +2892,18 @@ function transformRN(rows){
       anioCMN:_year(r['Año CMN']),
       solCMN:solCMN,
       anioPresCMN:_year(r['Año Presentación CMN']),
-      reunionCMN:_date(r['Reunión CMN Real']),
-      oficioCMN:_date(r['Obtención de Oficio de CMN Real']),
+      reunionCMN:_dateProc(r['Reunión CMN Real']),
+      oficioCMN:_dateProc(r['Obtención de Oficio de CMN Real']),
       mesesReunion:_float(r['Meses Obtención de Reunión']),
       mesesOficio:_float(r['Meses Totales Oficio']),
       tEvalCMN:_float(r['Tiempo Evaluación CMN']),
       anioSRN:_year(r['Año SRN']),
       pdt:_clean(r['PDT']),
-      ingresoRN:_date(r['Ingreso RN Real']),
-      obtPrev:_date(r['Obtención Prevención Real']),
-      respPrev:_date(r['Respuesta Prevención Real']),
-      obtResp:_date(r['Obtención de Respuesta Real']),
-      anioAprob:_year(r['Año Aprobación']),
+      ingresoRN:_dateProc(r['Ingreso RN Real']),
+      obtPrev:_dateProc(r['Obtención Prevención Real']),
+      respPrev:_dateProc(r['Respuesta Prevención Real']),
+      obtResp:_dateProc(r['Obtención de Respuesta Real']),
+      anioAprob:_yearProc(r['Obtención de Respuesta Real'], r['Año Aprobación']),
       tEvalInicial:_float(r['Tiempo Evaluación Inicial']),
       tSilanesResp:_float(r['Tiempo SILANES Evaluación RESP prevención']),
       tEvalPrev:_float(r['Tiempo Evaluación Prevención']),
