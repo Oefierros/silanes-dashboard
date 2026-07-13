@@ -717,7 +717,7 @@ tr:hover td{background:#F8FAFC}
       </div>
     </div>
     <div class="card">
-      <div class="ct">¿El resultado CMN influye en la aprobación final?<span class="help-ico">i</span><span class="help-tip">Compara qué porcentaje de proyectos con CMN Favorable vs No Favorable terminaron aprobados en el registro.</span></div>
+      <div class="ct">Porcentaje de dictámenes CMN favorables vs no favorables<span class="help-ico">i</span><span class="help-tip">Del total de proyectos que pasaron por el Comité de Moléculas Nuevas, qué porcentaje obtuvo dictamen Favorable vs No Favorable.</span></div>
       <div id="rn-cmn-rel"></div>
     </div>
     <div class="card">
@@ -2427,18 +2427,29 @@ function renderRNCmn(){
   var favTotal=conCMN.filter(function(d){return d.cmn&&d.cmn.indexOf('FAVORABLE')>=0&&d.cmn.indexOf('NO')<0;}).length;
   var nofavAprob=conCMN.filter(function(d){return d.cmn==='NO FAVORABLE'&&d.estatus==='Aprobado';}).length;
   var nofavTotal=conCMN.filter(function(d){return d.cmn==='NO FAVORABLE';}).length;
+  /* % de CMN favorables vs no favorables sobre el total de CMN (excluyendo NA) */
+  var cmnValidos=conCMN.filter(function(d){return d.cmn&&String(d.cmn).trim().toUpperCase()!=='NA';});
+  var totalCMN=cmnValidos.length;
+  var favC=cmnValidos.filter(function(d){return d.cmn.indexOf('FAVORABLE')>=0&&d.cmn.indexOf('NO')<0;}).length;
+  var nofavC=cmnValidos.filter(function(d){return d.cmn==='NO FAVORABLE';}).length;
+  var pFav=pct(favC,totalCMN), pNoFav=pct(nofavC,totalCMN);
   setHTML('rn-cmn-rel',
-    '<div style="display:flex;gap:16px;flex-wrap:wrap">'+
+    '<div style="font-size:12px;color:#64748B;margin-bottom:12px">De <b style="color:#065A62">'+totalCMN+'</b> proyectos que pasaron por el Comit\u00e9 de Mol\u00e9culas Nuevas:</div>'+
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px">'+
     '<div style="flex:1;min-width:200px;background:#F0FDF4;border-radius:10px;padding:16px;border-left:4px solid #059669">'+
       '<div style="font-size:11px;color:#15803D;font-weight:800;text-transform:uppercase;margin-bottom:6px">CMN Favorable</div>'+
-      '<div style="font-size:28px;font-weight:900;color:#059669">'+pct(favAprob,favTotal)+'%</div>'+
-      '<div style="font-size:12px;color:#64748B">'+favAprob+' de '+favTotal+' llegaron a aprobación</div>'+
+      '<div style="font-size:32px;font-weight:900;color:#059669">'+pFav+'%</div>'+
+      '<div style="font-size:12px;color:#64748B">'+favC+' de '+totalCMN+' dictámenes</div>'+
     '</div>'+
     '<div style="flex:1;min-width:200px;background:#FEF2F2;border-radius:10px;padding:16px;border-left:4px solid #DC2626">'+
       '<div style="font-size:11px;color:#991B1B;font-weight:800;text-transform:uppercase;margin-bottom:6px">CMN No Favorable</div>'+
-      '<div style="font-size:28px;font-weight:900;color:#DC2626">'+pct(nofavAprob,nofavTotal)+'%</div>'+
-      '<div style="font-size:12px;color:#64748B">'+nofavAprob+' de '+nofavTotal+' llegaron a aprobación</div>'+
+      '<div style="font-size:32px;font-weight:900;color:#DC2626">'+pNoFav+'%</div>'+
+      '<div style="font-size:12px;color:#64748B">'+nofavC+' de '+totalCMN+' dictámenes</div>'+
     '</div>'+
+    '</div>'+
+    '<div style="background:#F1F5F9;border-radius:8px;height:26px;display:flex;overflow:hidden">'+
+      (pFav>0?'<div style="background:#059669;width:'+pFav+'%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800">'+pFav+'%</div>':'')+
+      (pNoFav>0?'<div style="background:#DC2626;width:'+pNoFav+'%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800">'+pNoFav+'%</div>':'')+
     '</div>');
 
   // Tabla CMN
