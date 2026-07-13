@@ -2210,7 +2210,8 @@ function renderRNCmnDonut(){
 
 function renderRNAnio(){
   var ym={};
-  RNF.forEach(function(d){if(d.anioAprob&&d.estatus==='Aprobado')ym[d.anioAprob]=(ym[d.anioAprob]||0)+1;});
+  /* Solo aprobados reales: la fecha de aprobación no debe ser hoy (obtResp no null) */
+  RNF.forEach(function(d){if(d.anioAprob&&d.estatus==='Aprobado'&&d.obtResp)ym[d.anioAprob]=(ym[d.anioAprob]||0)+1;});
   var yrs=Object.keys(ym).sort();
   dc('rn-anio');
   var ctx=document.getElementById('rn-anio').getContext('2d');
