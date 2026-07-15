@@ -732,8 +732,18 @@ tr:hover td{background:#F8FAFC}
   <!-- RN: REINGRESOS Y ORIGEN -->
   <div id="rn-pg-reing" class="pg hidden">
     <div class="g3" id="rn-reing-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Intentos de registro por proyecto<span class="help-ico">i</span><span class="help-tip">Cuántos proyectos salieron con un solo intento de registro y cuántos necesitaron un segundo intento (reingreso). Se cuenta por proyecto consolidado, usando la columna oficial "No. de intento registro".</span></div>
+        <div style="height:230px"><canvas id="rn-int-reg">Intentos registro</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Intentos de CMN por proyecto<span class="help-ico">i</span><span class="help-tip">Cuántas veces cada proyecto pasó por el Comité de Moléculas Nuevas. Algunos necesitaron 2, 3 o hasta 4 intentos. Se cuenta por proyecto consolidado, usando la columna oficial "No. de intento CMN".</span></div>
+        <div style="height:230px"><canvas id="rn-int-cmn">Intentos CMN</canvas></div>
+      </div>
+    </div>
     <div class="card">
-      <div class="ct">Reingresos (2º intento) — primer resultado vs resultado actual<span class="help-ico">i</span><span class="help-tip">Productos que se sometieron una segunda vez (marcados con (2) en su nombre). Muestra que su primer intento fue Desecho y cuál es su resultado en el segundo intento.</span></div>
+      <div class="ct">Reingresos de registro — historia de cada proyecto<span class="help-ico">i</span><span class="help-tip">Proyectos que necesitaron un segundo intento de registro. Muestra el resultado del primer intento y el estatus actual (última entrada).</span></div>
       <div class="g2" id="rn-reing-cards"></div>
     </div>
     <div class="g2">
@@ -760,9 +770,9 @@ tr:hover td{background:#F8FAFC}
         <span id="rn-det-cnt" style="font-size:11px;font-weight:700;color:#0A9AA6"></span>
       </div>
       <div class="tw"><table><thead><tr>
-        <th>Proyecto</th><th>Producto</th><th>Origen</th><th>F.F</th><th>Concentración</th>
-        <th>Resultado CMN</th><th>Estatus RN</th><th>Año SRN</th><th>Ingreso RN</th>
-        <th>Año Aprob.</th><th>T. Total</th><th>Reingreso</th>
+        <th style="text-align:center">Int.</th><th>Proyecto</th><th>Producto</th><th>Origen</th><th>F.F</th>
+        <th style="text-align:center">Int. Reg.</th><th style="text-align:center">Int. CMN</th><th>Estatus</th><th>Año SRN</th>
+        <th>Año Aprob.</th><th>T. Total</th>
       </tr></thead><tbody id="rn-det-body"></tbody></table></div>
     </div>
   </div>
@@ -1996,11 +2006,14 @@ function renderARIDet(){
    LÓGICA ANÁLISIS DE REGISTROS NUEVOS
 ══════════════════════════════════════ */
 var RNF = [];
+var RNE = [];
 var RNCFG = {
   'Aprobado':             {bg:'#DCFCE7',c:'#15803D',bar:'#059669'},
   'Evaluación':           {bg:'#CFFAFE',c:'#155E75',bar:'#0891B2'},
   'Prevenido Contestado': {bg:'#FEF3C7',c:'#92400E',bar:'#D97706'},
   'Desecho':              {bg:'#FEE2E2',c:'#991B1B',bar:'#DC2626'},
+  'No iniciado':          {bg:'#F3F4F6',c:'#4B5563',bar:'#9CA3AF'},
+  'Cancelado':            {bg:'#EDE9FE',c:'#5B21B6',bar:'#7C3AED'},
   'Sin dato':             {bg:'#F1F5F9',c:'#64748B',bar:'#94A3B8'}
 };
 function rnclr(e){return (RNCFG[e]||RNCFG['Sin dato']).bar;}
@@ -2030,9 +2043,17 @@ function applyRN(){
     if(ff && d.ff!==ff) return false;
     return true;
   });
-  var unicos=RNF.filter(function(d){return d.numIntento===1;}).length;
-  var reing=RNF.filter(function(d){return d.numIntento>=2;}).length;
-  setTC('rn-info',RNF.length+' ingresos ('+unicos+' únicos + '+reing+' reingresos)');
+  // Entradas individuales filtradas (para el Detalle) - mismos filtros
+  RNE=(RN.entradas||[]).filter(function(d){
+    if(fy){ var yr=fybase==='srn'?d.anioSRN:d.anioAprob; if(String(yr)!==fy) return false; }
+    if(fo && d.origen!==fo) return false;
+    if(fe && d.estatus!==fe) return false;
+    if(ff && d.ff!==ff) return false;
+    return true;
+  });
+  var unicos=RNF.filter(function(d){return !d.maxIntentoReg||d.maxIntentoReg<=1;}).length;
+  var conReing=RNF.filter(function(d){return d.maxIntentoReg>=2;}).length;
+  setTC('rn-info',RNF.length+' proyectos ('+unicos+' únicos + '+conReing+' con reingreso)');
   renderRN();
 }
 
@@ -2042,35 +2063,30 @@ function renderRN(){
 }
 
 function renderRNKPIs(){
-  var t=RNF.length;
-  var unicos=RNF.filter(function(d){return d.numIntento===1;}).length;
-  var reing2=RNF.filter(function(d){return d.numIntento===2;}).length;
-  var reing3=RNF.filter(function(d){return d.numIntento>=3;}).length;
+  var t=RNF.length; /* proyectos consolidados */
+  var unicos=RNF.filter(function(d){return !d.maxIntentoReg||d.maxIntentoReg<=1;}).length;
+  var conReing=RNF.filter(function(d){return d.maxIntentoReg>=2;}).length;
   var aprob=RNF.filter(function(d){return d.estatus==='Aprobado';}).length;
   var eval2=RNF.filter(function(d){return d.estatus==='Evaluación';}).length;
   var prev=RNF.filter(function(d){return d.estatus==='Prevenido Contestado';}).length;
   var des=RNF.filter(function(d){return d.estatus==='Desecho';}).length;
+  var noini=RNF.filter(function(d){return d.estatus==='No iniciado';}).length;
   var conCMN=RNF.filter(function(d){return d.tieneCMN;}).length;
-  var tiempos=RNF.filter(function(d){return d.tTotal&&d.tTotal>0;}).map(function(d){return d.tTotal;});
-  var tProm=tiempos.length?Math.round(tiempos.reduce(function(a,b){return a+b;},0)/tiempos.length):0;
+  /* Proyectos que necesitaron más de 1 intento de CMN */
+  var multiCMN=RNF.filter(function(d){return d.maxIntentoCMN>=2;}).length;
 
   /* Título dinámico del periodo */
   actualizarPeriodoRN();
 
-  var reingTxt='';
-  if(reing2)reingTxt+=reing2+' de 2\u00aa vez';
-  if(reing3)reingTxt+=(reingTxt?', ':'')+reing3+' de 3\u00aa vez';
-  if(!reingTxt)reingTxt='sin reingresos';
-
   var items=[
-    {l:'Total Ingresos',v:t,s:unicos+' \u00fanicos + '+(reing2+reing3)+' reingresos',c:'#065A62',p:100},
-    {l:'Proyectos \u00danicos',v:unicos,s:'1er intento (sin repetir)',c:'#087A84',p:pct(unicos,t)},
-    {l:'Reingresos',v:reing2+reing3,s:reingTxt,c:'#7C3AED',p:pct(reing2+reing3,t)},
-    {l:'Aprobados',v:aprob,s:pct(aprob,t)+'% tasa aprobaci\u00f3n',c:'#059669',p:pct(aprob,t)},
-    {l:'Desechos',v:des,s:pct(des,t)+'% 1er intento no otorgado',c:'#DC2626',p:pct(des,t)},
+    {l:'Total Proyectos',v:t,s:unicos+' \u00fanicos + '+conReing+' con reingreso',c:'#065A62',p:100},
+    {l:'Proyectos \u00danicos',v:unicos,s:'1 solo intento de registro',c:'#087A84',p:pct(unicos,t)},
+    {l:'Con Reingreso',v:conReing,s:'necesitaron 2\u00ba intento registro',c:'#7C3AED',p:pct(conReing,t)},
+    {l:'Aprobados',v:aprob,s:pct(aprob,t)+'% del total',c:'#059669',p:pct(aprob,t)},
+    {l:'Desechos',v:des,s:pct(des,t)+'% desechados',c:'#DC2626',p:pct(des,t)},
     {l:'En Evaluaci\u00f3n',v:eval2,s:'en proceso',c:'#0891B2',p:pct(eval2,t)},
-    {l:'Prevenidos',v:prev,s:'contestados',c:'#D97706',p:pct(prev,t)},
-    {l:'Con CMN',v:conCMN,s:pct(conCMN,t)+'% pas\u00f3 comit\u00e9',c:'#BE185D',p:pct(conCMN,t)}
+    {l:'No Iniciados',v:noini,s:'a\u00fan sin ingresar a RN',c:'#9CA3AF',p:pct(noini,t)},
+    {l:'CMN Multi-intento',v:multiCMN,s:'necesitaron 2+ veces el comit\u00e9',c:'#BE185D',p:pct(multiCMN,t)}
   ];
   setHTML('rn-kpis',items.map(function(k){
     return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div>'+
@@ -2106,10 +2122,9 @@ function actualizarPeriodoRN(){
 }
 
 function renderRNFunnel(){
-  var t=RNF.length;
-  var unicos=RNF.filter(function(d){return d.numIntento===1;}).length;
-  var reing2=RNF.filter(function(d){return d.numIntento===2;}).length;
-  var reing3=RNF.filter(function(d){return d.numIntento>=3;}).length;
+  var t=RNF.length; /* consolidados */
+  var unicos=RNF.filter(function(d){return !d.maxIntentoReg||d.maxIntentoReg<=1;}).length;
+  var conReing=RNF.filter(function(d){return d.maxIntentoReg>=2;}).length;
   var conCMN=RNF.filter(function(d){return d.tieneCMN;}).length;
   var ingreso=RNF.filter(function(d){return d.ingresoRN;}).length;
   var prev=RNF.filter(function(d){return d.obtPrev;}).length;
@@ -2117,7 +2132,7 @@ function renderRNFunnel(){
   var des=RNF.filter(function(d){return d.estatus==='Desecho';}).length;
 
   var stages=[
-    {l:'Total Ingresos',v:t,c:'#065A62'},
+    {l:'Total Proyectos',v:t,c:'#065A62'},
     {l:'Pasaron CMN',v:conCMN,c:'#BE185D'},
     {l:'Ingreso RN',v:ingreso,c:'#7C3AED'},
     {l:'Con prevención',v:prev,c:'#D97706'},
@@ -2126,23 +2141,21 @@ function renderRNFunnel(){
   var maxV=t||1;
   var html='<div style="display:flex;flex-direction:column;gap:8px;padding:8px 0">';
 
-  // Tarjeta de desglose de ingresos (arriba del embudo)
   html+='<div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">'+
     '<div style="flex:1;min-width:120px;background:#0A9AA615;border-radius:8px;padding:10px 12px;border-left:3px solid #065A62">'+
-      '<div style="font-size:10px;color:#065A62;font-weight:800;text-transform:uppercase">Total Ingresos</div>'+
+      '<div style="font-size:10px;color:#065A62;font-weight:800;text-transform:uppercase">Total Proyectos</div>'+
       '<div style="font-size:22px;font-weight:900;color:#065A62">'+t+'</div>'+
+      '<div style="font-size:10px;color:#64748B">proyectos únicos (consolidados)</div>'+
     '</div>'+
     '<div style="flex:1;min-width:120px;background:#087A8415;border-radius:8px;padding:10px 12px;border-left:3px solid #087A84">'+
-      '<div style="font-size:10px;color:#087A84;font-weight:800;text-transform:uppercase">Proyectos únicos</div>'+
+      '<div style="font-size:10px;color:#087A84;font-weight:800;text-transform:uppercase">Sin reingreso</div>'+
       '<div style="font-size:22px;font-weight:900;color:#087A84">'+unicos+'</div>'+
+      '<div style="font-size:10px;color:#64748B">salieron al 1er intento</div>'+
     '</div>'+
     '<div style="flex:1;min-width:120px;background:#7C3AED15;border-radius:8px;padding:10px 12px;border-left:3px solid #7C3AED">'+
-      '<div style="font-size:10px;color:#7C3AED;font-weight:800;text-transform:uppercase">Reingreso 2ª vez</div>'+
-      '<div style="font-size:22px;font-weight:900;color:#7C3AED">'+reing2+'</div>'+
-    '</div>'+
-    '<div style="flex:1;min-width:120px;background:#BE185D15;border-radius:8px;padding:10px 12px;border-left:3px solid #BE185D">'+
-      '<div style="font-size:10px;color:#BE185D;font-weight:800;text-transform:uppercase">Reingreso 3ª vez</div>'+
-      '<div style="font-size:22px;font-weight:900;color:#BE185D">'+reing3+'</div>'+
+      '<div style="font-size:10px;color:#7C3AED;font-weight:800;text-transform:uppercase">Con reingreso</div>'+
+      '<div style="font-size:22px;font-weight:900;color:#7C3AED">'+conReing+'</div>'+
+      '<div style="font-size:10px;color:#64748B">necesitaron 2\u00ba intento</div>'+
     '</div>'+
   '</div>';
 
@@ -2158,7 +2171,6 @@ function renderRNFunnel(){
       '<div style="width:44px;font-size:11px;color:#94A3B8;font-weight:700">'+w+'%</div>'+
     '</div>';
   });
-  // Salida de desechos
   html+='<div style="display:flex;align-items:center;gap:12px;margin-top:4px;padding-top:10px;border-top:1px dashed #E2E8F0">'+
     '<div style="width:130px;font-size:12px;font-weight:700;color:#DC2626;text-align:right;flex-shrink:0">⤷ Desechos (salida)</div>'+
     '<div style="flex:1;background:#FEE2E2;border-radius:8px;height:28px;position:relative;overflow:hidden">'+
@@ -2171,6 +2183,8 @@ function renderRNFunnel(){
   html+='</div>';
   setHTML('rn-funnel',html);
 }
+
+
 
 function renderRNDonut(){
   var cc={};RNF.forEach(function(d){cc[d.estatus]=(cc[d.estatus]||0)+1;});
@@ -2467,32 +2481,74 @@ function renderRNCmn(){
 }
 
 function renderRNReing(){
-  var reing=RNF.filter(function(d){return d.esReingreso;});
-  var reingAprob=reing.filter(function(d){return d.estatus==='Aprobado';}).length;
-  var des=RNF.filter(function(d){return d.estatus==='Desecho';}).length;
+  var t=RNF.length;
+  var conReing=RNF.filter(function(d){return d.maxIntentoReg>=2;});
+  var reingAprob=conReing.filter(function(d){return d.estatus==='Aprobado';}).length;
+  var multiCMN=RNF.filter(function(d){return d.maxIntentoCMN>=2;}).length;
   setHTML('rn-reing-kpis',[
-    {l:'Reingresos (2º intento)',v:reing.length,s:'productos resometidos',c:'#7C3AED'},
-    {l:'Reingresos Aprobados',v:reingAprob,s:pct(reingAprob,reing.length)+'% éxito en 2do',c:'#059669'},
-    {l:'Desechos (1er intento)',v:des,s:'candidatos a reingreso',c:'#DC2626'}
+    {l:'Con Reingreso Registro',v:conReing.length,s:'necesitaron 2º intento',c:'#7C3AED'},
+    {l:'Reingresos Aprobados',v:reingAprob,s:pct(reingAprob,conReing.length)+'% éxito en 2do',c:'#059669'},
+    {l:'Multi-intento CMN',v:multiCMN,s:'2+ veces en el comité',c:'#BE185D'}
   ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
 
-  // Tarjetas de reingresos
-  setHTML('rn-reing-cards',reing.length?reing.map(function(d){
+  /* ── Gráfico 1: Intentos de registro por proyecto ── */
+  var regDist={1:0,2:0};
+  RNF.forEach(function(d){
+    var n=d.maxIntentoReg||1; if(n<1)n=1;
+    if(n>=2)regDist[2]++; else regDist[1]++;
+  });
+  dc('rn-int-reg');
+  var ctxR=document.getElementById('rn-int-reg').getContext('2d');
+  CH['rn-int-reg']=new Chart(ctxR,{type:'bar',
+    data:{labels:['1 intento (único)','2 intentos (reingreso)'],datasets:[{label:'Proyectos',
+      data:[regDist[1],regDist[2]],backgroundColor:['#087A84','#7C3AED'],borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:function(c){return c.parsed.y+' proyectos';}}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
+
+  /* ── Gráfico 2: Intentos de CMN por proyecto ── */
+  var cmnDist={};
+  RNF.forEach(function(d){var n=d.maxIntentoCMN||0; if(n>=1){cmnDist[n]=(cmnDist[n]||0)+1;}});
+  var cmnKeys=Object.keys(cmnDist).map(Number).sort(function(a,b){return a-b;});
+  dc('rn-int-cmn');
+  var ctxC=document.getElementById('rn-int-cmn').getContext('2d');
+  var cmnColors={1:'#0A9AA6',2:'#D97706',3:'#BE185D',4:'#8B0000'};
+  CH['rn-int-cmn']=new Chart(ctxC,{type:'bar',
+    data:{labels:cmnKeys.map(function(k){return k+(k===1?' intento':' intentos');}),datasets:[{label:'Proyectos',
+      data:cmnKeys.map(function(k){return cmnDist[k];}),
+      backgroundColor:cmnKeys.map(function(k){return cmnColors[k]||'#64748B';}),borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:function(c){return c.parsed.y+' proyectos con '+cmnKeys[c.dataIndex]+' intento(s) de CMN';}}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
+
+  /* ── Tarjetas de reingreso: historia real (primer intento vs actual) ── */
+  setHTML('rn-reing-cards',conReing.length?conReing.map(function(d){
     var cf=RNCFG[d.estatus]||RNCFG['Sin dato'];
+    /* Buscar el primer intento en la historia (menor intento de registro) */
+    var primero=null;
+    if(d.historia){
+      d.historia.forEach(function(h){
+        if(!primero || (h.intentoReg||1)<(primero.intentoReg||1)) primero=h;
+      });
+    }
+    var estatusPrimero=primero?primero.estatus:'Desecho';
+    var cfP=RNCFG[estatusPrimero]||RNCFG['Desecho'];
     return'<div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:5px solid '+cf.bar+'">'+
-      '<div style="font-weight:800;font-size:13px;margin-bottom:8px">'+(d.prod||'--')+'</div>'+
+      '<div style="font-weight:800;font-size:13px;margin-bottom:8px">'+(d.prod||'--')+'<span style="font-size:10px;color:#94A3B8;font-weight:600"> · '+(d.base||'')+'</span></div>'+
       '<div style="display:flex;gap:10px;align-items:center">'+
-        '<div style="flex:1;background:#FEE2E2;border-radius:8px;padding:8px;text-align:center">'+
-          '<div style="font-size:9px;color:#991B1B;font-weight:800;text-transform:uppercase">1er intento</div>'+
-          '<div style="font-size:13px;font-weight:900;color:#DC2626">Desecho</div>'+
+        '<div style="flex:1;background:'+cfP.bg+';border-radius:8px;padding:8px;text-align:center">'+
+          '<div style="font-size:9px;color:'+cfP.c+';font-weight:800;text-transform:uppercase">1er intento</div>'+
+          '<div style="font-size:13px;font-weight:900;color:'+cfP.c+'">'+estatusPrimero+'</div>'+
         '</div>'+
         '<div style="color:#94A3B8;font-size:18px">→</div>'+
         '<div style="flex:1;background:'+cf.bg+';border-radius:8px;padding:8px;text-align:center">'+
-          '<div style="font-size:9px;color:'+cf.c+';font-weight:800;text-transform:uppercase">2do intento</div>'+
+          '<div style="font-size:9px;color:'+cf.c+';font-weight:800;text-transform:uppercase">Actual (2do)</div>'+
           '<div style="font-size:13px;font-weight:900;color:'+cf.c+'">'+d.estatus+'</div>'+
         '</div>'+
       '</div></div>';
-  }).join(''):'<div style="padding:16px;color:#94A3B8;font-size:12px">Sin reingresos en este filtro</div>');
+  }).join(''):'<div style="padding:16px;color:#94A3B8;font-size:12px">Sin reingresos de registro en este filtro</div>');
 
   // Origen
   var om={};RNF.forEach(function(d){var o=d.origen||'Sin dato';if(!om[o])om[o]={total:0,aprob:0};om[o].total++;if(d.estatus==='Aprobado')om[o].aprob++;});
@@ -2501,7 +2557,7 @@ function renderRNReing(){
   var ctx=document.getElementById('rn-origen').getContext('2d');
   CH['rn-origen']=new Chart(ctx,{type:'bar',
     data:{labels:origs,datasets:[
-      {label:'Total',data:origs.map(function(o){return om[o].total;}),backgroundColor:'rgba(59,130,246,0.25)',borderColor:'#0A9AA6',borderWidth:2,borderRadius:4},
+      {label:'Total',data:origs.map(function(o){return om[o].total;}),backgroundColor:'rgba(10,154,166,0.25)',borderColor:'#0A9AA6',borderWidth:2,borderRadius:4},
       {label:'Aprobados',data:origs.map(function(o){return om[o].aprob;}),backgroundColor:'#059669',borderRadius:4}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
@@ -2534,24 +2590,57 @@ function renderRNReing(){
 function renderRNDet(){
   var q=(getEl('rn-srch')?document.getElementById('rn-srch').value:'').toLowerCase();
   var data=RNF.filter(function(d){
-    return !q||(d.prod||'').toLowerCase().indexOf(q)>=0||(d.proyecto||'').toLowerCase().indexOf(q)>=0||(d.origen||'').toLowerCase().indexOf(q)>=0;
+    return !q||(d.prod||'').toLowerCase().indexOf(q)>=0||(d.proyecto||'').toLowerCase().indexOf(q)>=0||(d.origen||'').toLowerCase().indexOf(q)>=0||(d.base||'').toLowerCase().indexOf(q)>=0;
   });
   setTC('rn-det-cnt',data.length+' proyectos');
   setHTML('rn-det-body',data.map(function(d,i){
-    return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'">'+
-      '<td style="font-weight:700;font-size:10px">'+(d.proyecto||'--')+'</td>'+
+    var tieneHist=d.historia&&d.historia.length>1;
+    var rid='rnhist-'+i;
+    var toggle=tieneHist
+      ?'<span onclick="rnToggleHist(\''+rid+'\',this)" style="cursor:pointer;color:#7C3AED;font-weight:800;user-select:none;font-size:11px">▸ '+d.historia.length+'</span>'
+      :'<span style="color:#CBD5E1">1</span>';
+    var fila='<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'">'+
+      '<td style="text-align:center">'+toggle+'</td>'+
+      '<td style="font-weight:700;font-size:10px">'+(d.base||d.proyecto||'--')+'</td>'+
       '<td style="font-weight:600;max-width:150px">'+(d.prod||'--')+'</td>'+
       '<td style="font-size:10px">'+(d.origen||'--')+'</td>'+
       '<td style="font-size:10px">'+(d.ff||'--')+'</td>'+
-      '<td style="font-size:10px;color:#64748B">'+(d.conc||'--')+'</td>'+
-      '<td style="font-size:9px;color:'+(d.cmn==='NO FAVORABLE'?'#DC2626':'#059669')+'">'+(d.cmn||'--')+'</td>'+
+      '<td style="text-align:center;font-size:10px">'+(d.maxIntentoReg||1)+'</td>'+
+      '<td style="text-align:center;font-size:10px">'+(d.maxIntentoCMN||'--')+'</td>'+
       '<td>'+rnbadge(d.estatus)+'</td>'+
       '<td>'+(d.anioSRN||'--')+'</td>'+
-      '<td style="font-family:monospace;font-size:10px;color:#64748B">'+(d.ingresoRN||'--')+'</td>'+
       '<td>'+(d.anioAprob||'--')+'</td>'+
-      '<td style="font-weight:700;color:#7C3AED">'+(d.tTotal?d.tTotal.toFixed(1)+'m':'--')+'</td>'+
-      '<td style="text-align:center">'+(d.esReingreso?'<span class="badge" style="background:#EDE9FE;color:#5B21B6">2º</span>':'--')+'</td></tr>';
+      '<td style="font-weight:700;color:#7C3AED">'+(d.tTotal?d.tTotal.toFixed(1)+'m':'--')+'</td></tr>';
+    /* Filas de historia (ocultas por defecto) */
+    if(tieneHist){
+      /* ordenar historia por intento */
+      var hist=d.historia.slice().sort(function(a,b){
+        var ra=a.intentoReg||0,rb=b.intentoReg||0; if(ra!==rb)return ra-rb;
+        return (a.intentoCMN||0)-(b.intentoCMN||0);
+      });
+      hist.forEach(function(h){
+        fila+='<tr class="'+rid+'" style="display:none;background:#F8FAFF">'+
+          '<td></td>'+
+          '<td style="font-size:9px;color:#7C3AED;font-weight:700">'+(h.proyecto||'--')+'</td>'+
+          '<td style="font-size:10px;color:#64748B" colspan="2">↳ '+(h.prod1||h.prod||'--')+'</td>'+
+          '<td style="font-size:10px">'+(h.ff||'--')+'</td>'+
+          '<td style="text-align:center;font-size:10px">'+(h.intentoReg||'--')+'</td>'+
+          '<td style="text-align:center;font-size:10px">'+(h.intentoCMN||'--')+'</td>'+
+          '<td>'+rnbadge(h.estatus)+'</td>'+
+          '<td>'+(h.anioSRN||'--')+'</td>'+
+          '<td>'+(h.anioAprob||'--')+'</td>'+
+          '<td style="font-size:10px;color:#64748B">'+(h.tTotal?h.tTotal.toFixed(1)+'m':'--')+'</td></tr>';
+      });
+    }
+    return fila;
   }).join(''));
+}
+
+function rnToggleHist(cls,el){
+  var rows=document.querySelectorAll('.'+cls);
+  var abierto=el.textContent.charAt(0)==='▾';
+  rows.forEach(function(r){r.style.display=abierto?'none':'table-row';});
+  el.textContent=(abierto?'▸ ':'▾ ')+el.textContent.slice(2);
 }
 
 /* Poblar dropdown de años dinámicamente */
@@ -2953,15 +3042,12 @@ function mostrarCargando(estado){
 function transformRN(rows){
   var records=[];
 
-  function esReingreso(prod){
-    if(!prod) return false;
-    /* Detecta (2), (3), (3er), (2da), (3ra), etc. al final */
-    return /\(\s*[0-9]+\s*(?:er|ra|da|do|va|ta|ma|na|\u00aa|\u00ba)?\s*\)\s*$/i.test(String(prod).trim());
-  }
-  function numIntento(prod){
-    if(!prod) return 1;
-    var m=String(prod).trim().match(/\(\s*([0-9]+)\s*(?:er|ra|da|do|va|ta|ma|na|\u00aa|\u00ba)?\s*\)\s*$/i);
-    return m?parseInt(m[1],10):1;
+  /* Número base del proyecto = todo antes del primer guion (ej. "30601-2" → "30601") */
+  function baseProyecto(num){
+    if(!num) return null;
+    var s=String(num).trim();
+    var m=s.match(/^([^-]+)/);
+    return m?m[1].trim():s;
   }
 
   rows.forEach(function(r){
@@ -2972,11 +3058,15 @@ function transformRN(rows){
     var estatus=_clean(r['RN Resultado']) || 'Sin dato';
     var cmn=_clean(r['Resultado CMN']);
     var solCMN=_date(r['solicitud CMN Real']);
+    var intReg=_int(r['No. de intento registro']);
+    var intCMN=_int(r['No. de intento CMN']);
 
     records.push({
       proyecto:proyecto,
+      base:baseProyecto(proyecto),
       origen:_clean(r['Origen']),
       prod:prod,
+      prod1:_clean(r['Producto 1']),
       ff:_clean(r['F.F']),
       conc:_clean(r['Concentración']),
       cmn:cmn,
@@ -3001,13 +3091,57 @@ function transformRN(rows){
       tEvalPrev:_float(r['Tiempo Evaluación Prevención']),
       tEvalRN:_float(r['Tiempo Evaluación RN']),
       tTotal:_float(r['Tiempo Total Proceso Incluyendo CMN']),
-      esReingreso:esReingreso(prod),
-      numIntento:numIntento(prod),
+      intentoReg:intReg,   /* No. de intento de registro (columna oficial) */
+      intentoCMN:intCMN,   /* No. de intento de CMN (columna oficial) */
+      numIntento:intReg||1, /* compatibilidad con código previo */
+      esReingreso:(intReg&&intReg>1)?true:false,
       tieneCMN:!!solCMN
     });
   });
 
-  return {records:records};
+  /* ── CONSOLIDACIÓN por número base de proyecto ── */
+  /* Cada proyecto base agrupa sus intentos. La "última entrada" (más reciente):
+     mayor intento de registro; si empatan/nulos, mayor intento CMN; luego fecha ingreso. */
+  var gruposMap={};
+  records.forEach(function(rec){
+    var b=rec.base||rec.proyecto||rec.prod;
+    if(!gruposMap[b]) gruposMap[b]=[];
+    gruposMap[b].push(rec);
+  });
+
+  function esMasReciente(a,b){
+    /* devuelve true si a es más reciente que b */
+    var ra=a.intentoReg||0, rb=b.intentoReg||0;
+    if(ra!==rb) return ra>rb;
+    var ca=a.intentoCMN||0, cb=b.intentoCMN||0;
+    if(ca!==cb) return ca>cb;
+    var fa=a.ingresoRN||'', fb=b.ingresoRN||'';
+    return fa>fb;
+  }
+
+  var consolidados=[];
+  Object.keys(gruposMap).forEach(function(b){
+    var g=gruposMap[b];
+    /* Ordenar para encontrar la última entrada */
+    var ultima=g[0];
+    g.forEach(function(rec){ if(esMasReciente(rec,ultima)) ultima=rec; });
+    /* Máximos intentos acumulados en la historia */
+    var maxReg=0,maxCMN=0;
+    g.forEach(function(rec){
+      if(rec.intentoReg&&rec.intentoReg>maxReg)maxReg=rec.intentoReg;
+      if(rec.intentoCMN&&rec.intentoCMN>maxCMN)maxCMN=rec.intentoCMN;
+    });
+    /* El proyecto consolidado usa los datos de la última entrada + historia */
+    var cons={};
+    for(var k in ultima){ if(ultima.hasOwnProperty(k)) cons[k]=ultima[k]; }
+    cons.entradas=g.length;         /* cuántas filas/intentos tiene */
+    cons.maxIntentoReg=maxReg;      /* intentos de registro acumulados */
+    cons.maxIntentoCMN=maxCMN;      /* intentos de CMN acumulados */
+    cons.historia=g;                /* todas las entradas para el detalle */
+    consolidados.push(cons);
+  });
+
+  return {records:consolidados, entradas:records};
 }
 
 
