@@ -79,6 +79,20 @@ tr:hover td{background:#F8FAFC}
 .help-tip{position:absolute;left:0;top:calc(100% + 8px);width:300px;max-width:85vw;background:rgba(15,23,42,0.95);color:#F1F5F9;padding:11px 13px;border-radius:9px;font-size:11px;font-weight:400;line-height:1.5;letter-spacing:0;text-transform:none;z-index:1000;opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .18s,transform .18s,visibility .18s;box-shadow:0 8px 28px rgba(0,0,0,.28);pointer-events:none;backdrop-filter:blur(2px);}
 .help-ico:hover + .help-tip{opacity:1;visibility:visible;transform:translateY(0);}
 .help-tip::before{content:'';position:absolute;bottom:100%;left:14px;border:6px solid transparent;border-bottom-color:rgba(15,23,42,0.95);}
+
+/* ══ Multi-select dropdown con checkboxes ══ */
+.ms{position:relative;display:inline-block;vertical-align:middle}
+.ms-btn{font-size:11px;padding:5px 26px 5px 10px;border-radius:7px;border:1px solid #0A9AA6;background:#065A62;color:#fff;cursor:pointer;font-weight:600;white-space:nowrap;position:relative;min-width:90px;text-align:left;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.ms-btn::after{content:'▾';position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:9px;opacity:.8}
+.ms-btn.act{background:#E2001A;border-color:#E2001A}
+.ms-panel{display:none;position:absolute;z-index:200;top:calc(100% + 4px);left:0;background:#fff;border:1px solid #E2E8F0;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.16);min-width:180px;max-width:280px;max-height:280px;overflow-y:auto;padding:6px}
+.ms-panel.open{display:block}
+.ms-opt{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;cursor:pointer;font-size:12px;color:#1F2937;font-weight:500}
+.ms-opt:hover{background:#F1F5F9}
+.ms-opt input{width:15px;height:15px;accent-color:#087A84;cursor:pointer;margin:0}
+.ms-head{display:flex;gap:6px;padding:4px 6px 8px;border-bottom:1px solid #F1F5F9;margin-bottom:4px}
+.ms-head button{flex:1;font-size:10px;padding:4px;border-radius:5px;border:1px solid #E2E8F0;background:#F8FAFC;color:#475569;cursor:pointer;font-weight:700}
+.ms-head button:hover{background:#E0F2F3;color:#065A62;border-color:#087A84}
 </style>
 </head>
 <body>
@@ -121,27 +135,10 @@ tr:hover td{background:#F8FAFC}
   <!-- Filtros ARN -->
   <div class="sub-hdr">
     <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
-    <select id="a-fy" onchange="applyARN()">
-      <option value="">Todos los años</option>
-      <option>2025</option><option>2026</option><option>2027</option>
-      <option>2028</option><option>2029</option><option>2030</option>
-    </select>
-    <select id="a-ft" onchange="applyARN()">
-      <option value="">Todos los tipos</option>
-      <option>MCR</option><option>Prorroga</option><option>BPF/Licencia sanitaria</option>
-      <option>Corrección interna</option><option>Controlados</option><option>EL</option><option>Aviso</option>
-    </select>
-    <select id="a-fr" onchange="applyARN()">
-      <option value="">Todos los responsables</option>
-      <option>Ivan Torres Martinez</option><option>Itzel Flores Portilla</option>
-      <option>Karla Cristina Jiménez García</option><option>Monica Mezquita Alcocer</option>
-      <option>Alejandro Oviedo Becerril</option>
-    </select>
-    <select id="a-fry" onchange="applyARN()">
-      <option value="">Año resolución: Todos</option>
-      <option>Sin resolución</option>
-      <option>2025</option><option>2026</option>
-    </select>
+    <div id="a-fy"></div>
+    <div id="a-ft"></div>
+    <div id="a-fr"></div>
+    <div id="a-fry"></div>
     <span class="info" id="a-info">150 trámites</span>
   </div>
   <!-- Tabs ARN -->
@@ -275,28 +272,10 @@ tr:hover td{background:#F8FAFC}
   <!-- Filtros Pagos -->
   <div class="sub-hdr">
     <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
-    <select id="p-fy" onchange="applyPAG()">
-      <option value="">Todos los años</option>
-      <option value="2025">2025</option><option value="2026">2026</option>
-    </select>
-    <select id="p-fm" onchange="applyPAG()">
-      <option value="">Todos los meses</option>
-      <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-      <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-    </select>
-    <select id="p-ft" onchange="applyPAG()">
-      <option value="">Todos los trámites</option>
-      <option>P.Import</option><option>Permiso Publicidad</option><option>MCR</option>
-      <option>Protocolo</option><option>Permiso Venta</option><option>Prórroga</option>
-      <option>Visita y Verificación</option><option>Permiso Adquisición</option>
-      <option>Ubicación Geo</option><option>RN</option><option>Multa</option>
-    </select>
-    <select id="p-fr" onchange="applyPAG()">
-      <option value="">Todos los responsables</option>
-      <option>M. Mezquita</option><option>I. Flores</option><option>MA. Flores</option>
-      <option>A. Oviedo</option><option>JC.Vargas</option><option>I. Torres</option>
-      <option>D. Castillo</option><option>K. Jimenez</option>
-    </select>
+    <div id="p-fy"></div>
+    <div id="p-fm"></div>
+    <div id="p-ft"></div>
+    <div id="p-fr"></div>
     <select id="p-fc" style="display:none">
       <option value="">Todas las llaves</option>
       <option value="✅">✅ Confirmadas</option><option value="⚠️">⚠️ Pendientes</option>
@@ -455,29 +434,10 @@ tr:hover td{background:#F8FAFC}
 <div id="uni-ari" class="universe">
   <div class="sub-hdr">
     <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
-    <select id="ri-fp" onchange="applyARI()">
-      <option value="">Todos los paises</option>
-      <option>Guatemala</option><option>Nicaragua</option><option>Honduras</option>
-      <option>El Salvador</option><option>República Dominicana</option>
-      <option>Colombia</option><option>EUA</option>
-    </select>
-    <select id="ri-ft" onchange="applyARI()">
-      <option value="">Todos los tipos</option>
-      <option>MODIFICACIÓN / NOTIFICACIÓN</option><option>NUEVO REGISTRO</option>
-      <option>RENOVACIÓN</option><option>PERMISO EXPORTACIÓN</option>
-      <option>RENOVACIÓN BPM INVIMA</option>
-    </select>
-    <select id="ri-fd" onchange="applyARI()">
-      <option value="">Todos los dictamenes</option>
-      <option>APROBADO / CONCLUIDO</option><option>PROGRAMADO</option>
-      <option>REPROGRAMADO</option><option>EN EVALUACIÓN</option>
-      <option>CANCELADO</option><option>PREVENIDO POR CONTESTAR</option>
-      <option>RECHAZADO</option><option>PAGADO</option>
-    </select>
-    <select id="ri-fa" onchange="applyARI()">
-      <option value="">Todos los años</option>
-      <option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option>
-    </select>
+    <div id="ri-fp"></div>
+    <div id="ri-ft"></div>
+    <div id="ri-fd"></div>
+    <div id="ri-fa"></div>
     <span class="info" id="ri-info">443 trámites</span>
   </div>
   <div class="sec-tabs">
@@ -621,27 +581,14 @@ tr:hover td{background:#F8FAFC}
   <div id="rn-content">
   <div class="sub-hdr">
     <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
-    <select id="rn-fy" onchange="applyRN()">
-      <option value="">Todos los años</option>
-    </select>
-    <select id="rn-fybase" onchange="applyRN()">
+    <div id="rn-fy"></div>
+    <select id="rn-fybase" onchange="poblarAniosRN();applyRN()">
       <option value="aprob">Año: Aprobación</option>
       <option value="srn">Año: SRN (ingreso)</option>
     </select>
-    <select id="rn-fo" onchange="applyRN()">
-      <option value="">Todos los orígenes</option>
-      <option>Organico</option><option>Inorganico</option>
-    </select>
-    <select id="rn-fe" onchange="applyRN()">
-      <option value="">Todos los estatus</option>
-      <option>Aprobado</option><option>Evaluación</option>
-      <option>Prevenido Contestado</option><option>Desecho</option>
-    </select>
-    <select id="rn-ff" onchange="applyRN()">
-      <option value="">Todas las formas</option>
-      <option>Tableta</option><option>Capsula</option><option>Suspensión</option>
-      <option>Solución</option><option>Granulado</option><option>Sol. Inyectable</option>
-    </select>
+    <div id="rn-fo"></div>
+    <div id="rn-fe"></div>
+    <div id="rn-ff"></div>
     <span class="info" id="rn-info">42 proyectos</span>
   </div>
   <div class="sec-tabs">
@@ -825,6 +772,99 @@ var CUR_AV='at', CUR_SV='all';
 
 /* ── NAVEGACIÓN PRINCIPAL ── */
 var _rendered={arn:false,pag:false,ari:false,rn:false};
+/* ══════════════════════════════════════
+   COMPONENTE MULTI-SELECT (checkboxes)
+   ══════════════════════════════════════ */
+var MS_STATE = {}; /* id -> array de valores seleccionados */
+
+/* Construye un multiselect en el contenedor dado.
+   id: identificador único, label: texto por defecto,
+   options: array de {v:valor, t:texto}, onChange: función a llamar */
+function msBuild(id, label, options, onChange){
+  MS_STATE[id]=MS_STATE[id]||[];
+  var wrap=document.getElementById(id);
+  if(!wrap)return;
+  wrap.className='ms';
+  wrap.setAttribute('data-label',label);
+  var html='<button type="button" class="ms-btn" id="'+id+'-btn" onclick="msToggle(\''+id+'\')">'+label+'</button>';
+  html+='<div class="ms-panel" id="'+id+'-panel">';
+  html+='<div class="ms-head"><button type="button" onclick="msAll(\''+id+'\')">Todos</button><button type="button" onclick="msNone(\''+id+'\')">Ninguno</button></div>';
+  options.forEach(function(o){
+    var checked=MS_STATE[id].indexOf(o.v)>=0?'checked':'';
+    html+='<label class="ms-opt"><input type="checkbox" value="'+String(o.v).replace(/"/g,'&quot;')+'" '+checked+' onchange="msChange(\''+id+'\')"> '+o.t+'</label>';
+  });
+  html+='</div>';
+  wrap.innerHTML=html;
+  wrap._onChange=onChange;
+  wrap._options=options;
+  msUpdateLabel(id);
+}
+
+function msToggle(id){
+  var panel=document.getElementById(id+'-panel');
+  if(!panel)return;
+  var isOpen=panel.classList.contains('open');
+  /* cerrar todos los demás */
+  var all=document.querySelectorAll('.ms-panel');
+  for(var i=0;i<all.length;i++){all[i].classList.remove('open');}
+  if(!isOpen)panel.classList.add('open');
+}
+
+function msChange(id){
+  var panel=document.getElementById(id+'-panel');
+  if(!panel)return;
+  var checks=panel.querySelectorAll('input[type=checkbox]');
+  var sel=[];
+  for(var i=0;i<checks.length;i++){if(checks[i].checked)sel.push(checks[i].value);}
+  MS_STATE[id]=sel;
+  msUpdateLabel(id);
+  var wrap=document.getElementById(id);
+  if(wrap&&wrap._onChange)wrap._onChange();
+}
+
+function msAll(id){
+  var panel=document.getElementById(id+'-panel');
+  var checks=panel.querySelectorAll('input[type=checkbox]');
+  for(var i=0;i<checks.length;i++){checks[i].checked=true;}
+  msChange(id);
+}
+function msNone(id){
+  var panel=document.getElementById(id+'-panel');
+  var checks=panel.querySelectorAll('input[type=checkbox]');
+  for(var i=0;i<checks.length;i++){checks[i].checked=false;}
+  msChange(id);
+}
+
+function msUpdateLabel(id){
+  var btn=document.getElementById(id+'-btn');
+  var wrap=document.getElementById(id);
+  if(!btn||!wrap)return;
+  var label=wrap.getAttribute('data-label');
+  var sel=MS_STATE[id]||[];
+  if(sel.length===0){
+    btn.textContent=label;
+    btn.classList.remove('act');
+  } else if(sel.length===1){
+    /* mostrar el texto de la opción */
+    var opt=(wrap._options||[]).filter(function(o){return String(o.v)===String(sel[0]);})[0];
+    btn.textContent=opt?opt.t:sel[0];
+    btn.classList.add('act');
+  } else {
+    btn.textContent=label+': '+sel.length;
+    btn.classList.add('act');
+  }
+}
+
+/* Devuelve los valores seleccionados de un multiselect (array). Vacío = todos. */
+function msGet(id){ return MS_STATE[id]||[]; }
+
+/* Cerrar paneles al hacer clic fuera */
+document.addEventListener('click',function(e){
+  if(e.target.closest && e.target.closest('.ms'))return;
+  var all=document.querySelectorAll('.ms-panel');
+  for(var i=0;i<all.length;i++){all[i].classList.remove('open');}
+});
+
 function showUniverse(id,btn){
   document.querySelectorAll('.universe').forEach(function(u){u.classList.remove('on');});
   document.querySelectorAll('.main-tab').forEach(function(b){b.classList.remove('on');});
@@ -932,22 +972,38 @@ function showPAGTab(id,btn){
 /* ══════════════════════════════════════
    LÓGICA ARN
 ══════════════════════════════════════ */
+function initFiltrosARN(){
+  if(!D||!D.records)return;
+  /* Años de fecha planeada */
+  var years={};D.records.forEach(function(d){if(d.fp)years[d.fp.slice(0,4)]=1;});
+  msBuild('a-fy','Años',Object.keys(years).sort().map(function(y){return{v:y,t:y};}),applyARN);
+  /* Tipos */
+  var tipos={};D.records.forEach(function(d){if(d.t)tipos[d.t]=1;});
+  msBuild('a-ft','Tipos',Object.keys(tipos).sort().map(function(t){return{v:t,t:t};}),applyARN);
+  /* Responsables */
+  var resp={};D.records.forEach(function(d){if(d.r)resp[d.r]=1;});
+  msBuild('a-fr','Responsables',Object.keys(resp).sort().map(function(r){return{v:r,t:r};}),applyARN);
+  /* Año resolución */
+  var ry={};D.records.forEach(function(d){ if(d.fr){ry[String(new Date(d.fr).getFullYear())]=1;} else {ry['Sin resolución']=1;} });
+  msBuild('a-fry','Año resol.',Object.keys(ry).sort().map(function(y){return{v:y,t:y};}),applyARN);
+}
+
 function applyARN(){
-  var fy=document.getElementById('a-fy').value;
-  var ft=document.getElementById('a-ft').value;
-  var fr=document.getElementById('a-fr').value;
-  var fry=document.getElementById('a-fry').value;
+  var fy=msGet('a-fy');
+  var ft=msGet('a-ft');
+  var fr=msGet('a-fr');
+  var fry=msGet('a-fry');
   AFILTERED=D.records.filter(function(d){
-    if(fy){
-      // El año se rige por la Fecha PLANEADA (coherente con la gráfica por año de plan)
+    if(fy.length){
       var anioRef = d.fp ? d.fp.slice(0,4) : null;
-      if(anioRef!==fy) return false;
+      if(fy.indexOf(anioRef)<0) return false;
     }
-    if(ft&&d.t!==ft)return false;
-    if(fr&&d.r!==fr)return false;
-    if(fry){
-      if(fry==='Sin resolución')return!d.fr;
-      if(!d.fr||String(new Date(d.fr).getFullYear())!==fry)return false;
+    if(ft.length && ft.indexOf(d.t)<0)return false;
+    if(fr.length && fr.indexOf(d.r)<0)return false;
+    if(fry.length){
+      var ry = d.fr ? String(new Date(d.fr).getFullYear()) : 'Sin resolución';
+      if(!d.fr) ry='Sin resolución';
+      if(fry.indexOf(ry)<0) return false;
     }
     return true;
   });
@@ -1114,16 +1170,42 @@ function renderARNDet(){
 /* ══════════════════════════════════════
    LÓGICA PAGOS
 ══════════════════════════════════════ */
+function initFiltrosPAG(){
+  if(!P||!P.records)return;
+  var MESES={'1':'Enero','2':'Febrero','3':'Marzo','4':'Abril','5':'Mayo','6':'Junio','7':'Julio','8':'Agosto','9':'Septiembre','10':'Octubre','11':'Noviembre','12':'Diciembre'};
+  var years={};P.records.forEach(function(d){if(d.anioSol)years[d.anioSol]=1;});
+  msBuild('p-fy','Años',Object.keys(years).sort().map(function(y){return{v:String(y),t:String(y)};}),applyPAG);
+  var meses={};P.records.forEach(function(d){if(d.mesSol)meses[d.mesSol]=1;});
+  var mkeys=Object.keys(meses).map(Number).sort(function(a,b){return a-b;});
+  msBuild('p-fm','Meses',mkeys.map(function(m){return{v:String(m),t:MESES[String(m)]||String(m)};}),applyPAG);
+  var tram={};P.records.forEach(function(d){if(d.tramite)tram[d.tramite]=1;});
+  msBuild('p-ft','Trámites',Object.keys(tram).sort().map(function(t){return{v:t,t:t};}),applyPAG);
+  var resp={};P.records.forEach(function(d){if(d.resp)resp[d.resp]=1;});
+  msBuild('p-fr','Responsables',Object.keys(resp).sort().map(function(r){return{v:r,t:r};}),applyPAG);
+}
+
+function initFiltrosARI(){
+  if(!ARI||!ARI.records)return;
+  var pais={};ARI.records.forEach(function(d){if(d.pa)pais[d.pa]=1;});
+  msBuild('ri-fp','Países',Object.keys(pais).sort().map(function(p){return{v:p,t:p};}),applyARI);
+  var tip={};ARI.records.forEach(function(d){if(d.ti)tip[d.ti]=1;});
+  msBuild('ri-ft','Tipos',Object.keys(tip).sort().map(function(t){return{v:t,t:t};}),applyARI);
+  var dic={};ARI.records.forEach(function(d){if(d.dic)dic[d.dic]=1;});
+  msBuild('ri-fd','Dictámenes',Object.keys(dic).sort().map(function(d){return{v:d,t:d};}),applyARI);
+  var anios={};ARI.records.forEach(function(d){if(d.ap)anios[d.ap]=1;});
+  msBuild('ri-fa','Años',Object.keys(anios).sort().map(function(y){return{v:String(y),t:String(y)};}),applyARI);
+}
+
 function applyPAG(){
-  var fy=document.getElementById('p-fy').value;
-  var fm=document.getElementById('p-fm').value;
-  var ft=document.getElementById('p-ft').value;
-  var fr=document.getElementById('p-fr').value;
+  var fy=msGet('p-fy');
+  var fm=msGet('p-fm');
+  var ft=msGet('p-ft');
+  var fr=msGet('p-fr');
   PFILTERED=P.records.filter(function(d){
-    if(fy&&String(d.anioSol)!==fy)return false;
-    if(fm&&String(d.mesSol)!==fm)return false;
-    if(ft&&d.tramite!==ft)return false;
-    if(fr&&d.resp!==fr)return false;
+    if(fy.length&&fy.indexOf(String(d.anioSol))<0)return false;
+    if(fm.length&&fm.indexOf(String(d.mesSol))<0)return false;
+    if(ft.length&&ft.indexOf(d.tramite)<0)return false;
+    if(fr.length&&fr.indexOf(d.resp)<0)return false;
     return true;
   });
   var real=PFILTERED.filter(function(d){return d.status==='Real';});
@@ -1483,15 +1565,15 @@ function showARITab(id,btn){
 }
 
 function applyARI(){
-  var fp=document.getElementById('ri-fp').value;
-  var ft=document.getElementById('ri-ft').value;
-  var fd=document.getElementById('ri-fd').value;
-  var fa=document.getElementById('ri-fa').value;
+  var fp=msGet('ri-fp');
+  var ft=msGet('ri-ft');
+  var fd=msGet('ri-fd');
+  var fa=msGet('ri-fa');
   ARIF=ARI.records.filter(function(d){
-    if(fp && d.pa!==fp) return false;
-    if(ft && d.ti!==ft) return false;
-    if(fd && d.dic!==fd) return false;
-    if(fa && String(d.ap)!==fa) return false;
+    if(fp.length && fp.indexOf(d.pa)<0) return false;
+    if(ft.length && ft.indexOf(d.ti)<0) return false;
+    if(fd.length && fd.indexOf(d.dic)<0) return false;
+    if(fa.length && fa.indexOf(String(d.ap))<0) return false;
     return true;
   });
   setTC('ri-info',ARIF.length+' trámites');
@@ -2028,29 +2110,20 @@ function showRNTab(id,btn){
 }
 
 function applyRN(){
-  var fy=getEl('rn-fy')?document.getElementById('rn-fy').value:'';
+  var fy=msGet('rn-fy');           /* años seleccionados (array) */
   var fybase=document.getElementById('rn-fybase').value;
-  var fo=document.getElementById('rn-fo').value;
-  var fe=document.getElementById('rn-fe').value;
-  var ff=document.getElementById('rn-ff').value;
-  RNF=RN.records.filter(function(d){
-    if(fy){
-      var yr = fybase==='srn' ? d.anioSRN : d.anioAprob;
-      if(String(yr)!==fy) return false;
-    }
-    if(fo && d.origen!==fo) return false;
-    if(fe && d.estatus!==fe) return false;
-    if(ff && d.ff!==ff) return false;
+  var fo=msGet('rn-fo');           /* orígenes */
+  var fe=msGet('rn-fe');           /* estatus */
+  var ff=msGet('rn-ff');           /* formas */
+  function pasa(d){
+    if(fy.length){ var yr=fybase==='srn'?d.anioSRN:d.anioAprob; if(fy.indexOf(String(yr))<0) return false; }
+    if(fo.length && fo.indexOf(d.origen)<0) return false;
+    if(fe.length && fe.indexOf(d.estatus)<0) return false;
+    if(ff.length && ff.indexOf(d.ff)<0) return false;
     return true;
-  });
-  // Entradas individuales filtradas (para el Detalle) - mismos filtros
-  RNE=(RN.entradas||[]).filter(function(d){
-    if(fy){ var yr=fybase==='srn'?d.anioSRN:d.anioAprob; if(String(yr)!==fy) return false; }
-    if(fo && d.origen!==fo) return false;
-    if(fe && d.estatus!==fe) return false;
-    if(ff && d.ff!==ff) return false;
-    return true;
-  });
+  }
+  RNF=RN.records.filter(pasa);
+  RNE=(RN.entradas||[]).filter(pasa);
   var unicos=RNF.filter(function(d){return !d.maxIntentoReg||d.maxIntentoReg<=1;}).length;
   var conReing=RNF.filter(function(d){return d.maxIntentoReg>=2;}).length;
   setTC('rn-info',RNF.length+' proyectos ('+unicos+' únicos + '+conReing+' con reingreso)');
@@ -2099,14 +2172,17 @@ function renderRNKPIs(){
 function actualizarPeriodoRN(){
   var el=document.getElementById('rn-periodo');
   if(!el)return;
-  var fy=getEl('rn-fy')?document.getElementById('rn-fy').value:'';
+  var fy=msGet('rn-fy'); /* array de años seleccionados */
   var fybase=getEl('rn-fybase')?document.getElementById('rn-fybase').value:'aprob';
   var baseTxt=fybase==='srn'?'a\u00f1o de ingreso (SRN)':'a\u00f1o de aprobaci\u00f3n';
   var txt;
-  if(fy){
-    txt='\ud83d\udcc5 Mostrando datos de '+fy+' \u00b7 por '+baseTxt;
+  if(fy.length===1){
+    txt='\ud83d\udcc5 Mostrando datos de '+fy[0]+' \u00b7 por '+baseTxt;
+  } else if(fy.length>1){
+    var ord=fy.slice().sort();
+    txt='\ud83d\udcc5 Mostrando '+ord.join(', ')+' \u00b7 por '+baseTxt;
   } else {
-    /* Rango completo de años presentes */
+    /* Sin filtro: rango completo de años presentes */
     var years={};
     RNF.forEach(function(d){var y=fybase==='srn'?d.anioSRN:d.anioAprob;if(y)years[y]=1;});
     var yrs=Object.keys(years).sort();
@@ -2672,14 +2748,27 @@ function rnToggleHist(cls,el){
 
 /* Poblar dropdown de años dinámicamente */
 function poblarAniosRN(){
-  var sel=document.getElementById('rn-fy');if(!sel)return;
+  if(!document.getElementById('rn-fy'))return;
   var base=document.getElementById('rn-fybase').value;
   var years={};
   RN.records.forEach(function(d){var y=base==='srn'?d.anioSRN:d.anioAprob;if(y)years[y]=1;});
   var yrs=Object.keys(years).sort();
-  var cur=sel.value;
-  sel.innerHTML='<option value="">Todos los años</option>'+yrs.map(function(y){return'<option>'+y+'</option>';}).join('');
-  if(yrs.indexOf(cur)>=0)sel.value=cur;
+  msBuild('rn-fy','Años',yrs.map(function(y){return{v:y,t:y};}),applyRN);
+}
+
+/* Inicializa todos los multiselects del universo RN con las opciones reales de los datos */
+function initFiltrosRN(){
+  if(!RN||!RN.records)return;
+  poblarAniosRN();
+  /* Orígenes reales */
+  var origs={};RN.records.forEach(function(d){if(d.origen)origs[d.origen]=1;});
+  msBuild('rn-fo','Orígenes',Object.keys(origs).sort().map(function(o){return{v:o,t:o};}),applyRN);
+  /* Estatus reales */
+  var ests={};RN.records.forEach(function(d){if(d.estatus)ests[d.estatus]=1;});
+  msBuild('rn-fe','Estatus',Object.keys(ests).sort().map(function(e){return{v:e,t:e};}),applyRN);
+  /* Formas reales */
+  var ffs={};RN.records.forEach(function(d){if(d.ff)ffs[d.ff]=1;});
+  msBuild('rn-ff','Formas',Object.keys(ffs).sort().map(function(f){return{v:f,t:f};}),applyRN);
 }
 
 
@@ -3193,7 +3282,12 @@ function cargarDatosEnVivo(){
     if(typeof PFILTERED!=='undefined') PFILTERED=P.records.slice();
     if(typeof ARIF!=='undefined') ARIF=ARI.records.slice();
     if(typeof RNF!=='undefined') RNF=RN.records.slice();
-    if(typeof poblarAniosRN==='function') poblarAniosRN();
+    if(typeof RNE!=='undefined') RNE=RN.entradas.slice();
+    // Inicializar TODOS los filtros multiselect con datos reales
+    if(typeof initFiltrosARN==='function') initFiltrosARN();
+    if(typeof initFiltrosPAG==='function') initFiltrosPAG();
+    if(typeof initFiltrosARI==='function') initFiltrosARI();
+    if(typeof initFiltrosRN==='function') initFiltrosRN();
 
     // Re-renderizar el universo visible
     _rendered={arn:false,pag:false,ari:false,rn:false};
