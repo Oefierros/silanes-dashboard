@@ -2519,13 +2519,15 @@ function renderRNCmn(){
   var nofavAprob=conCMN.filter(function(d){return d.cmn==='NO FAVORABLE'&&d.estatus==='Aprobado';}).length;
   var nofavTotal=conCMN.filter(function(d){return d.cmn==='NO FAVORABLE';}).length;
   /* % de CMN favorables vs no favorables sobre el total de CMN (excluyendo NA) */
-  var cmnValidos=conCMN.filter(function(d){return d.cmn&&String(d.cmn).trim().toUpperCase()!=='NA';});
+  /* Contar TODOS los dictámenes CMN de todos los intentos (historia completa), no solo la última entrada */
+  var todasEntradas=(RNE&&RNE.length)?RNE:(RN.entradas||[]);
+  var cmnValidos=todasEntradas.filter(function(d){return d.cmn&&String(d.cmn).trim().toUpperCase()!=='NA'&&d.intentoCMN;});
   var totalCMN=cmnValidos.length;
   var favC=cmnValidos.filter(function(d){return d.cmn.indexOf('FAVORABLE')>=0&&d.cmn.indexOf('NO')<0;}).length;
-  var nofavC=cmnValidos.filter(function(d){return d.cmn==='NO FAVORABLE';}).length;
+  var nofavC=cmnValidos.filter(function(d){return d.cmn.indexOf('NO FAVORABLE')>=0||d.cmn.indexOf('NO PROCEDENTE')>=0;}).length;
   var pFav=pct(favC,totalCMN), pNoFav=pct(nofavC,totalCMN);
   setHTML('rn-cmn-rel',
-    '<div style="font-size:12px;color:#64748B;margin-bottom:12px">De <b style="color:#065A62">'+totalCMN+'</b> proyectos que pasaron por el Comit\u00e9 de Mol\u00e9culas Nuevas:</div>'+
+    '<div style="font-size:12px;color:#64748B;margin-bottom:12px">De <b style="color:#065A62">'+totalCMN+'</b> dict\u00e1menes del Comit\u00e9 de Mol\u00e9culas Nuevas (todos los intentos):</div>'+
     '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px">'+
     '<div style="flex:1;min-width:200px;background:#F0FDF4;border-radius:10px;padding:16px;border-left:4px solid #059669">'+
       '<div style="font-size:11px;color:#15803D;font-weight:800;text-transform:uppercase;margin-bottom:6px">CMN Favorable</div>'+
