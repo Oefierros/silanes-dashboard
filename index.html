@@ -288,6 +288,7 @@ tr:hover td{background:#F8FAFC}
     <button class="sec-tab" onclick="showPAGTab('mes',this)">📅 Por Mes</button>
     <button class="sec-tab" onclick="showPAGTab('tram',this)">📋 Por Trámite</button>
     <button class="sec-tab" onclick="showPAGTab('resp',this)">👤 Por Responsable</button>
+    <button class="sec-tab" onclick="showPAGTab('presup',this)">💰 Presupuesto</button>
     <button class="sec-tab" onclick="showPAGTab('llaves',this)">🔑 Llaves de Pago</button>
     <button class="sec-tab" onclick="showPAGTab('det',this)">🔎 Detalle</button>
   </div>
@@ -377,6 +378,33 @@ tr:hover td{background:#F8FAFC}
     <div class="g2" id="p-resp-cards"></div>
   </div>
   <!-- Pagos: Llaves de Pago -->
+  <div id="p-pg-presup" class="pg hidden">
+    <div class="g4" id="p-presup-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Trámites: presupuestados vs no presupuestados<span class="help-ico">i</span><span class="help-tip">Cuántos trámites estaban contemplados en el presupuesto (SI) y cuántos no (NO). El anillo muestra la proporción por número de trámites.</span></div>
+        <div style="height:240px"><canvas id="p-presup-donut">Presupuestado</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Monto: presupuestado vs no presupuestado<span class="help-ico">i</span><span class="help-tip">Cuánto dinero (en monto) corresponde a trámites presupuestados vs no presupuestados. Ayuda a dimensionar el impacto económico de lo no contemplado.</span></div>
+        <div style="height:240px"><canvas id="p-presup-monto">Monto presupuesto</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Por trámite: cuáles se salen más del presupuesto<span class="help-ico">i</span><span class="help-tip">Para cada tipo de trámite, cuántos fueron presupuestados vs no. Los que tienen mucha barra roja (no presupuestado) son los que más se salen del plan.</span></div>
+      <div style="height:300px"><canvas id="p-presup-tram">Por trámite</canvas></div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Por dirección/área: gasto no presupuestado<span class="help-ico">i</span><span class="help-tip">Qué área o dirección genera más trámites no presupuestados. Útil para identificar dónde se concentra el gasto no contemplado.</span></div>
+        <div style="height:280px"><canvas id="p-presup-dir">Por dirección</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Evolución mensual de lo no presupuestado<span class="help-ico">i</span><span class="help-tip">Cómo evoluciona mes a mes la cantidad de trámites no presupuestados. Permite ver si el problema crece o se controla en el tiempo.</span></div>
+        <div style="height:280px"><canvas id="p-presup-mes">Evolución mensual</canvas></div>
+      </div>
+    </div>
+  </div>
   <div id="p-pg-llaves" class="pg hidden">
     <div class="g4" id="p-llaves-kpis"></div>
     <div class="g2">
@@ -963,11 +991,110 @@ function showARNTab(id,btn){
 
 /* ── NAVEGACIÓN PAGOS ── */
 function showPAGTab(id,btn){
-  ['ov','mes','tram','resp','llaves','det'].forEach(function(x){document.getElementById('p-pg-'+x).classList.add('hidden');});
+  ['ov','mes','tram','resp','presup','llaves','det'].forEach(function(x){document.getElementById('p-pg-'+x).classList.add('hidden');});
   document.querySelectorAll('#uni-pag .sec-tab').forEach(function(b){b.classList.remove('on');});
   document.getElementById('p-pg-'+id).classList.remove('hidden');
   btn.classList.add('on');
+  if(id==='presup'&&typeof renderPAGPresup==='function') renderPAGPresup();
 }
+
+/* ══════════════════════════════════════
+   SECCIÓN PRESUPUESTO (columna "Presupuestado")
+══════════════════════════════════════ */
+function renderPAGPresup(){
+  var data=PFILTERED||P.records;
+  /* Solo trámites con valor de presupuestado definido (SI/NO) */
+  var conDato=data.filter(function(d){return d.presup===true||d.presup===false;});
+  var si=conDato.filter(function(d){return d.presup===true;});
+  var no=conDato.filter(function(d){return d.presup===false;});
+  var total=conDato.length;
+  var montoSi=sum(si,'monto'), montoNo=sum(no,'monto');
+  var montoTotal=montoSi+montoNo;
+
+  /* KPIs */
+  setHTML('p-presup-kpis',[
+    {l:'Trámites con dato',v:total,s:'de '+data.length+' totales',c:'#065A62'},
+    {l:'Presupuestados',v:si.length,s:pct(si.length,total)+'% del total',c:'#059669'},
+    {l:'No Presupuestados',v:no.length,s:pct(no.length,total)+'% del total',c:'#DC2626'},
+    {l:'Monto No Presup.',v:fmt(montoNo),s:pct(montoNo,montoTotal)+'% del gasto',c:'#B8000F'}
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+';font-size:'+(String(k.v).length>6?'20px':'26px')+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+
+  /* 1. Donut trámites presupuestado vs no */
+  dc('p-presup-donut');
+  var ctxD=document.getElementById('p-presup-donut').getContext('2d');
+  CH['p-presup-donut']=new Chart(ctxD,{type:'doughnut',
+    data:{labels:['Presupuestado ('+si.length+')','No presupuestado ('+no.length+')'],
+      datasets:[{data:[si.length,no.length],backgroundColor:['#059669','#DC2626'],borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'bold'},boxWidth:12,padding:10}},
+        tooltip:{callbacks:{label:function(c){return c.label+': '+pct(c.parsed,total)+'%';}}}}}});
+
+  /* 2. Monto presupuestado vs no (barras) */
+  dc('p-presup-monto');
+  var ctxM=document.getElementById('p-presup-monto').getContext('2d');
+  CH['p-presup-monto']=new Chart(ctxM,{type:'bar',
+    data:{labels:['Presupuestado','No presupuestado'],
+      datasets:[{label:'Monto',data:[montoSi,montoNo],backgroundColor:['#059669','#DC2626'],borderRadius:8,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return fmt(c.parsed.y)+' ('+pct(c.parsed.y,montoTotal)+'%)';}}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:12,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',callback:function(v){return fmt(v);}}}}}});
+
+  /* 3. Por trámite: presupuestado vs no (barras apiladas) */
+  var tramMap={};
+  conDato.forEach(function(d){var t=d.tramite||'Otro';if(!tramMap[t])tramMap[t]={si:0,no:0};if(d.presup)tramMap[t].si++;else tramMap[t].no++;});
+  var trams=Object.keys(tramMap).sort(function(a,b){return tramMap[b].no-tramMap[a].no;});
+  dc('p-presup-tram');
+  var ctxT=document.getElementById('p-presup-tram').getContext('2d');
+  CH['p-presup-tram']=new Chart(ctxT,{type:'bar',
+    data:{labels:trams,datasets:[
+      {label:'Presupuestado',data:trams.map(function(t){return tramMap[t].si;}),backgroundColor:'#059669',borderRadius:3,stack:'a'},
+      {label:'No presupuestado',data:trams.map(function(t){return tramMap[t].no;}),backgroundColor:'#DC2626',borderRadius:3,stack:'a'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151',maxRotation:45,minRotation:45}},
+              y:{stacked:true,grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
+
+  /* 4. Por dirección/área: no presupuestado (barras horizontales) */
+  var dirMap={};
+  conDato.forEach(function(d){var dir=d.dir||'Sin área';if(!dirMap[dir])dirMap[dir]={si:0,no:0};if(d.presup)dirMap[dir].si++;else dirMap[dir].no++;});
+  var dirs=Object.keys(dirMap).sort(function(a,b){return dirMap[b].no-dirMap[a].no;});
+  dc('p-presup-dir');
+  var ctxDir=document.getElementById('p-presup-dir').getContext('2d');
+  CH['p-presup-dir']=new Chart(ctxDir,{type:'bar',
+    data:{labels:dirs,datasets:[
+      {label:'No presupuestado',data:dirs.map(function(x){return dirMap[x].no;}),backgroundColor:'#DC2626',borderRadius:4,stack:'a'},
+      {label:'Presupuestado',data:dirs.map(function(x){return dirMap[x].si;}),backgroundColor:'#0A9AA6',borderRadius:4,stack:'a'}
+    ]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{stacked:true,grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}},
+              y:{stacked:true,grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}}}}});
+
+  /* 5. Evolución mensual de lo no presupuestado */
+  var MESES=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var mesMap={};
+  conDato.forEach(function(d){
+    var a=d.anioSol,m=d.mesSol; if(!a||!m)return;
+    var k=a+'-'+(m<10?'0'+m:m);
+    if(!mesMap[k])mesMap[k]={si:0,no:0,label:MESES[m]+' '+String(a).slice(2)};
+    if(d.presup)mesMap[k].si++;else mesMap[k].no++;
+  });
+  var mkeys=Object.keys(mesMap).sort();
+  dc('p-presup-mes');
+  var ctxMes=document.getElementById('p-presup-mes').getContext('2d');
+  CH['p-presup-mes']=new Chart(ctxMes,{type:'line',
+    data:{labels:mkeys.map(function(k){return mesMap[k].label;}),datasets:[
+      {label:'No presupuestado',data:mkeys.map(function(k){return mesMap[k].no;}),borderColor:'#DC2626',backgroundColor:'rgba(220,38,38,0.1)',borderWidth:2,fill:true,tension:0.3,pointRadius:3},
+      {label:'Presupuestado',data:mkeys.map(function(k){return mesMap[k].si;}),borderColor:'#059669',backgroundColor:'rgba(5,150,105,0.08)',borderWidth:2,fill:true,tension:0.3,pointRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
+}
+
 
 /* ══════════════════════════════════════
    LÓGICA ARN
@@ -2965,6 +3092,15 @@ function transformARN(rows){
 /* ════════════════════════════════════════
    TRANSFORMAR PAGOS
    ════════════════════════════════════════ */
+/* Normaliza la columna "Presupuestado" (SI/NO) → true/false/null */
+function esPresupuestado(v){
+  if(v===null||v===undefined) return null;
+  var s=String(v).trim().toUpperCase();
+  if(s==='SI'||s==='SÍ'||s==='S'||s==='YES'||s==='Y'||s==='1'||s==='TRUE') return true;
+  if(s==='NO'||s==='N'||s==='0'||s==='FALSE') return false;
+  return null;
+}
+
 function transformPagos(rows){
   var records=[];
 
@@ -3024,7 +3160,8 @@ function transformPagos(rows){
       llave:llave,
       conf:_clean(r['CONFIRMACION LLAVE UTILIZADA']),
       coment:_clean(r['Comentarios']),
-      status:status
+      status:status,
+      presup:esPresupuestado(r['Presupuestado'])
     });
   });
 
