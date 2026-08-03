@@ -2606,7 +2606,8 @@ function renderRNCmn(){
   var _allDict=[];
   conCMN.forEach(function(p){var h=(p.historia&&p.historia.length)?p.historia:[p];h.forEach(function(x){if(x.cmn&&String(x.cmn).trim().toUpperCase()!=='NA'&&x.intentoCMN)_allDict.push(x);});});
   var fav=_allDict.filter(function(d){return d.cmn.indexOf('FAVORABLE')>=0&&d.cmn.indexOf('NO')<0;}).length;
-  var nofav=_allDict.filter(function(d){return d.cmn.indexOf('NO FAVORABLE')>=0||d.cmn.indexOf('NO PROCEDENTE')>=0;}).length;
+  var nofav=_allDict.filter(function(d){return d.cmn.indexOf('NO FAVORABLE')>=0;}).length;
+  var noproc=_allDict.filter(function(d){return d.cmn.indexOf('NO PROCEDENTE')>=0;}).length;
   var tCMN=_allDict.filter(function(d){return d.tEvalCMN;}).map(function(d){return d.tEvalCMN;});
   var promCMN=tCMN.length?(tCMN.reduce(function(a,b){return a+b;},0)/tCMN.length).toFixed(1):0;
   setHTML('rn-cmn-kpis',[
@@ -2657,26 +2658,30 @@ function renderRNCmn(){
      Se toma la historia completa de cada proyecto consolidado que pasó el filtro,
      así el conteo coincide exactamente con lo que se ve al expandir la tabla. */
   var totalCMN=_allDict.length;
-  var favC=fav;
-  var nofavC=nofav;
-  var pFav=pct(favC,totalCMN), pNoFav=pct(nofavC,totalCMN);
+  var pFav=pct(fav,totalCMN), pNoFav=pct(nofav,totalCMN), pNoProc=pct(noproc,totalCMN);
   setHTML('rn-cmn-rel',
     '<div style="font-size:12px;color:#64748B;margin-bottom:12px">De <b style="color:#065A62">'+totalCMN+'</b> dict\u00e1menes del Comit\u00e9 de Mol\u00e9culas Nuevas (todos los intentos):</div>'+
-    '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px">'+
-    '<div style="flex:1;min-width:200px;background:#F0FDF4;border-radius:10px;padding:16px;border-left:4px solid #059669">'+
+    '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">'+
+    '<div style="flex:1;min-width:170px;background:#F0FDF4;border-radius:10px;padding:16px;border-left:4px solid #059669">'+
       '<div style="font-size:11px;color:#15803D;font-weight:800;text-transform:uppercase;margin-bottom:6px">CMN Favorable</div>'+
-      '<div style="font-size:32px;font-weight:900;color:#059669">'+pFav+'%</div>'+
-      '<div style="font-size:12px;color:#64748B">'+favC+' de '+totalCMN+' dictámenes</div>'+
+      '<div style="font-size:30px;font-weight:900;color:#059669">'+pFav+'%</div>'+
+      '<div style="font-size:12px;color:#64748B">'+fav+' de '+totalCMN+' dictámenes</div>'+
     '</div>'+
-    '<div style="flex:1;min-width:200px;background:#FEF2F2;border-radius:10px;padding:16px;border-left:4px solid #DC2626">'+
+    '<div style="flex:1;min-width:170px;background:#FEF2F2;border-radius:10px;padding:16px;border-left:4px solid #DC2626">'+
       '<div style="font-size:11px;color:#991B1B;font-weight:800;text-transform:uppercase;margin-bottom:6px">CMN No Favorable</div>'+
-      '<div style="font-size:32px;font-weight:900;color:#DC2626">'+pNoFav+'%</div>'+
-      '<div style="font-size:12px;color:#64748B">'+nofavC+' de '+totalCMN+' dictámenes</div>'+
+      '<div style="font-size:30px;font-weight:900;color:#DC2626">'+pNoFav+'%</div>'+
+      '<div style="font-size:12px;color:#64748B">'+nofav+' de '+totalCMN+' dictámenes</div>'+
+    '</div>'+
+    '<div style="flex:1;min-width:170px;background:#FFF7ED;border-radius:10px;padding:16px;border-left:4px solid #D97706">'+
+      '<div style="font-size:11px;color:#92400E;font-weight:800;text-transform:uppercase;margin-bottom:6px">CMN No Procedente</div>'+
+      '<div style="font-size:30px;font-weight:900;color:#D97706">'+pNoProc+'%</div>'+
+      '<div style="font-size:12px;color:#64748B">'+noproc+' de '+totalCMN+' dictámenes</div>'+
     '</div>'+
     '</div>'+
     '<div style="background:#F1F5F9;border-radius:8px;height:26px;display:flex;overflow:hidden">'+
-      (pFav>0?'<div style="background:#059669;width:'+pFav+'%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800">'+pFav+'%</div>':'')+
-      (pNoFav>0?'<div style="background:#DC2626;width:'+pNoFav+'%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800">'+pNoFav+'%</div>':'')+
+      (pFav>0?'<div style="background:#059669;width:'+pFav+'%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800" title="Favorable">'+pFav+'%</div>':'')+
+      (pNoFav>0?'<div style="background:#DC2626;width:'+pNoFav+'%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800" title="No Favorable">'+pNoFav+'%</div>':'')+
+      (pNoProc>0?'<div style="background:#D97706;width:'+pNoProc+'%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800" title="No Procedente">'+pNoProc+'%</div>':'')+
     '</div>');
 
   // Tabla CMN con detalle expandible — muestra los MISMOS dictámenes que la gráfica
