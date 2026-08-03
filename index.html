@@ -2597,23 +2597,30 @@ function renderRNTiempos(){
 }
 
 function renderRNCmn(){
-  var conCMN=RNF.filter(function(d){return d.tieneCMN;});
-  var fav=conCMN.filter(function(d){return d.cmn&&d.cmn.indexOf('FAVORABLE')>=0&&d.cmn.indexOf('NO')<0;}).length;
-  var nofav=conCMN.filter(function(d){return d.cmn==='NO FAVORABLE';}).length;
-  var tCMN=conCMN.filter(function(d){return d.tEvalCMN;}).map(function(d){return d.tEvalCMN;});
+  /* Proyectos cuya historia tiene al menos un dictamen CMN (coherente con la gráfica) */
+  var conCMN=RNF.filter(function(d){
+    var hist=(d.historia&&d.historia.length)?d.historia:[d];
+    return hist.some(function(h){return h.cmn&&String(h.cmn).trim().toUpperCase()!=='NA'&&h.intentoCMN;});
+  });
+  /* Contar dictámenes de toda la historia (coherente con gráfica y tabla) */
+  var _allDict=[];
+  conCMN.forEach(function(p){var h=(p.historia&&p.historia.length)?p.historia:[p];h.forEach(function(x){if(x.cmn&&String(x.cmn).trim().toUpperCase()!=='NA'&&x.intentoCMN)_allDict.push(x);});});
+  var fav=_allDict.filter(function(d){return d.cmn.indexOf('FAVORABLE')>=0&&d.cmn.indexOf('NO')<0;}).length;
+  var nofav=_allDict.filter(function(d){return d.cmn.indexOf('NO FAVORABLE')>=0||d.cmn.indexOf('NO PROCEDENTE')>=0;}).length;
+  var tCMN=_allDict.filter(function(d){return d.tEvalCMN;}).map(function(d){return d.tEvalCMN;});
   var promCMN=tCMN.length?(tCMN.reduce(function(a,b){return a+b;},0)/tCMN.length).toFixed(1):0;
   setHTML('rn-cmn-kpis',[
-    {l:'Proyectos con CMN',v:conCMN.length,s:'pasaron comité',c:'#BE185D'},
-    {l:'CMN Favorable',v:fav,s:pct(fav,conCMN.length)+'% favorable',c:'#059669'},
+    {l:'Proyectos con CMN',v:conCMN.length,s:_allDict.length+' dictámenes en total',c:'#BE185D'},
+    {l:'CMN Favorable',v:fav,s:pct(fav,_allDict.length)+'% de dictámenes',c:'#059669'},
     {l:'Tiempo eval. CMN',v:promCMN+'m',s:'promedio',c:'#0891B2'}
   ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
 
   // CMN por año presentación (favorable vs no)
   var ym={};
-  conCMN.forEach(function(d){
+  _allDict.forEach(function(d){
     var y=d.anioPresCMN||d.anioCMN;if(!y)return;
     if(!ym[y])ym[y]={fav:0,nofav:0};
-    if(d.cmn==='NO FAVORABLE')ym[y].nofav++;else if(d.cmn)ym[y].fav++;
+    if(d.cmn.indexOf('NO FAVORABLE')>=0||d.cmn.indexOf('NO PROCEDENTE')>=0)ym[y].nofav++;else ym[y].fav++;
   });
   var yrs=Object.keys(ym).sort();
   dc('rn-cmn-anio');
@@ -2646,12 +2653,12 @@ function renderRNCmn(){
   var nofavAprob=conCMN.filter(function(d){return d.cmn==='NO FAVORABLE'&&d.estatus==='Aprobado';}).length;
   var nofavTotal=conCMN.filter(function(d){return d.cmn==='NO FAVORABLE';}).length;
   /* % de CMN favorables vs no favorables sobre el total de CMN (excluyendo NA) */
-  /* Contar TODOS los dictámenes CMN de todos los intentos (historia completa), no solo la última entrada */
-  var todasEntradas=(RNE&&RNE.length)?RNE:(RN.entradas||[]);
-  var cmnValidos=todasEntradas.filter(function(d){return d.cmn&&String(d.cmn).trim().toUpperCase()!=='NA'&&d.intentoCMN;});
-  var totalCMN=cmnValidos.length;
-  var favC=cmnValidos.filter(function(d){return d.cmn.indexOf('FAVORABLE')>=0&&d.cmn.indexOf('NO')<0;}).length;
-  var nofavC=cmnValidos.filter(function(d){return d.cmn.indexOf('NO FAVORABLE')>=0||d.cmn.indexOf('NO PROCEDENTE')>=0;}).length;
+  /* Contar TODOS los dictámenes CMN de la historia de los proyectos visibles (RNF).
+     Se toma la historia completa de cada proyecto consolidado que pasó el filtro,
+     así el conteo coincide exactamente con lo que se ve al expandir la tabla. */
+  var totalCMN=_allDict.length;
+  var favC=fav;
+  var nofavC=nofav;
   var pFav=pct(favC,totalCMN), pNoFav=pct(nofavC,totalCMN);
   setHTML('rn-cmn-rel',
     '<div style="font-size:12px;color:#64748B;margin-bottom:12px">De <b style="color:#065A62">'+totalCMN+'</b> dict\u00e1menes del Comit\u00e9 de Mol\u00e9culas Nuevas (todos los intentos):</div>'+
@@ -2672,11 +2679,11 @@ function renderRNCmn(){
       (pNoFav>0?'<div style="background:#DC2626;width:'+pNoFav+'%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800">'+pNoFav+'%</div>':'')+
     '</div>');
 
-  // Tabla CMN con detalle expandible (historia de intentos de CMN)
+  // Tabla CMN con detalle expandible — muestra los MISMOS dictámenes que la gráfica
   setHTML('rn-cmn-body',conCMN.map(function(d,i){
-    var cmnColor=d.cmn==='NO FAVORABLE'?'#DC2626':'#059669';
-    /* Historia de intentos que pasaron por CMN */
-    var histCMN=(d.historia||[]).filter(function(h){return h.intentoCMN;});
+    var cmnColor=(d.cmn&&(d.cmn.indexOf('NO FAVORABLE')>=0||d.cmn.indexOf('NO PROCEDENTE')>=0))?'#DC2626':'#059669';
+    /* Todos los dictámenes CMN válidos en la historia (mismo criterio que la gráfica) */
+    var histCMN=(d.historia||[d]).filter(function(h){return h.cmn&&String(h.cmn).trim().toUpperCase()!=='NA'&&h.intentoCMN;});
     var tieneHist=histCMN.length>1;
     var rid='cmnhist-'+i;
     var toggle=tieneHist
