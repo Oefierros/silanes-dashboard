@@ -483,6 +483,7 @@ tr:hover td{background:#F8FAFC}
     <div class="g2">
       <div class="card">
         <div class="ct">Distribución por Dictamen (estatus actual)<span class="help-ico">i</span><span class="help-tip">Distribución de los trámites internacionales según la columna DICTAMEN, que indica el estatus actual de cada uno.</span></div>
+        <div id="ri-donut-drill-hdr" style="display:none;margin-bottom:8px"></div>
         <div style="height:200px"><canvas id="ri-donut">Dictamen</canvas></div>
         <div id="ri-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
       </div>
@@ -1793,21 +1794,62 @@ function renderARIKPIs(){
   }).join('');
 }
 
+var ARI_DIC_DRILL = null; /* drill-down de la dona de dictamen ARI */
+
 function renderARIDonut(){
-  var cc={};ARIF.forEach(function(d){cc[d.cu]=(cc[d.cu]||0)+1;});
-  var labels=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];});
-  var vals=labels.map(function(l){return cc[l];});
-  var colors=labels.map(function(l){return dclr(l);});
-  dc('ri-donut');
-  var ctx=document.getElementById('ri-donut').getContext('2d');
-  CH['ri-donut']=new Chart(ctx,{type:'doughnut',
-    data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,ARIF.length)+'%)';}}}}}});
-  (document.getElementById('ri-donut-leg')||{innerHTML:''}).innerHTML=labels.map(function(l,i){
-    return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
-      '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';flex-shrink:0;display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
-  }).join('');
+  var hdr=document.getElementById('ri-donut-drill-hdr');
+  if(!ARI_DIC_DRILL){
+    /* Vista general por dictamen */
+    if(hdr){hdr.style.display='none';hdr.innerHTML='';}
+    var cc={};ARIF.forEach(function(d){cc[d.cu]=(cc[d.cu]||0)+1;});
+    var labels=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];});
+    var vals=labels.map(function(l){return cc[l];});
+    var colors=labels.map(function(l){return dclr(l);});
+    dc('ri-donut');
+    var ctx=document.getElementById('ri-donut').getContext('2d');
+    CH['ri-donut']=new Chart(ctx,{type:'doughnut',
+      data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        onClick:function(evt,els){ if(els&&els.length){ ARI_DIC_DRILL=labels[els[0].index]; renderARIDonut(); } },
+        onHover:function(evt,els){ evt.native.target.style.cursor=els&&els.length?'pointer':'default'; },
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,ARIF.length)+'%) · clic para productos';}}}}}});
+    (document.getElementById('ri-donut-leg')||{innerHTML:''}).innerHTML=labels.map(function(l,i){
+      return'<div onclick="ARI_DIC_DRILL=\''+l.replace(/'/g,"\\'")+'\';renderARIDonut();" style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';flex-shrink:0;display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
+    }).join('');
+  } else {
+    /* Drill-down: productos dentro del dictamen seleccionado */
+    var dic=ARI_DIC_DRILL;
+    var delDic=ARIF.filter(function(d){return d.cu===dic;});
+    var baseColor=dclr(dic);
+    if(hdr){
+      hdr.style.display='block';
+      hdr.innerHTML='<button onclick="ARI_DIC_DRILL=null;renderARIDonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
+        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+dic+' · '+delDic.length+' trámites</span>';
+    }
+    /* Agrupar por producto (con país para distinguir) */
+    var pm={};
+    delDic.forEach(function(d){
+      var nom=(d.pr||'(sin producto)')+(d.pa?' · '+d.pa:'');
+      pm[nom]=(pm[nom]||0)+1;
+    });
+    var prods=Object.keys(pm).sort(function(a,b){return pm[b]-pm[a];});
+    var vals=prods.map(function(p){return pm[p];});
+    var colors=prods.map(function(p,i){return rnTono(baseColor,i);});
+    dc('ri-donut');
+    var ctx=document.getElementById('ri-donut').getContext('2d');
+    CH['ri-donut']=new Chart(ctx,{type:'doughnut',
+      data:{labels:prods,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        onClick:function(evt,els){ ARI_DIC_DRILL=null; renderARIDonut(); },
+        onHover:function(evt,els){ evt.native.target.style.cursor='pointer'; },
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+(c.parsed>1?' trámites':' trámite');}}}}}});
+    (document.getElementById('ri-donut-leg')||{innerHTML:''}).innerHTML=prods.map(function(p,i){
+      var nom=p.length>34?p.slice(0,34)+'…':p;
+      return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';flex-shrink:0;display:inline-block"></span>'+nom+' ('+vals[i]+')</div>';
+    }).join('');
+  }
 }
 
 function renderARIPais(){
