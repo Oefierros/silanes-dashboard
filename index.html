@@ -3433,8 +3433,15 @@ function transformRN(rows){
   function baseProyecto(num){
     if(!num) return null;
     var s=String(num).trim();
-    var m=s.match(/^([^-]+)/);
-    return m?m[1].trim():s;
+    /* Solo consolidar cuando el sufijo tras el guion es un intento numérico -1..-4.
+       Cualquier otro sufijo (ej. -MCR1, -Fast) se trata como proyecto DISTINTO. */
+    var m=s.match(/^(.+)-([0-9]+)$/);
+    if(m){
+      var suf=parseInt(m[2],10);
+      if(suf>=1&&suf<=4) return m[1].trim(); /* es un intento → agrupar con la base */
+    }
+    /* sin guion, o sufijo no numérico → el número completo es su propia base */
+    return s;
   }
 
   rows.forEach(function(r){
