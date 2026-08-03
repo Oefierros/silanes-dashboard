@@ -2530,6 +2530,9 @@ function renderRNDuracion(){
   });
   var lista=Object.keys(base).map(function(k){return base[k];});
 
+  /* Solo procesos terminados (excluye No iniciado, Evaluación, Cancelado) */
+  lista=lista.filter(function(d){return rnProcesoTerminado(d);});
+
   /* Filtro por forma farmacéutica */
   if(RN_DUR_FF) lista=lista.filter(function(d){return d.ff===RN_DUR_FF;});
 
@@ -2588,19 +2591,27 @@ function renderRNDuracion(){
 
 function setRNDurFF(f){ RN_DUR_FF=f; renderRNDuracion(); }
 
+/* Criterio único: un proyecto cuenta para tiempos solo si su proceso realmente terminó */
+function rnProcesoTerminado(d){
+  return d.estatus==='Aprobado'||d.estatus==='Desecho'||d.estatus==='Prevenido Contestado';
+}
+
 function renderRNTiempos(){
-  var withT=RNF.filter(function(d){return d.tTotal&&d.tTotal>0;});
+  /* Solo proyectos con proceso terminado Y con tiempo total válido */
+  var withT=RNF.filter(function(d){return rnProcesoTerminado(d)&&d.tTotal&&d.tTotal>0;});
   var tt=withT.map(function(d){return d.tTotal;});
   var prom=tt.length?Math.round(tt.reduce(function(a,b){return a+b;},0)/tt.length):0;
-  var mn=tt.length?Math.min.apply(null,tt):0;
-  var mx=tt.length?Math.max.apply(null,tt):0;
+  var mn=tt.length?Math.round(Math.min.apply(null,tt)):0;
+  var mx=tt.length?Math.round(Math.max.apply(null,tt)):0;
+  /* En proceso (excluidos del cálculo de tiempos) */
+  var enProceso=RNF.filter(function(d){return !rnProcesoTerminado(d);}).length;
   setHTML('rn-time-kpis',[
-    {l:'Proyectos con tiempo',v:withT.length,s:'de '+RNF.length,c:'#0A9AA6'},
-    {l:'Tiempo total prom.',v:prom+'m',s:'proceso completo',c:'#065A62'},
-    {l:'Rango',v:mn+' - '+mx+'m',s:'mín a máx',c:'#7C3AED'}
-  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+    {l:'Procesos terminados',v:withT.length,s:enProceso+' en proceso (no contados)',c:'#0A9AA6'},
+    {l:'Tiempo promedio',v:prom+'m',s:'de ingreso a resolución',c:'#065A62'},
+    {l:'Más rápido / más lento',v:mn+' - '+mx+'m',s:'solo procesos terminados',c:'#7C3AED'}
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+';font-size:'+(String(k.v).length>7?'20px':'26px')+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
 
-  // Etapas: min/prom/max de cada tiempo
+  // Etapas: min/prom/max — solo de procesos terminados
   var etapas=[
     {k:'tEvalCMN',n:'Eval. CMN'},
     {k:'tEvalInicial',n:'Eval. Inicial'},
@@ -2608,9 +2619,10 @@ function renderRNTiempos(){
     {k:'tEvalPrev',n:'Eval. Prevención'},
     {k:'tEvalRN',n:'Eval. RN'}
   ];
+  var terminados=RNF.filter(rnProcesoTerminado);
   var mins=[],proms=[],maxs=[],labels=[];
   etapas.forEach(function(e){
-    var vals=RNF.map(function(d){return d[e.k];}).filter(function(x){return x!==null&&x!==undefined&&x>0;});
+    var vals=terminados.map(function(d){return d[e.k];}).filter(function(x){return x!==null&&x!==undefined&&x>0;});
     labels.push(e.n);
     if(vals.length){
       mins.push(Math.min.apply(null,vals).toFixed(1));
@@ -2631,9 +2643,9 @@ function renderRNTiempos(){
       scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
               y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'},title:{display:true,text:'Meses',color:'#94A3B8',font:{size:9}}}}}});
 
-  // Tiempo total por año aprobación
+  // Tiempo total por año aprobación — solo terminados
   var ym={};
-  RNF.forEach(function(d){if(d.anioAprob&&d.tTotal&&d.tTotal>0){if(!ym[d.anioAprob])ym[d.anioAprob]=[];ym[d.anioAprob].push(d.tTotal);}});
+  terminados.forEach(function(d){if(d.anioAprob&&d.obtResp&&d.tTotal&&d.tTotal>0){if(!ym[d.anioAprob])ym[d.anioAprob]=[];ym[d.anioAprob].push(d.tTotal);}});
   var yrs=Object.keys(ym).sort();
   dc('rn-ttotal');
   var ctx2=document.getElementById('rn-ttotal').getContext('2d');
@@ -2646,7 +2658,7 @@ function renderRNTiempos(){
       scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
               y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'}}}}});
 
-  // Tabla ordenada por tiempo total
+  // Tabla ordenada por tiempo total — solo terminados
   var sorted=withT.slice().sort(function(a,b){return b.tTotal-a.tTotal;});
   setHTML('rn-time-body',sorted.map(function(d){
     return'<tr><td style="font-weight:700;font-size:10px">'+(d.proyecto||'--')+'</td>'+
