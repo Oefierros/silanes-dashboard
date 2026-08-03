@@ -639,6 +639,7 @@ tr:hover td{background:#F8FAFC}
     <div class="g2">
       <div class="card">
         <div class="ct">Distribución por estatus (RN Resultado)<span class="help-ico">i</span><span class="help-tip">Clasifica los proyectos según su resultado actual: Aprobado, Evaluación, Prevenido Contestado o Desecho (1er intento no otorgado).</span></div>
+        <div id="rn-donut-drill-hdr" style="display:none;margin-bottom:8px"></div>
         <div style="height:210px"><canvas id="rn-donut">Estatus</canvas></div>
         <div id="rn-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
       </div>
@@ -2332,7 +2333,7 @@ function renderRNKPIs(){
     {l:'Desechos',v:des,s:pct(des,t)+'% desechados',c:'#DC2626',p:pct(des,t)},
     {l:'En Evaluaci\u00f3n',v:eval2,s:'en proceso',c:'#0891B2',p:pct(eval2,t)},
     {l:'No Iniciados',v:noini,s:'a\u00fan sin ingresar a RN',c:'#9CA3AF',p:pct(noini,t)},
-    {l:'CMN Multi-intento',v:multiCMN,s:'necesitaron 2+ veces el comit\u00e9',c:'#BE185D',p:pct(multiCMN,t)}
+    {l:'Prevenidos Contestados',v:prev,s:'respondieron prevenci\u00f3n',c:'#D97706',p:pct(prev,t)}
   ];
   setHTML('rn-kpis',items.map(function(k){
     return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div>'+
@@ -2435,21 +2436,75 @@ function renderRNFunnel(){
 
 
 
+var RN_EST_DRILL = null; /* drill-down de la dona de estatus */
+
 function renderRNDonut(){
-  var cc={};RNF.forEach(function(d){cc[d.estatus]=(cc[d.estatus]||0)+1;});
-  var labels=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];});
-  var vals=labels.map(function(l){return cc[l];});
-  var colors=labels.map(function(l){return rnclr(l);});
-  dc('rn-donut');
-  var ctx=document.getElementById('rn-donut').getContext('2d');
-  CH['rn-donut']=new Chart(ctx,{type:'doughnut',
-    data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,RNF.length)+'%)';}}}}}});
-  setHTML('rn-donut-leg',labels.map(function(l,i){
-    return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
-      '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
-  }).join(''));
+  var hdr=document.getElementById('rn-donut-drill-hdr');
+  if(!RN_EST_DRILL){
+    /* Vista general por estatus */
+    if(hdr){hdr.style.display='none';hdr.innerHTML='';}
+    var cc={};RNF.forEach(function(d){cc[d.estatus]=(cc[d.estatus]||0)+1;});
+    var labels=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];});
+    var vals=labels.map(function(l){return cc[l];});
+    var colors=labels.map(function(l){return rnclr(l);});
+    dc('rn-donut');
+    var ctx=document.getElementById('rn-donut').getContext('2d');
+    CH['rn-donut']=new Chart(ctx,{type:'doughnut',
+      data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        onClick:function(evt,els){ if(els&&els.length){ RN_EST_DRILL=labels[els[0].index]; renderRNDonut(); } },
+        onHover:function(evt,els){ evt.native.target.style.cursor=els&&els.length?'pointer':'default'; },
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,RNF.length)+'%) · clic para productos';}}}}}});
+    setHTML('rn-donut-leg',labels.map(function(l,i){
+      return'<div onclick="RN_EST_DRILL=\''+l.replace(/'/g,"\\'")+'\';renderRNDonut();" style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
+    }).join(''));
+  } else {
+    /* Drill-down: productos dentro del estatus seleccionado */
+    var est=RN_EST_DRILL;
+    var delEst=RNF.filter(function(d){return d.estatus===est;});
+    var baseColor=rnclr(est);
+    if(hdr){
+      hdr.style.display='block';
+      hdr.innerHTML='<button onclick="RN_EST_DRILL=null;renderRNDonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
+        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+est+' · '+delEst.length+' proyectos</span>';
+    }
+    var prods=delEst.map(function(d){return d.prod||d.proyecto||'(sin nombre)';});
+    var vals=prods.map(function(){return 1;});
+    /* Todos los productos con 1 c/u; usar tonos del color base */
+    var colors=prods.map(function(p,i){
+      var op=[1,0.82,0.66,0.5,0.38,0.28];
+      return baseColor;
+    });
+    /* Para distinguir, alternar opacidad via rgba no es trivial con hex; usar variación */
+    dc('rn-donut');
+    var ctx=document.getElementById('rn-donut').getContext('2d');
+    CH['rn-donut']=new Chart(ctx,{type:'doughnut',
+      data:{labels:prods,datasets:[{data:vals,backgroundColor:prods.map(function(p,i){return rnTono(baseColor,i);}),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        onClick:function(evt,els){ RN_EST_DRILL=null; renderRNDonut(); },
+        onHover:function(evt,els){ evt.native.target.style.cursor='pointer'; },
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label;}}}}}});
+    setHTML('rn-donut-leg',prods.map(function(p,i){
+      var nom=p.length>28?p.slice(0,28)+'…':p;
+      return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+        '<span style="width:10px;height:10px;border-radius:2px;background:'+rnTono(baseColor,i)+';display:inline-block"></span>'+nom+'</div>';
+    }).join(''));
+  }
+}
+
+/* Genera un tono a partir de un color hex base, variando luminosidad por índice */
+function rnTono(hex, i){
+  var factors=[1,0.85,0.7,0.58,0.46,0.9,0.75,0.62];
+  var f=factors[i%factors.length];
+  var h=hex.replace('#','');
+  if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  var r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
+  /* Mezclar hacia blanco según (1-f) para aclarar tonos sucesivos */
+  var mix=1-f;
+  r=Math.round(r+(255-r)*mix); g=Math.round(g+(255-g)*mix); b=Math.round(b+(255-b)*mix);
+  function hx(n){var s=n.toString(16);return s.length<2?'0'+s:s;}
+  return '#'+hx(r)+hx(g)+hx(b);
 }
 
 var RN_CMN_DRILL = null; /* null = vista general; si tiene categoría = drill-down por producto */
@@ -2575,8 +2630,15 @@ function renderRNDuracion(){
   });
   var lista=Object.keys(base).map(function(k){return base[k];});
 
-  /* Solo procesos terminados (excluye No iniciado, Evaluación, Cancelado) */
-  lista=lista.filter(function(d){return rnProcesoTerminado(d);});
+  /* Si el filtro de estatus es solo de estatus en proceso, mostrar esos; si no, solo terminados */
+  var feSel=msGet('rn-fe');
+  var enProcesoStatus=['Evaluación','No iniciado','Cancelado'];
+  var soloEnProceso=feSel.length>0&&feSel.every(function(e){return enProcesoStatus.indexOf(e)>=0;});
+  if(soloEnProceso){
+    lista=lista.filter(function(d){return !rnProcesoTerminado(d);});
+  } else {
+    lista=lista.filter(function(d){return rnProcesoTerminado(d);});
+  }
 
   /* Filtro por forma farmacéutica */
   if(RN_DUR_FF) lista=lista.filter(function(d){return d.ff===RN_DUR_FF;});
@@ -2641,20 +2703,46 @@ function rnProcesoTerminado(d){
   return d.estatus==='Aprobado'||d.estatus==='Desecho'||d.estatus==='Prevenido Contestado';
 }
 
+/* Tiempo transcurrido de un proyecto hasta hoy (para los que siguen en proceso) */
+function rnTiempoTranscurrido(d){
+  /* Desde el ingreso RN (o solicitud CMN) hasta hoy */
+  var inicio = d.ingresoRN || d.solCMN;
+  if(!inicio) return 0;
+  return rnMesesEntre(inicio, null); /* null = hasta hoy */
+}
+
 function renderRNTiempos(){
-  /* Solo proyectos con proceso terminado Y con tiempo total válido */
-  var withT=RNF.filter(function(d){return rnProcesoTerminado(d)&&d.tTotal&&d.tTotal>0;});
-  var tt=withT.map(function(d){return d.tTotal;});
-  var prom=tt.length?Math.round(tt.reduce(function(a,b){return a+b;},0)/tt.length):0;
-  var mn=tt.length?Math.round(Math.min.apply(null,tt)):0;
-  var mx=tt.length?Math.round(Math.max.apply(null,tt)):0;
-  /* En proceso (excluidos del cálculo de tiempos) */
-  var enProceso=RNF.filter(function(d){return !rnProcesoTerminado(d);}).length;
-  setHTML('rn-time-kpis',[
-    {l:'Procesos terminados',v:withT.length,s:enProceso+' en proceso (no contados)',c:'#0A9AA6'},
-    {l:'Tiempo promedio',v:prom+'m',s:'de ingreso a resolución',c:'#065A62'},
-    {l:'Más rápido / más lento',v:mn+' - '+mx+'m',s:'solo procesos terminados',c:'#7C3AED'}
-  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+';font-size:'+(String(k.v).length>7?'20px':'26px')+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+  /* Detectar si el filtro de estatus activo es SOLO de estatus en proceso */
+  var feSel = msGet('rn-fe');
+  var enProcesoStatus = ['Evaluación','No iniciado','Cancelado'];
+  var soloEnProceso = feSel.length>0 && feSel.every(function(e){return enProcesoStatus.indexOf(e)>=0;});
+
+  if(soloEnProceso){
+    /* MODO "EN PROCESO": medir tiempo transcurrido hasta hoy */
+    var enProc=RNF.filter(function(d){return !rnProcesoTerminado(d);});
+    var tt=enProc.map(rnTiempoTranscurrido).filter(function(x){return x>0;});
+    var prom=tt.length?Math.round(tt.reduce(function(a,b){return a+b;},0)/tt.length):0;
+    var mn=tt.length?Math.round(Math.min.apply(null,tt)):0;
+    var mx=tt.length?Math.round(Math.max.apply(null,tt)):0;
+    setHTML('rn-time-kpis',[
+      {l:'Proyectos en proceso',v:enProc.length,s:'aún sin resolución',c:'#0891B2'},
+      {l:'Tiempo transcurrido prom.',v:prom+'m',s:'llevan esperando (hasta hoy)',c:'#D97706'},
+      {l:'Menos / más tiempo esperando',v:mn+' - '+mx+'m',s:'transcurrido hasta hoy',c:'#7C3AED'}
+    ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+';font-size:'+(String(k.v).length>7?'18px':'26px')+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+  } else {
+    /* MODO NORMAL: solo procesos terminados */
+    var withT=RNF.filter(function(d){return rnProcesoTerminado(d)&&d.tTotal&&d.tTotal>0;});
+    var tt=withT.map(function(d){return d.tTotal;});
+    var prom=tt.length?Math.round(tt.reduce(function(a,b){return a+b;},0)/tt.length):0;
+    var mn=tt.length?Math.round(Math.min.apply(null,tt)):0;
+    var mx=tt.length?Math.round(Math.max.apply(null,tt)):0;
+    var enProceso=RNF.filter(function(d){return !rnProcesoTerminado(d);}).length;
+    setHTML('rn-time-kpis',[
+      {l:'Procesos terminados',v:withT.length,s:enProceso+' en proceso (no contados)',c:'#0A9AA6'},
+      {l:'Tiempo promedio',v:prom+'m',s:'de ingreso a resolución',c:'#065A62'},
+      {l:'Más rápido / más lento',v:mn+' - '+mx+'m',s:'solo procesos terminados',c:'#7C3AED'}
+    ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+';font-size:'+(String(k.v).length>7?'20px':'26px')+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+  }
 
   // Etapas: min/prom/max — solo de procesos terminados
   var etapas=[
@@ -2703,16 +2791,32 @@ function renderRNTiempos(){
       scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
               y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'}}}}});
 
-  // Tabla ordenada por tiempo total — solo terminados
-  var sorted=withT.slice().sort(function(a,b){return b.tTotal-a.tTotal;});
-  setHTML('rn-time-body',sorted.map(function(d){
+  // Tabla ordenada — según modo (terminados: tiempo total; en proceso: transcurrido)
+  var tablaList, esProc;
+  var feSel2=msGet('rn-fe');
+  var enProcSt=['Evaluación','No iniciado','Cancelado'];
+  esProc=feSel2.length>0&&feSel2.every(function(e){return enProcSt.indexOf(e)>=0;});
+  if(esProc){
+    tablaList=RNF.filter(function(d){return !rnProcesoTerminado(d);}).map(function(d){
+      var c={};for(var k in d){if(d.hasOwnProperty(k))c[k]=d[k];}
+      c._tMostrar=rnTiempoTranscurrido(d);
+      return c;
+    }).sort(function(a,b){return b._tMostrar-a._tMostrar;});
+  } else {
+    tablaList=RNF.filter(function(d){return rnProcesoTerminado(d)&&d.tTotal&&d.tTotal>0;}).map(function(d){
+      var c={};for(var k in d){if(d.hasOwnProperty(k))c[k]=d[k];}
+      c._tMostrar=d.tTotal;
+      return c;
+    }).sort(function(a,b){return b._tMostrar-a._tMostrar;});
+  }
+  setHTML('rn-time-body',tablaList.map(function(d){
     return'<tr><td style="font-weight:700;font-size:10px">'+(d.proyecto||'--')+'</td>'+
       '<td style="max-width:160px">'+(d.prod||'--')+'</td>'+
       '<td>'+rnbadge(d.estatus)+'</td>'+
       '<td style="color:#64748B">'+(d.tEvalCMN?d.tEvalCMN.toFixed(1):'--')+'</td>'+
       '<td style="color:#64748B">'+(d.tEvalInicial?d.tEvalInicial.toFixed(1):'--')+'</td>'+
       '<td style="color:#64748B">'+(d.tEvalRN?d.tEvalRN.toFixed(1):'--')+'</td>'+
-      '<td style="font-weight:800;color:#7C3AED">'+d.tTotal.toFixed(1)+'m</td></tr>';
+      '<td style="font-weight:800;color:#7C3AED">'+(d._tMostrar?d._tMostrar.toFixed(1):'0')+'m'+(esProc?' ⏳':'')+'</td></tr>';
   }).join(''));
 }
 
