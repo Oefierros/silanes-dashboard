@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Silanes ARN · Dashboard Regulatorio 2025-2030</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#F1F5F9;color:#0F172A;font-size:13px}
@@ -757,6 +758,50 @@ tr:hover td{background:#F8FAFC}
 
 
 <script>
+/* ── Configuración global del plugin de etiquetas de datos (números en barras) ── */
+(function(){
+  if(typeof Chart==='undefined'||typeof ChartDataLabels==='undefined')return;
+  Chart.register(ChartDataLabels);
+  /* Por defecto DESACTIVADO en todas las gráficas; se activa solo en barras vía lógica abajo */
+  Chart.defaults.plugins.datalabels = Chart.defaults.plugins.datalabels || {};
+  Chart.defaults.plugins.datalabels.display = false;
+
+  /* Interceptar la creación de charts para activar etiquetas solo en barras */
+  var _OrigChart = Chart;
+  window.Chart = function(ctx, cfg){
+    try {
+      if(cfg && cfg.type==='bar'){
+        cfg.options = cfg.options || {};
+        cfg.options.plugins = cfg.options.plugins || {};
+        var stacked = cfg.options.scales && ((cfg.options.scales.x&&cfg.options.scales.x.stacked)||(cfg.options.scales.y&&cfg.options.scales.y.stacked));
+        var horizontal = cfg.options.indexAxis==='y';
+        cfg.options.plugins.datalabels = {
+          display:function(context){
+            var v=context.dataset.data[context.dataIndex];
+            return v!==null && v!==undefined && Number(v)!==0;
+          },
+          color: stacked ? '#fff' : '#374151',
+          anchor: stacked ? 'center' : 'end',
+          align: stacked ? 'center' : 'end',
+          offset: stacked ? 0 : 2,
+          clamp:true,
+          font:{size:10,weight:'bold'},
+          formatter:function(value){
+            var n=Number(value);
+            if(isNaN(n))return value;
+            return (n%1===0)?n:n.toFixed(1);
+          }
+        };
+      }
+    } catch(e){}
+    return new _OrigChart(ctx, cfg);
+  };
+  /* Preservar propiedades estáticas de Chart */
+  for(var k in _OrigChart){ if(_OrigChart.hasOwnProperty(k)) window.Chart[k]=_OrigChart[k]; }
+  window.Chart.defaults = _OrigChart.defaults;
+  window.Chart.register = function(){ return _OrigChart.register.apply(_OrigChart, arguments); };
+})();
+
 /* ── Error catcher visible en pantalla ── */
 window.onerror=function(msg,src,line,col,err){
   var d=document.createElement('div');
