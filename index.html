@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Silanes ARN · Dashboard Regulatorio 2025-2030</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js" onerror="window.__noDatalabels=true"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#F1F5F9;color:#0F172A;font-size:13px}
@@ -805,6 +805,10 @@ tr:hover td{background:#F8FAFC}
 
 /* ── Error catcher visible en pantalla ── */
 window.onerror=function(msg,src,line,col,err){
+  /* Ignorar 'Script error.' opaco (falla de carga de script externo por CORS) — es inofensivo */
+  if(msg==='Script error.'&&line===0&&col===0)return false;
+  /* Ignorar también errores originados en scripts de CDN externos (plugin opcional) */
+  if(src&&src.indexOf('cdn.jsdelivr.net')>=0)return false;
   var d=document.createElement('div');
   d.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#7F1D1D;color:#fff;padding:10px 16px;font-size:11px;font-family:monospace;z-index:9999;word-break:break-all';
   d.textContent='ERROR L'+line+':'+col+' → '+msg+' | '+src;
