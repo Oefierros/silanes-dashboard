@@ -642,7 +642,8 @@ tr:hover td{background:#F8FAFC}
         <div id="rn-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
       </div>
       <div class="card">
-        <div class="ct">Resultado del CMN<span class="help-ico">i</span><span class="help-tip">De los proyectos que pasaron por el Comité de Moléculas Nuevas, muestra cuántos obtuvieron dictamen Favorable vs No Favorable.</span></div>
+        <div class="ct">Resultado del CMN por producto<span class="help-ico">i</span><span class="help-tip">Distribución de dictámenes del Comité de Moléculas Nuevas por resultado. Haz clic en cualquier segmento (ej. Favorable) para ver qué productos lo componen. Usa "volver" para regresar a la vista general.</span></div>
+        <div id="rn-cmn-drill-hdr" style="display:none;margin-bottom:8px"></div>
         <div style="height:210px"><canvas id="rn-cmn-donut">CMN</canvas></div>
         <div id="rn-cmn-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
       </div>
@@ -2406,23 +2407,85 @@ function renderRNDonut(){
   }).join(''));
 }
 
+var RN_CMN_DRILL = null; /* null = vista general; si tiene categoría = drill-down por producto */
+
 function renderRNCmnDonut(){
-  var cc={};RNF.forEach(function(d){if(d.cmn&&String(d.cmn).trim().toUpperCase()!=='NA')cc[d.cmn]=(cc[d.cmn]||0)+1;});
-  var labels=Object.keys(cc);
-  if(!labels.length){setHTML('rn-cmn-leg','<span style="font-size:11px;color:#94A3B8">Sin datos de CMN en este filtro</span>');dc('rn-cmn-donut');return;}
-  var vals=labels.map(function(l){return cc[l];});
-  var cmap={'FAVORABLE':'#059669','COMPLETADO FAVORABLE':'#15803D','NO FAVORABLE':'#DC2626'};
-  var colors=labels.map(function(l){return cmap[l]||'#94A3B8';});
-  dc('rn-cmn-donut');
-  var ctx=document.getElementById('rn-cmn-donut').getContext('2d');
-  CH['rn-cmn-donut']=new Chart(ctx,{type:'doughnut',
-    data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed;}}}}}});
-  setHTML('rn-cmn-leg',labels.map(function(l,i){
-    return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
-      '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
-  }).join(''));
+  /* Recolectar TODOS los dictámenes CMN de la historia (coherente con las tarjetas) */
+  var dictamenes=[];
+  RNF.forEach(function(p){
+    var hist=(p.historia&&p.historia.length)?p.historia:[p];
+    hist.forEach(function(h){
+      if(h.cmn&&String(h.cmn).trim().toUpperCase()!=='NA'&&h.intentoCMN){
+        dictamenes.push(h);
+      }
+    });
+  });
+
+  var cmap={'FAVORABLE':'#059669','COMPLETADO FAVORABLE':'#15803D','NO FAVORABLE':'#DC2626','NO PROCEDENTE':'#D97706'};
+  var hdr=document.getElementById('rn-cmn-drill-hdr');
+
+  if(!RN_CMN_DRILL){
+    /* ── VISTA GENERAL: por categoría de resultado ── */
+    if(hdr){hdr.style.display='none';hdr.innerHTML='';}
+    var cc={};
+    dictamenes.forEach(function(d){cc[d.cmn]=(cc[d.cmn]||0)+1;});
+    var labels=Object.keys(cc);
+    if(!labels.length){setHTML('rn-cmn-leg','<span style="font-size:11px;color:#94A3B8">Sin datos de CMN en este filtro</span>');dc('rn-cmn-donut');return;}
+    var vals=labels.map(function(l){return cc[l];});
+    var colors=labels.map(function(l){return cmap[l]||'#94A3B8';});
+    dc('rn-cmn-donut');
+    var ctx=document.getElementById('rn-cmn-donut').getContext('2d');
+    CH['rn-cmn-donut']=new Chart(ctx,{type:'doughnut',
+      data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        onClick:function(evt,els){
+          if(els&&els.length){ RN_CMN_DRILL=labels[els[0].index]; renderRNCmnDonut(); }
+        },
+        onHover:function(evt,els){ evt.native.target.style.cursor=els&&els.length?'pointer':'default'; },
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' (clic para ver productos)';}}}}}});
+    setHTML('rn-cmn-leg',labels.map(function(l,i){
+      return'<div onclick="RN_CMN_DRILL=\''+l.replace(/'/g,"\\'")+'\';renderRNCmnDonut();" style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
+    }).join(''));
+  } else {
+    /* ── DRILL-DOWN: productos dentro de la categoría seleccionada ── */
+    var cat=RN_CMN_DRILL;
+    var delCat=dictamenes.filter(function(d){return d.cmn===cat;});
+    var baseColor=cmap[cat]||'#94A3B8';
+    /* Botón volver */
+    if(hdr){
+      hdr.style.display='block';
+      hdr.innerHTML='<button onclick="RN_CMN_DRILL=null;renderRNCmnDonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
+        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+cat+' · '+delCat.length+' dictámenes</span>';
+    }
+    /* Agrupar por producto */
+    var pm={};
+    delCat.forEach(function(d){
+      var nom=d.prod||d.proyecto||'(sin nombre)';
+      pm[nom]=(pm[nom]||0)+1;
+    });
+    var prods=Object.keys(pm).sort(function(a,b){return pm[b]-pm[a];});
+    var vals=prods.map(function(p){return pm[p];});
+    /* Paleta de tonos de la categoría */
+    var tonos=['#059669','#10B981','#34D399','#6EE7B7','#A7F3D0'];
+    if(baseColor==='#DC2626')tonos=['#DC2626','#EF4444','#F87171','#FCA5A5','#FECACA'];
+    if(baseColor==='#D97706')tonos=['#D97706','#F59E0B','#FBBF24','#FCD34D','#FDE68A'];
+    if(baseColor==='#15803D')tonos=['#15803D','#059669','#10B981','#34D399','#6EE7B7'];
+    var colors=prods.map(function(p,i){return tonos[i%tonos.length];});
+    dc('rn-cmn-donut');
+    var ctx=document.getElementById('rn-cmn-donut').getContext('2d');
+    CH['rn-cmn-donut']=new Chart(ctx,{type:'doughnut',
+      data:{labels:prods,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        onClick:function(evt,els){ RN_CMN_DRILL=null; renderRNCmnDonut(); },
+        onHover:function(evt,els){ evt.native.target.style.cursor='pointer'; },
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+(c.parsed>1?' dictámenes':' dictamen');}}}}}});
+    setHTML('rn-cmn-leg',prods.map(function(p,i){
+      var nom=p.length>30?p.slice(0,30)+'…':p;
+      return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+nom+' ('+vals[i]+')</div>';
+    }).join(''));
+  }
 }
 
 function renderRNAnio(){
