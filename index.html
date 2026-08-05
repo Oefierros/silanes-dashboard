@@ -2799,7 +2799,9 @@ function renderRNTiempos(){
     {k:'tEvalRN',n:'Eval. RN'}
   ];
   var terminados=RNF.filter(rnProcesoTerminado);
-  var mins=[],proms=[],maxs=[],labels=[];
+  /* PROVISIONAL: tiempo de industria por etapa (dato temporal, luego vendrá de Smartsheet) */
+  var INDUSTRIA={'Eval. Inicial':10,'Eval. Prevención':22,'Eval. RN':30};
+  var mins=[],proms=[],maxs=[],industria=[],labels=[];
   etapas.forEach(function(e){
     var vals=terminados.map(function(d){return d[e.k];}).filter(function(x){return x!==null&&x!==undefined&&x>0;});
     labels.push(e.n);
@@ -2808,6 +2810,7 @@ function renderRNTiempos(){
       proms.push((vals.reduce(function(a,b){return a+b;},0)/vals.length).toFixed(1));
       maxs.push(Math.max.apply(null,vals).toFixed(1));
     } else {mins.push(0);proms.push(0);maxs.push(0);}
+    industria.push(INDUSTRIA[e.n]!==undefined?INDUSTRIA[e.n]:null);
   });
   dc('rn-etapas');
   var ctx=document.getElementById('rn-etapas').getContext('2d');
@@ -2815,7 +2818,8 @@ function renderRNTiempos(){
     data:{labels:labels,datasets:[
       {label:'Mínimo',data:mins,backgroundColor:'#059669',borderRadius:3},
       {label:'Promedio',data:proms,backgroundColor:'#0A9AA6',borderRadius:3},
-      {label:'Máximo',data:maxs,backgroundColor:'#DC2626',borderRadius:{topLeft:4,topRight:4}}
+      {label:'Máximo',data:maxs,backgroundColor:'#DC2626',borderRadius:{topLeft:4,topRight:4}},
+      {label:'Tiempo Industria',data:industria,backgroundColor:'#D97706',borderRadius:{topLeft:4,topRight:4}}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
