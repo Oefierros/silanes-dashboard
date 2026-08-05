@@ -2364,6 +2364,7 @@ function renderRNKPIs(){
   var prev=RNF.filter(function(d){return d.estatus==='Prevenido Contestado';}).length;
   var des=RNF.filter(function(d){return d.estatus==='Desecho';}).length;
   var noini=RNF.filter(function(d){return d.estatus==='No iniciado';}).length;
+  var cancel=RNF.filter(function(d){return d.estatus==='Cancelado';}).length;
   var conCMN=RNF.filter(function(d){return d.tieneCMN;}).length;
   /* Proyectos que necesitaron más de 1 intento de CMN */
   var multiCMN=RNF.filter(function(d){return d.maxIntentoCMN>=2;}).length;
@@ -2373,13 +2374,12 @@ function renderRNKPIs(){
 
   var items=[
     {l:'Total Proyectos',v:t,s:unicos+' \u00fanicos + '+conReing+' con reingreso',c:'#065A62',p:100},
-    {l:'Proyectos \u00danicos',v:unicos,s:'1 solo intento de registro',c:'#087A84',p:pct(unicos,t)},
-    {l:'Con Reingreso',v:conReing,s:'necesitaron 2\u00ba intento registro',c:'#7C3AED',p:pct(conReing,t)},
     {l:'Aprobados',v:aprob,s:pct(aprob,t)+'% del total',c:'#059669',p:pct(aprob,t)},
     {l:'Desechos',v:des,s:pct(des,t)+'% desechados',c:'#DC2626',p:pct(des,t)},
     {l:'En Evaluaci\u00f3n',v:eval2,s:'en proceso',c:'#0891B2',p:pct(eval2,t)},
     {l:'No Iniciados',v:noini,s:'a\u00fan sin ingresar a RN',c:'#9CA3AF',p:pct(noini,t)},
-    {l:'Prevenidos Contestados',v:prev,s:'respondieron prevenci\u00f3n',c:'#D97706',p:pct(prev,t)}
+    {l:'Prevenidos Contestados',v:prev,s:'respondieron prevenci\u00f3n',c:'#D97706',p:pct(prev,t)},
+    {l:'Cancelados',v:cancel,s:pct(cancel,t)+'% cancelados',c:'#7C3AED',p:pct(cancel,t)}
   ];
   setHTML('rn-kpis',items.map(function(k){
     return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div>'+
