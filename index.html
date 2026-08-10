@@ -1142,13 +1142,15 @@ function bioProm(arr,k){
 function renderBIOKpis(){
   var t=BIOF.length;
   var aprob=BIOF.filter(function(d){return d.estado==='Aprobado';}).length;
-  var proceso=BIOF.filter(function(d){return d.estado==='Sometido'||d.estado==='Planeado';}).length;
+  var somet=BIOF.filter(function(d){return d.estado==='Sometido';}).length;
+  var plan=BIOF.filter(function(d){return d.estado==='Planeado';}).length;
+  var proceso=somet+plan;
   var rezago=BIOF.filter(bioRezagoActivo).length;
   var promTotal=Math.round(bioProm(BIOF,'dTotal'));
   setHTML('bio-kpis',[
     {l:'Total Lotes',v:t,s:'en seguimiento',c:'#065A62'},
     {l:'Aprobados',v:aprob,s:pct(aprob,t)+'% liberados',c:'#059669'},
-    {l:'En Proceso',v:proceso,s:'sometidos + planeados',c:'#0891B2'},
+    {l:'En Proceso',v:proceso,s:somet+' sometidos + '+plan+' planeados',c:'#0891B2'},
     {l:'En Rezago',v:rezago,s:pct(rezago,t)+'% atrasados',c:'#DC2626'},
     {l:'Tiempo Prom. Total',v:promTotal+'d',s:'días de evaluación',c:'#7C3AED'}
   ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+';font-size:'+(String(k.v).length>5?'20px':'26px')+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
