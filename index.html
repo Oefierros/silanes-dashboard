@@ -1088,7 +1088,7 @@ function initFiltrosBIO(){
   var ests={};BIO.records.forEach(function(d){if(d.estado)ests[d.estado]=1;});
   msBuild('bio-fe','Estados',Object.keys(ests).sort().map(function(e){return{v:e,t:e};}),applyBIO);
   var labs={};BIO.records.forEach(function(d){if(d.analisisPor)labs[d.analisisPor]=1;});
-  msBuild('bio-fl','Laboratorio',Object.keys(labs).sort().map(function(l){return{v:l,t:l};}),applyBIO);
+  msBuild('bio-fl','Ingreso Por',Object.keys(labs).sort().map(function(l){return{v:l,t:l};}),applyBIO);
   var anios={};BIO.records.forEach(function(d){if(d.anioIngreso)anios[d.anioIngreso]=1;});
   msBuild('bio-fy','Año ingreso',Object.keys(anios).sort().map(function(y){return{v:String(y),t:String(y)};}),applyBIO);
 }
