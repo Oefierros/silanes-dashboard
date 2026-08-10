@@ -823,11 +823,11 @@ tr:hover td{background:#F8FAFC}
     <div class="g3" id="bio-rezago-kpis"></div>
     <div class="g2">
       <div class="card">
-        <div class="ct">Lotes en rezago vs sin rezago<span class="help-ico">i</span><span class="help-tip">Un lote entra en "rezago" cuando su proceso se atrasa más de lo esperado. Muestra la proporción de lotes que cayeron en rezago.</span></div>
+        <div class="ct">Lotes en rezago vs sin rezago<span class="help-ico">i</span><span class="help-tip">Solo cuenta el rezago ACTIVO: lotes que se atrasaron y todavía NO tienen resolución. Si un lote tuvo rezago pero ya se resolvió, deja de contarse porque el problema ya no está vigente.</span></div>
         <div style="height:230px"><canvas id="bio-rezago-donut">Rezago</canvas></div>
       </div>
       <div class="card">
-        <div class="ct">Rezago por producto<span class="help-ico">i</span><span class="help-tip">Cuántos lotes de cada producto cayeron en rezago. Ayuda a identificar qué productos tienen más problemas de atraso.</span></div>
+        <div class="ct">Rezago por producto<span class="help-ico">i</span><span class="help-tip">Cuántos lotes de cada producto están en rezago activo (atrasados y sin resolución). Ayuda a identificar dónde enfocar el seguimiento.</span></div>
         <div style="height:230px"><canvas id="bio-rezago-prod">Rezago producto</canvas></div>
       </div>
     </div>
@@ -1069,6 +1069,12 @@ function showBIOTab(id,btn){
 }
 
 /* Colores por estado */
+/* Rezago ACTIVO: el lote tuvo rezago y todavía NO tiene resolución.
+   Si ya se resolvió, el rezago dejó de ser un problema vigente y no se cuenta. */
+function bioRezagoActivo(d){
+  return !!d.enRezago && !d.resolucion;
+}
+
 function bioEstadoColor(e){
   var m={'Aprobado':'#059669','Sometido':'#0891B2','Planeado':'#7C3AED','Cancelado':'#DC2626','Desistido':'#D97706','Sin estado':'#94A3B8'};
   return m[e]||'#94A3B8';
@@ -1123,7 +1129,7 @@ function renderBIOKpis(){
   var t=BIOF.length;
   var aprob=BIOF.filter(function(d){return d.estado==='Aprobado';}).length;
   var proceso=BIOF.filter(function(d){return d.estado==='Sometido'||d.estado==='Planeado';}).length;
-  var rezago=BIOF.filter(function(d){return d.enRezago;}).length;
+  var rezago=BIOF.filter(bioRezagoActivo).length;
   var promTotal=Math.round(bioProm(BIOF,'dTotal'));
   setHTML('bio-kpis',[
     {l:'Total Lotes',v:t,s:'en seguimiento',c:'#065A62'},
@@ -1315,7 +1321,7 @@ function renderBIOTiempos(){
     return {
       nombre:(d.producto+' '+(d.lote||'')).trim(),
       producto:d.producto, lote:d.lote, estado:d.estado, lab:d.analisisPor,
-      t1:t1, t2:t2, t3:t3, total:t1+t2+t3, tNotif:tNotif, rezago:d.enRezago
+      t1:t1, t2:t2, t3:t3, total:t1+t2+t3, tNotif:tNotif, rezago:bioRezagoActivo(d)
     };
   }).filter(function(x){return x.total>0;});
 
@@ -1354,18 +1360,18 @@ function renderBIOTiempos(){
 
 function renderBIORezago(){
   var t=BIOF.length;
-  var rez=BIOF.filter(function(d){return d.enRezago;});
+  var rez=BIOF.filter(bioRezagoActivo);
   var sinRez=t-rez.length;
   setHTML('bio-rezago-kpis',[
-    {l:'Lotes en Rezago',v:rez.length,s:pct(rez.length,t)+'% del total',c:'#DC2626'},
-    {l:'Sin Rezago',v:sinRez,s:pct(sinRez,t)+'% en tiempo',c:'#059669'},
+    {l:'Rezago Activo',v:rez.length,s:pct(rez.length,t)+'% sin resolver',c:'#DC2626'},
+    {l:'Sin Rezago Activo',v:sinRez,s:'resueltos o en tiempo',c:'#059669'},
     {l:'Productos afectados',v:Object.keys(rez.reduce(function(a,d){a[d.producto]=1;return a;},{})).length,s:'con al menos 1 rezago',c:'#D97706'}
   ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
 
   dc('bio-rezago-donut');
   var ctx=document.getElementById('bio-rezago-donut').getContext('2d');
   CH['bio-rezago-donut']=new Chart(ctx,{type:'doughnut',
-    data:{labels:['En rezago ('+rez.length+')','Sin rezago ('+sinRez+')'],
+    data:{labels:['Rezago activo ('+rez.length+')','Sin rezago activo ('+sinRez+')'],
       datasets:[{data:[rez.length,sinRez],backgroundColor:['#DC2626','#059669'],borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
       plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'bold'},boxWidth:12,padding:10}},
@@ -1450,7 +1456,7 @@ function renderBIODet(){
       '<td style="font-size:10px">'+(d.lote||'--')+'</td>'+
       '<td>'+bioBadgeEstado(d.estado)+'</td>'+
       '<td style="font-size:10px">'+(d.analisisPor||'--')+'</td>'+
-      '<td style="text-align:center">'+(d.enRezago?'<span style="color:#DC2626;font-weight:800">⚠️ Sí</span>':'<span style="color:#94A3B8">No</span>')+'</td>'+
+      '<td style="text-align:center">'+(bioRezagoActivo(d)?'<span style="color:#DC2626;font-weight:800" title="En rezago y aún sin resolución">⚠️ Sí</span>':(d.enRezago?'<span style="color:#94A3B8;font-size:10px" title="Tuvo rezago, pero ya se resolvió">✓ resuelto</span>':'<span style="color:#94A3B8">No</span>'))+'</td>'+
       '<td style="font-size:10px">'+(d.entradaCofepris||'--')+'</td>'+
       '<td style="text-align:center;font-size:10px">'+(d.dAnalisis!==null?d.dAnalisis+'d':'--')+'</td>'+
       '<td style="text-align:center;font-weight:700;color:#7C3AED">'+(d.dTotal!==null?d.dTotal+'d':'--')+'</td>'+
