@@ -791,8 +791,10 @@ tr:hover td{background:#F8FAFC}
         <div id="bio-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
       </div>
       <div class="card">
-        <div class="ct">Lotes por Producto<span class="help-ico">i</span><span class="help-tip">Cuántos lotes de cada producto (antiveneno) hay en el tracking, separados por estado.</span></div>
+        <div class="ct">Lotes pendientes por producto (sin aprobados)<span class="help-ico">i</span><span class="help-tip">Solo muestra los lotes que NO están aprobados, es decir, los que todavía requieren seguimiento. Haz clic en la barra de un producto para desplegar el detalle de cada lote: número de lote, estado, si está en rezago, cuándo entró a CCAYAC/LEI y su fecha estimada de resolución.</span></div>
+        <div id="bio-prod-hdr" style="display:none;margin-bottom:8px"></div>
         <div style="height:230px"><canvas id="bio-productos">Productos</canvas></div>
+        <div id="bio-prod-detalle" style="margin-top:12px"></div>
       </div>
     </div>
     <div class="card">
@@ -1195,24 +1197,84 @@ function renderBIODonut(){
   }
 }
 
+var BIO_PROD_SEL = null; /* producto seleccionado para ver su detalle */
+
 function renderBIOProductos(){
+  /* Solo lotes NO aprobados: los que todavía requieren seguimiento */
+  var pend=BIOF.filter(function(d){return d.estado!=='Aprobado';});
   var pm={};
-  BIOF.forEach(function(d){
-    if(!pm[d.producto])pm[d.producto]={aprob:0,otro:0};
-    if(d.estado==='Aprobado')pm[d.producto].aprob++;else pm[d.producto].otro++;
-  });
-  var prods=Object.keys(pm).sort(function(a,b){return (pm[b].aprob+pm[b].otro)-(pm[a].aprob+pm[a].otro);});
+  pend.forEach(function(d){pm[d.producto]=(pm[d.producto]||0)+1;});
+  var prods=Object.keys(pm).sort(function(a,b){return pm[b]-pm[a];});
+
+  /* Si el producto seleccionado ya no está en el filtro, limpiar selección */
+  if(BIO_PROD_SEL&&prods.indexOf(BIO_PROD_SEL)<0)BIO_PROD_SEL=null;
+
   dc('bio-productos');
+  if(!prods.length){
+    setHTML('bio-prod-detalle','<div style="padding:14px;color:#94A3B8;font-size:12px">No hay lotes pendientes con este filtro. Todos están aprobados.</div>');
+    var h0=document.getElementById('bio-prod-hdr'); if(h0){h0.style.display='none';h0.innerHTML='';}
+    return;
+  }
   var ctx=document.getElementById('bio-productos').getContext('2d');
   CH['bio-productos']=new Chart(ctx,{type:'bar',
-    data:{labels:prods,datasets:[
-      {label:'Aprobados',data:prods.map(function(p){return pm[p].aprob;}),backgroundColor:'#059669',borderRadius:3,stack:'a'},
-      {label:'Otros estados',data:prods.map(function(p){return pm[p].otro;}),backgroundColor:'#CBD5E1',borderRadius:3,stack:'a'}
-    ]},
+    data:{labels:prods,datasets:[{label:'Lotes pendientes',
+      data:prods.map(function(p){return pm[p];}),
+      backgroundColor:prods.map(function(p){return p===BIO_PROD_SEL?'#E2001A':'#0A9AA6';}),
+      borderRadius:4}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
-      scales:{x:{stacked:true,grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}},
-              y:{stacked:true,grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}}}}});
+      onClick:function(evt,els){
+        if(els&&els.length){
+          var p=prods[els[0].index];
+          BIO_PROD_SEL=(BIO_PROD_SEL===p)?null:p; /* clic de nuevo = cerrar */
+          renderBIOProductos();
+        }
+      },
+      onHover:function(evt,els){evt.native.target.style.cursor=els&&els.length?'pointer':'default';},
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:function(c){return c.parsed.x+' lote(s) pendiente(s) · clic para ver detalle';}}}},
+      scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}},
+              y:{grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}}}}});
+
+  /* ── Detalle del producto seleccionado ── */
+  var hdr=document.getElementById('bio-prod-hdr');
+  if(!BIO_PROD_SEL){
+    if(hdr){hdr.style.display='none';hdr.innerHTML='';}
+    setHTML('bio-prod-detalle','<div style="padding:10px 12px;color:#94A3B8;font-size:11px;background:#F8FAFC;border-radius:8px">👆 Haz clic en un producto para ver el detalle de sus lotes pendientes.</div>');
+    return;
+  }
+  var lotes=pend.filter(function(d){return d.producto===BIO_PROD_SEL;})
+    .sort(function(a,b){
+      /* Primero los que están en rezago activo, luego por fecha estimada */
+      var ra=bioRezagoActivo(a)?0:1, rb=bioRezagoActivo(b)?0:1;
+      if(ra!==rb)return ra-rb;
+      return (a.estimAprob||'9999')<(b.estimAprob||'9999')?-1:1;
+    });
+  if(hdr){
+    hdr.style.display='block';
+    hdr.innerHTML='<button onclick="BIO_PROD_SEL=null;renderBIOProductos();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Ver todos</button>'+
+      '<span style="margin-left:10px;font-size:12px;font-weight:800;color:#E2001A">'+BIO_PROD_SEL+' · '+lotes.length+' lote(s) pendiente(s)</span>';
+  }
+  setHTML('bio-prod-detalle',
+    '<div class="tw" style="max-height:280px;overflow-y:auto"><table style="font-size:11px"><thead><tr>'+
+      '<th>Lote</th><th>Estado</th><th style="text-align:center">Rezago</th>'+
+      '<th>Ingreso CCAYAC/LEI</th><th>Fecha estimada resol.</th>'+
+    '</tr></thead><tbody>'+
+    lotes.map(function(d,i){
+      var rez=bioRezagoActivo(d)
+        ?'<span style="color:#DC2626;font-weight:800">⚠️ Sí</span>'
+        :(d.enRezago?'<span style="color:#94A3B8;font-size:10px">✓ resuelto</span>':'<span style="color:#94A3B8">No</span>');
+      var estim=d.resolucion
+        ?'<span style="color:#059669;font-weight:700">✓ '+d.resolucion+'</span>'
+        :(d.estimAprob?'<span style="color:#D97706;font-weight:600">~ '+d.estimAprob+'</span>':'<span style="color:#CBD5E1">sin fecha</span>');
+      var lab=d.ingLab?d.ingLab+' <span style="color:#94A3B8;font-size:9px">('+(d.analisisPor||'--')+')</span>':'<span style="color:#CBD5E1">no ha entrado</span>';
+      return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'">'+
+        '<td style="font-weight:700">'+(d.lote||'--')+'</td>'+
+        '<td>'+bioBadgeEstado(d.estado)+'</td>'+
+        '<td style="text-align:center">'+rez+'</td>'+
+        '<td style="font-size:10px">'+lab+'</td>'+
+        '<td style="font-size:10px">'+estim+'</td></tr>';
+    }).join('')+
+    '</tbody></table></div>');
 }
 
 function renderBIOEvolucion(){
