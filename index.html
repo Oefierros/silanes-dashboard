@@ -800,7 +800,7 @@ tr:hover td{background:#F8FAFC}
       <div id="bio-proximas"></div>
     </div>
     <div class="card">
-      <div class="ct">Evolución por año (ingresados vs resueltos)<span class="help-ico">i</span><span class="help-tip">Lotes ingresados a COFEPRIS por año vs lotes que obtuvieron resolución por año. Permite ver el ritmo de trabajo anual.</span></div>
+      <div class="ct">Evolución por año (ingresados vs resueltos)<span class="help-ico">i</span><span class="help-tip">Ritmo de trabajo anual. La barra azul son los lotes que INGRESARON ese año. La barra de al lado son los RESUELTOS ese año, dividida en dos: en verde los que se resolvieron el mismo año en que entraron, y en ámbar los que venían arrastrados de años anteriores. Ejemplo: en 2026 ingresaron 11 lotes, y se resolvieron 11 en total, pero solo 5 eran de 2026 — los otros 6 eran trámites de años previos. Esta gráfica siempre muestra todos los años (el filtro de "Año ingreso" no la recorta, porque es una línea de tiempo); los filtros de producto, estado y laboratorio sí aplican.</span></div>
       <div style="height:260px"><canvas id="bio-evolucion">Evolución</canvas></div>
     </div>
   </div>
@@ -1095,13 +1095,20 @@ function initFiltrosBIO(){
 
 function applyBIO(){
   var fp=msGet('bio-fp'), fe=msGet('bio-fe'), fl=msGet('bio-fl'), fy=msGet('bio-fy');
-  BIOF=BIO.records.filter(function(d){
+  /* Filtros que NO dependen del año (producto, estado, laboratorio) */
+  function pasaBase(d){
     if(fp.length&&fp.indexOf(d.producto)<0)return false;
     if(fe.length&&fe.indexOf(d.estado)<0)return false;
     if(fl.length&&fl.indexOf(d.analisisPor)<0)return false;
+    return true;
+  }
+  BIOF=BIO.records.filter(function(d){
+    if(!pasaBase(d))return false;
     if(fy.length&&fy.indexOf(String(d.anioIngreso))<0)return false;
     return true;
   });
+  /* La gráfica de evolución usa todos los años (una línea de tiempo no debe recortarse por año) */
+  BIOF_SINANIO=BIO.records.filter(pasaBase);
   setTC('bio-info',BIOF.length+' lotes');
   renderBIO();
 }
@@ -1209,24 +1216,53 @@ function renderBIOProductos(){
 }
 
 function renderBIOEvolucion(){
-  var ing={},res={};
-  BIOF.forEach(function(d){
+  /* Tres series por año:
+     - Ingresados: lotes que entraron a COFEPRIS ese año
+     - Resueltos del mismo año: entraron y se resolvieron en el mismo año
+     - Resueltos de años anteriores: se resolvieron ese año pero venían de años previos
+     Las dos series de resueltos se apilan, así su suma es el total resuelto en el año. */
+  var ing={}, resMismo={}, resAnt={};
+  /* Usa el conjunto sin filtro de año: la evolución siempre muestra la línea de tiempo completa */
+  var base=(BIOF_SINANIO&&BIOF_SINANIO.length)?BIOF_SINANIO:BIOF;
+  base.forEach(function(d){
     if(d.anioIngreso)ing[d.anioIngreso]=(ing[d.anioIngreso]||0)+1;
-    if(d.anioResol)res[d.anioResol]=(res[d.anioResol]||0)+1;
+    if(d.anioResol){
+      if(d.anioIngreso&&d.anioIngreso<d.anioResol){
+        resAnt[d.anioResol]=(resAnt[d.anioResol]||0)+1;
+      } else {
+        resMismo[d.anioResol]=(resMismo[d.anioResol]||0)+1;
+      }
+    }
   });
-  var anios={};Object.keys(ing).forEach(function(y){anios[y]=1;});Object.keys(res).forEach(function(y){anios[y]=1;});
+  var anios={};
+  Object.keys(ing).forEach(function(y){anios[y]=1;});
+  Object.keys(resMismo).forEach(function(y){anios[y]=1;});
+  Object.keys(resAnt).forEach(function(y){anios[y]=1;});
   var yrs=Object.keys(anios).sort();
   dc('bio-evolucion');
   var ctx=document.getElementById('bio-evolucion').getContext('2d');
   CH['bio-evolucion']=new Chart(ctx,{type:'bar',
     data:{labels:yrs,datasets:[
-      {label:'Ingresados',data:yrs.map(function(y){return ing[y]||0;}),backgroundColor:'#0891B2',borderRadius:5},
-      {label:'Resueltos',data:yrs.map(function(y){return res[y]||0;}),backgroundColor:'#059669',borderRadius:5}
+      {label:'Ingresados',data:yrs.map(function(y){return ing[y]||0;}),backgroundColor:'#0891B2',borderRadius:5,stack:'ingreso'},
+      {label:'Resueltos (del mismo año)',data:yrs.map(function(y){return resMismo[y]||0;}),backgroundColor:'#059669',borderRadius:3,stack:'resuelto'},
+      {label:'Resueltos (de años anteriores)',data:yrs.map(function(y){return resAnt[y]||0;}),backgroundColor:'#D97706',borderRadius:{topLeft:5,topRight:5},stack:'resuelto'}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
-              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}},
+        tooltip:{callbacks:{
+          label:function(c){
+            if(c.dataset.label==='Ingresados')return c.parsed.y+' lotes ingresaron a COFEPRIS en '+c.label;
+            if(c.dataset.label==='Resueltos (del mismo año)')return c.parsed.y+' se resolvieron el mismo año en que ingresaron';
+            return c.parsed.y+' resueltos en '+c.label+' pero ingresados en años previos';
+          },
+          footer:function(its){
+            var i=its[0].dataIndex, y=yrs[i];
+            var totalRes=(resMismo[y]||0)+(resAnt[y]||0);
+            return 'Total resuelto en '+y+': '+totalRes+' lotes';
+          }
+        }}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
+              y:{stacked:true,grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
 }
 
 function renderBIOProximas(){
@@ -2832,6 +2868,7 @@ var RNF = [];
 var RNE = [];
 var BIO = {records:[]};
 var BIOF = [];
+var BIOF_SINANIO = []; /* mismos filtros excepto el de año (para la gráfica de evolución) */
 var RNCFG = {
   'Aprobado':             {bg:'#DCFCE7',c:'#15803D',bar:'#059669'},
   'Evaluación':           {bg:'#CFFAFE',c:'#155E75',bar:'#0891B2'},
