@@ -1,106 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-<head
-<!-- ══════════════════════════════════════════════════════════
-     UNIVERSO BIOLÓGICOS (liberación de lotes ante COFEPRIS)
-══════════════════════════════════════════════════════════ -->
-<div id="uni-bio" class="universe">
-  <div class="sub-hdr">
-    <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
-    <div id="bio-fp"></div>
-    <div id="bio-fe"></div>
-    <div id="bio-fl"></div>
-    <div id="bio-fy"></div>
-    <span class="info" id="bio-info">76 lotes</span>
-  </div>
-  <div class="sec-tabs">
-    <button class="sec-tab on" onclick="showBIOTab('ov',this)">📊 Resumen</button>
-    <button class="sec-tab" onclick="showBIOTab('tiempos',this)">⏱️ Tiempos del Proceso</button>
-    <button class="sec-tab" onclick="showBIOTab('rezago',this)">⚠️ Rezago</button>
-    <button class="sec-tab" onclick="showBIOTab('lab',this)">🔬 CCAYAC vs LEI</button>
-    <button class="sec-tab" onclick="showBIOTab('det',this)">🔎 Detalle</button>
-  </div>
-
-  <!-- RESUMEN -->
-  <div id="bio-pg-ov" class="pg">
-    <div class="g4" id="bio-kpis"></div>
-    <div class="g2">
-      <div class="card">
-        <div class="ct">Distribución por Estado<span class="help-ico">i</span><span class="help-tip">Estado actual de cada lote biológico. Haz clic en un segmento (ej. Aprobado) para ver qué productos lo componen. Usa "volver" para regresar.</span></div>
-        <div id="bio-est-drill-hdr" style="display:none;margin-bottom:8px"></div>
-        <div style="height:230px"><canvas id="bio-donut">Estado</canvas></div>
-        <div id="bio-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
-      </div>
-      <div class="card">
-        <div class="ct">Lotes por Producto<span class="help-ico">i</span><span class="help-tip">Cuántos lotes de cada producto (antiveneno) hay en el tracking, separados por estado.</span></div>
-        <div style="height:230px"><canvas id="bio-productos">Productos</canvas></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="ct">Evolución por año (ingresados vs resueltos)<span class="help-ico">i</span><span class="help-tip">Lotes ingresados a COFEPRIS por año vs lotes que obtuvieron resolución por año. Permite ver el ritmo de trabajo anual.</span></div>
-      <div style="height:260px"><canvas id="bio-evolucion">Evolución</canvas></div>
-    </div>
-  </div>
-
-  <!-- TIEMPOS DEL PROCESO -->
-  <div id="bio-pg-tiempos" class="pg hidden">
-    <div class="g4" id="bio-time-kpis"></div>
-    <div class="card">
-      <div class="ct">¿Cuánto tarda cada etapa del proceso? (días promedio)<span class="help-ico">i</span><span class="help-tip">Tiempo promedio en días que toma cada etapa del proceso de liberación de un lote: desde el ingreso a análisis, el análisis en laboratorio, el ingreso del CoA, hasta la evaluación final. La suma da el tiempo total.</span></div>
-      <div style="height:300px"><canvas id="bio-etapas">Etapas</canvas></div>
-    </div>
-    <div class="card">
-      <div class="ct">Duración total por lote (días de evaluación)<span class="help-ico">i</span><span class="help-tip">Días totales de evaluación de cada lote, ordenados de mayor a menor. Permite identificar los lotes que más tardaron.</span></div>
-      <div style="height:340px"><canvas id="bio-duracion">Duración</canvas></div>
-    </div>
-  </div>
-
-  <!-- REZAGO -->
-  <div id="bio-pg-rezago" class="pg hidden">
-    <div class="g3" id="bio-rezago-kpis"></div>
-    <div class="g2">
-      <div class="card">
-        <div class="ct">Lotes en rezago vs sin rezago<span class="help-ico">i</span><span class="help-tip">Un lote entra en "rezago" cuando su proceso se atrasa más de lo esperado. Muestra la proporción de lotes que cayeron en rezago.</span></div>
-        <div style="height:230px"><canvas id="bio-rezago-donut">Rezago</canvas></div>
-      </div>
-      <div class="card">
-        <div class="ct">Rezago por producto<span class="help-ico">i</span><span class="help-tip">Cuántos lotes de cada producto cayeron en rezago. Ayuda a identificar qué productos tienen más problemas de atraso.</span></div>
-        <div style="height:230px"><canvas id="bio-rezago-prod">Rezago producto</canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CCAYAC vs LEI -->
-  <div id="bio-pg-lab" class="pg hidden">
-    <div class="g3" id="bio-lab-kpis"></div>
-    <div class="g2">
-      <div class="card">
-        <div class="ct">Lotes analizados por laboratorio<span class="help-ico">i</span><span class="help-tip">Cuántos lotes analizó cada laboratorio (CCAYAC o LEI).</span></div>
-        <div style="height:230px"><canvas id="bio-lab-donut">Laboratorio</canvas></div>
-      </div>
-      <div class="card">
-        <div class="ct">Tiempo de análisis: CCAYAC vs LEI (días)<span class="help-ico">i</span><span class="help-tip">Comparación del tiempo promedio, mínimo y máximo de análisis de cada laboratorio. Un laboratorio más rápido agiliza toda la liberación del lote.</span></div>
-        <div style="height:230px"><canvas id="bio-lab-comp">Comparación</canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- DETALLE -->
-  <div id="bio-pg-det" class="pg hidden">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div class="ct" style="margin-bottom:0">Detalle de lotes <span class="info" id="bio-det-cnt" style="color:#94A3B8"></span></div>
-        <input type="text" id="bio-srch" class="sf" placeholder="Buscar producto, lote, entrada..." oninput="renderBIODet()">
-      </div>
-      <div class="tw"><table><thead><tr>
-        <th>Producto</th><th>Lote</th><th>Estado</th><th>Análisis</th><th style="text-align:center">Rezago</th>
-        <th>Entrada COFEPRIS</th><th style="text-align:center">D. Análisis</th><th style="text-align:center">D. Total Eval.</th><th>Año Resol.</th>
-      </tr></thead><tbody id="bio-det-body"></tbody></table></div>
-    </div>
-  </div>
-</div>
-
->
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Silanes ARN · Dashboard Regulatorio 2025-2030</title>
@@ -857,6 +757,106 @@ tr:hover td{background:#F8FAFC}
     </div>
   </div>
   </div><!-- /rn-content -->
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     UNIVERSO BIOLÓGICOS (liberación de lotes ante COFEPRIS)
+══════════════════════════════════════════════════════════ -->
+<div id="uni-bio" class="universe">
+  <div class="sub-hdr">
+    <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
+    <div id="bio-fp"></div>
+    <div id="bio-fe"></div>
+    <div id="bio-fl"></div>
+    <div id="bio-fy"></div>
+    <span class="info" id="bio-info">76 lotes</span>
+  </div>
+  <div class="sec-tabs">
+    <button class="sec-tab on" onclick="showBIOTab('ov',this)">📊 Resumen</button>
+    <button class="sec-tab" onclick="showBIOTab('tiempos',this)">⏱️ Tiempos del Proceso</button>
+    <button class="sec-tab" onclick="showBIOTab('rezago',this)">⚠️ Rezago</button>
+    <button class="sec-tab" onclick="showBIOTab('lab',this)">🔬 CCAYAC vs LEI</button>
+    <button class="sec-tab" onclick="showBIOTab('det',this)">🔎 Detalle</button>
+  </div>
+
+  <!-- RESUMEN -->
+  <div id="bio-pg-ov" class="pg">
+    <div class="g4" id="bio-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Distribución por Estado<span class="help-ico">i</span><span class="help-tip">Estado actual de cada lote biológico. Haz clic en un segmento (ej. Aprobado) para ver qué productos lo componen. Usa "volver" para regresar.</span></div>
+        <div id="bio-est-drill-hdr" style="display:none;margin-bottom:8px"></div>
+        <div style="height:230px"><canvas id="bio-donut">Estado</canvas></div>
+        <div id="bio-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Lotes por Producto<span class="help-ico">i</span><span class="help-tip">Cuántos lotes de cada producto (antiveneno) hay en el tracking, separados por estado.</span></div>
+        <div style="height:230px"><canvas id="bio-productos">Productos</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Evolución por año (ingresados vs resueltos)<span class="help-ico">i</span><span class="help-tip">Lotes ingresados a COFEPRIS por año vs lotes que obtuvieron resolución por año. Permite ver el ritmo de trabajo anual.</span></div>
+      <div style="height:260px"><canvas id="bio-evolucion">Evolución</canvas></div>
+    </div>
+  </div>
+
+  <!-- TIEMPOS DEL PROCESO -->
+  <div id="bio-pg-tiempos" class="pg hidden">
+    <div class="g4" id="bio-time-kpis"></div>
+    <div class="card">
+      <div class="ct">¿Cuánto tarda cada etapa del proceso? (días promedio)<span class="help-ico">i</span><span class="help-tip">Tiempo promedio en días que toma cada etapa del proceso de liberación de un lote: desde el ingreso a análisis, el análisis en laboratorio, el ingreso del CoA, hasta la evaluación final. La suma da el tiempo total.</span></div>
+      <div style="height:300px"><canvas id="bio-etapas">Etapas</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Duración total por lote (días de evaluación)<span class="help-ico">i</span><span class="help-tip">Días totales de evaluación de cada lote, ordenados de mayor a menor. Permite identificar los lotes que más tardaron.</span></div>
+      <div style="height:340px"><canvas id="bio-duracion">Duración</canvas></div>
+    </div>
+  </div>
+
+  <!-- REZAGO -->
+  <div id="bio-pg-rezago" class="pg hidden">
+    <div class="g3" id="bio-rezago-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Lotes en rezago vs sin rezago<span class="help-ico">i</span><span class="help-tip">Un lote entra en "rezago" cuando su proceso se atrasa más de lo esperado. Muestra la proporción de lotes que cayeron en rezago.</span></div>
+        <div style="height:230px"><canvas id="bio-rezago-donut">Rezago</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Rezago por producto<span class="help-ico">i</span><span class="help-tip">Cuántos lotes de cada producto cayeron en rezago. Ayuda a identificar qué productos tienen más problemas de atraso.</span></div>
+        <div style="height:230px"><canvas id="bio-rezago-prod">Rezago producto</canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CCAYAC vs LEI -->
+  <div id="bio-pg-lab" class="pg hidden">
+    <div class="g3" id="bio-lab-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Lotes analizados por laboratorio<span class="help-ico">i</span><span class="help-tip">Cuántos lotes analizó cada laboratorio (CCAYAC o LEI).</span></div>
+        <div style="height:230px"><canvas id="bio-lab-donut">Laboratorio</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Tiempo de análisis: CCAYAC vs LEI (días)<span class="help-ico">i</span><span class="help-tip">Comparación del tiempo promedio, mínimo y máximo de análisis de cada laboratorio. Un laboratorio más rápido agiliza toda la liberación del lote.</span></div>
+        <div style="height:230px"><canvas id="bio-lab-comp">Comparación</canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETALLE -->
+  <div id="bio-pg-det" class="pg hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="ct" style="margin-bottom:0">Detalle de lotes <span class="info" id="bio-det-cnt" style="color:#94A3B8"></span></div>
+        <input type="text" id="bio-srch" class="sf" placeholder="Buscar producto, lote, entrada..." oninput="renderBIODet()">
+      </div>
+      <div class="tw"><table><thead><tr>
+        <th>Producto</th><th>Lote</th><th>Estado</th><th>Análisis</th><th style="text-align:center">Rezago</th>
+        <th>Entrada COFEPRIS</th><th style="text-align:center">D. Análisis</th><th style="text-align:center">D. Total Eval.</th><th>Año Resol.</th>
+      </tr></thead><tbody id="bio-det-body"></tbody></table></div>
+    </div>
+  </div>
 </div>
 
 
