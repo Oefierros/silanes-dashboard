@@ -1,6 +1,106 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+<head
+<!-- ══════════════════════════════════════════════════════════
+     UNIVERSO BIOLÓGICOS (liberación de lotes ante COFEPRIS)
+══════════════════════════════════════════════════════════ -->
+<div id="uni-bio" class="universe">
+  <div class="sub-hdr">
+    <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
+    <div id="bio-fp"></div>
+    <div id="bio-fe"></div>
+    <div id="bio-fl"></div>
+    <div id="bio-fy"></div>
+    <span class="info" id="bio-info">76 lotes</span>
+  </div>
+  <div class="sec-tabs">
+    <button class="sec-tab on" onclick="showBIOTab('ov',this)">📊 Resumen</button>
+    <button class="sec-tab" onclick="showBIOTab('tiempos',this)">⏱️ Tiempos del Proceso</button>
+    <button class="sec-tab" onclick="showBIOTab('rezago',this)">⚠️ Rezago</button>
+    <button class="sec-tab" onclick="showBIOTab('lab',this)">🔬 CCAYAC vs LEI</button>
+    <button class="sec-tab" onclick="showBIOTab('det',this)">🔎 Detalle</button>
+  </div>
+
+  <!-- RESUMEN -->
+  <div id="bio-pg-ov" class="pg">
+    <div class="g4" id="bio-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Distribución por Estado<span class="help-ico">i</span><span class="help-tip">Estado actual de cada lote biológico. Haz clic en un segmento (ej. Aprobado) para ver qué productos lo componen. Usa "volver" para regresar.</span></div>
+        <div id="bio-est-drill-hdr" style="display:none;margin-bottom:8px"></div>
+        <div style="height:230px"><canvas id="bio-donut">Estado</canvas></div>
+        <div id="bio-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Lotes por Producto<span class="help-ico">i</span><span class="help-tip">Cuántos lotes de cada producto (antiveneno) hay en el tracking, separados por estado.</span></div>
+        <div style="height:230px"><canvas id="bio-productos">Productos</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Evolución por año (ingresados vs resueltos)<span class="help-ico">i</span><span class="help-tip">Lotes ingresados a COFEPRIS por año vs lotes que obtuvieron resolución por año. Permite ver el ritmo de trabajo anual.</span></div>
+      <div style="height:260px"><canvas id="bio-evolucion">Evolución</canvas></div>
+    </div>
+  </div>
+
+  <!-- TIEMPOS DEL PROCESO -->
+  <div id="bio-pg-tiempos" class="pg hidden">
+    <div class="g4" id="bio-time-kpis"></div>
+    <div class="card">
+      <div class="ct">¿Cuánto tarda cada etapa del proceso? (días promedio)<span class="help-ico">i</span><span class="help-tip">Tiempo promedio en días que toma cada etapa del proceso de liberación de un lote: desde el ingreso a análisis, el análisis en laboratorio, el ingreso del CoA, hasta la evaluación final. La suma da el tiempo total.</span></div>
+      <div style="height:300px"><canvas id="bio-etapas">Etapas</canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Duración total por lote (días de evaluación)<span class="help-ico">i</span><span class="help-tip">Días totales de evaluación de cada lote, ordenados de mayor a menor. Permite identificar los lotes que más tardaron.</span></div>
+      <div style="height:340px"><canvas id="bio-duracion">Duración</canvas></div>
+    </div>
+  </div>
+
+  <!-- REZAGO -->
+  <div id="bio-pg-rezago" class="pg hidden">
+    <div class="g3" id="bio-rezago-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Lotes en rezago vs sin rezago<span class="help-ico">i</span><span class="help-tip">Un lote entra en "rezago" cuando su proceso se atrasa más de lo esperado. Muestra la proporción de lotes que cayeron en rezago.</span></div>
+        <div style="height:230px"><canvas id="bio-rezago-donut">Rezago</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Rezago por producto<span class="help-ico">i</span><span class="help-tip">Cuántos lotes de cada producto cayeron en rezago. Ayuda a identificar qué productos tienen más problemas de atraso.</span></div>
+        <div style="height:230px"><canvas id="bio-rezago-prod">Rezago producto</canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CCAYAC vs LEI -->
+  <div id="bio-pg-lab" class="pg hidden">
+    <div class="g3" id="bio-lab-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Lotes analizados por laboratorio<span class="help-ico">i</span><span class="help-tip">Cuántos lotes analizó cada laboratorio (CCAYAC o LEI).</span></div>
+        <div style="height:230px"><canvas id="bio-lab-donut">Laboratorio</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Tiempo de análisis: CCAYAC vs LEI (días)<span class="help-ico">i</span><span class="help-tip">Comparación del tiempo promedio, mínimo y máximo de análisis de cada laboratorio. Un laboratorio más rápido agiliza toda la liberación del lote.</span></div>
+        <div style="height:230px"><canvas id="bio-lab-comp">Comparación</canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETALLE -->
+  <div id="bio-pg-det" class="pg hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="ct" style="margin-bottom:0">Detalle de lotes <span class="info" id="bio-det-cnt" style="color:#94A3B8"></span></div>
+        <input type="text" id="bio-srch" class="sf" placeholder="Buscar producto, lote, entrada..." oninput="renderBIODet()">
+      </div>
+      <div class="tw"><table><thead><tr>
+        <th>Producto</th><th>Lote</th><th>Estado</th><th>Análisis</th><th style="text-align:center">Rezago</th>
+        <th>Entrada COFEPRIS</th><th style="text-align:center">D. Análisis</th><th style="text-align:center">D. Total Eval.</th><th>Año Resol.</th>
+      </tr></thead><tbody id="bio-det-body"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Silanes ARN · Dashboard Regulatorio 2025-2030</title>
@@ -126,6 +226,7 @@ tr:hover td{background:#F8FAFC}
     <button class="main-tab" onclick="showUniverse('pag',this)">💳 Registro de Pagos</button>
     <button class="main-tab" onclick="showUniverse('ari',this)">🌎 Plan de Trabajo ARI</button>
     <button class="main-tab" onclick="showUniverse('rn',this)">🧪 Análisis de Registros Nuevos</button>
+    <button class="main-tab" onclick="showUniverse('bio',this)">🧬 Biológicos</button>
   </div>
 </div>
 
@@ -945,6 +1046,334 @@ document.addEventListener('click',function(e){
   for(var i=0;i<all.length;i++){all[i].classList.remove('open');}
 });
 
+/* ══════════════════════════════════════════════════════════
+   LÓGICA UNIVERSO BIOLÓGICOS
+══════════════════════════════════════════════════════════ */
+var _bioRendered={};
+
+function showBIOTab(id,btn){
+  ['ov','tiempos','rezago','lab','det'].forEach(function(x){var el=document.getElementById('bio-pg-'+x);if(el)el.classList.add('hidden');});
+  document.querySelectorAll('#uni-bio .sec-tab').forEach(function(b){b.classList.remove('on');});
+  var pg=document.getElementById('bio-pg-'+id);if(pg)pg.classList.remove('hidden');
+  if(btn)btn.classList.add('on');
+  /* Render lazy por pestaña */
+  if(id==='tiempos')renderBIOTiempos();
+  else if(id==='rezago')renderBIORezago();
+  else if(id==='lab')renderBIOLab();
+  else if(id==='det')renderBIODet();
+}
+
+/* Colores por estado */
+function bioEstadoColor(e){
+  var m={'Aprobado':'#059669','Sometido':'#0891B2','Planeado':'#7C3AED','Cancelado':'#DC2626','Desistido':'#D97706','Sin estado':'#94A3B8'};
+  return m[e]||'#94A3B8';
+}
+
+/* Filtros */
+function initFiltrosBIO(){
+  if(!BIO||!BIO.records)return;
+  var prods={};BIO.records.forEach(function(d){if(d.producto)prods[d.producto]=1;});
+  msBuild('bio-fp','Productos',Object.keys(prods).sort().map(function(p){return{v:p,t:p};}),applyBIO);
+  var ests={};BIO.records.forEach(function(d){if(d.estado)ests[d.estado]=1;});
+  msBuild('bio-fe','Estados',Object.keys(ests).sort().map(function(e){return{v:e,t:e};}),applyBIO);
+  var labs={};BIO.records.forEach(function(d){if(d.analisisPor)labs[d.analisisPor]=1;});
+  msBuild('bio-fl','Laboratorio',Object.keys(labs).sort().map(function(l){return{v:l,t:l};}),applyBIO);
+  var anios={};BIO.records.forEach(function(d){if(d.anioIngreso)anios[d.anioIngreso]=1;});
+  msBuild('bio-fy','Año ingreso',Object.keys(anios).sort().map(function(y){return{v:String(y),t:String(y)};}),applyBIO);
+}
+
+function applyBIO(){
+  var fp=msGet('bio-fp'), fe=msGet('bio-fe'), fl=msGet('bio-fl'), fy=msGet('bio-fy');
+  BIOF=BIO.records.filter(function(d){
+    if(fp.length&&fp.indexOf(d.producto)<0)return false;
+    if(fe.length&&fe.indexOf(d.estado)<0)return false;
+    if(fl.length&&fl.indexOf(d.analisisPor)<0)return false;
+    if(fy.length&&fy.indexOf(String(d.anioIngreso))<0)return false;
+    return true;
+  });
+  setTC('bio-info',BIOF.length+' lotes');
+  renderBIO();
+}
+
+function renderBIO(){
+  renderBIOKpis();
+  renderBIODonut();
+  renderBIOProductos();
+  renderBIOEvolucion();
+  /* Las otras pestañas se renderizan al abrirlas (lazy), pero refrescamos si están visibles */
+  var t=document.getElementById('bio-pg-tiempos'); if(t&&!t.classList.contains('hidden'))renderBIOTiempos();
+  var rz=document.getElementById('bio-pg-rezago'); if(rz&&!rz.classList.contains('hidden'))renderBIORezago();
+  var lb=document.getElementById('bio-pg-lab'); if(lb&&!lb.classList.contains('hidden'))renderBIOLab();
+  var dt=document.getElementById('bio-pg-det'); if(dt&&!dt.classList.contains('hidden'))renderBIODet();
+}
+
+/* Promedio de una columna numérica */
+function bioProm(arr,k){
+  var v=arr.map(function(d){return d[k];}).filter(function(x){return x!==null&&x!==undefined&&x>0;});
+  return v.length?v.reduce(function(a,b){return a+b;},0)/v.length:0;
+}
+
+function renderBIOKpis(){
+  var t=BIOF.length;
+  var aprob=BIOF.filter(function(d){return d.estado==='Aprobado';}).length;
+  var proceso=BIOF.filter(function(d){return d.estado==='Sometido'||d.estado==='Planeado';}).length;
+  var rezago=BIOF.filter(function(d){return d.enRezago;}).length;
+  var promTotal=Math.round(bioProm(BIOF,'dTotal'));
+  setHTML('bio-kpis',[
+    {l:'Total Lotes',v:t,s:'en seguimiento',c:'#065A62'},
+    {l:'Aprobados',v:aprob,s:pct(aprob,t)+'% liberados',c:'#059669'},
+    {l:'En Proceso',v:proceso,s:'sometidos + planeados',c:'#0891B2'},
+    {l:'En Rezago',v:rezago,s:pct(rezago,t)+'% atrasados',c:'#DC2626'},
+    {l:'Tiempo Prom. Total',v:promTotal+'d',s:'días de evaluación',c:'#7C3AED'}
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+';font-size:'+(String(k.v).length>5?'20px':'26px')+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+}
+
+var BIO_EST_DRILL=null;
+function renderBIODonut(){
+  var hdr=document.getElementById('bio-est-drill-hdr');
+  if(!BIO_EST_DRILL){
+    if(hdr){hdr.style.display='none';hdr.innerHTML='';}
+    var cc={};BIOF.forEach(function(d){cc[d.estado]=(cc[d.estado]||0)+1;});
+    var labels=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];});
+    var vals=labels.map(function(l){return cc[l];});
+    var colors=labels.map(bioEstadoColor);
+    dc('bio-donut');
+    var ctx=document.getElementById('bio-donut').getContext('2d');
+    CH['bio-donut']=new Chart(ctx,{type:'doughnut',
+      data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        onClick:function(evt,els){if(els&&els.length){BIO_EST_DRILL=labels[els[0].index];renderBIODonut();}},
+        onHover:function(evt,els){evt.native.target.style.cursor=els&&els.length?'pointer':'default';},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,BIOF.length)+'%) · clic para productos';}}}}}});
+    setHTML('bio-donut-leg',labels.map(function(l,i){
+      return'<div onclick="BIO_EST_DRILL=\''+l.replace(/'/g,"\\'")+'\';renderBIODonut();" style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
+    }).join(''));
+  } else {
+    var est=BIO_EST_DRILL;
+    var delEst=BIOF.filter(function(d){return d.estado===est;});
+    var baseColor=bioEstadoColor(est);
+    if(hdr){hdr.style.display='block';
+      hdr.innerHTML='<button onclick="BIO_EST_DRILL=null;renderBIODonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
+        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+est+' · '+delEst.length+' lotes</span>';
+    }
+    var pm={};delEst.forEach(function(d){pm[d.producto]=(pm[d.producto]||0)+1;});
+    var prods=Object.keys(pm).sort(function(a,b){return pm[b]-pm[a];});
+    var vals=prods.map(function(p){return pm[p];});
+    var colors=prods.map(function(p,i){return rnTono(baseColor,i);});
+    dc('bio-donut');
+    var ctx=document.getElementById('bio-donut').getContext('2d');
+    CH['bio-donut']=new Chart(ctx,{type:'doughnut',
+      data:{labels:prods,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        onClick:function(evt,els){BIO_EST_DRILL=null;renderBIODonut();},
+        onHover:function(evt,els){evt.native.target.style.cursor='pointer';},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+(c.parsed>1?' lotes':' lote');}}}}}});
+    setHTML('bio-donut-leg',prods.map(function(p,i){
+      return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+p+' ('+vals[i]+')</div>';
+    }).join(''));
+  }
+}
+
+function renderBIOProductos(){
+  var pm={};
+  BIOF.forEach(function(d){
+    if(!pm[d.producto])pm[d.producto]={aprob:0,otro:0};
+    if(d.estado==='Aprobado')pm[d.producto].aprob++;else pm[d.producto].otro++;
+  });
+  var prods=Object.keys(pm).sort(function(a,b){return (pm[b].aprob+pm[b].otro)-(pm[a].aprob+pm[a].otro);});
+  dc('bio-productos');
+  var ctx=document.getElementById('bio-productos').getContext('2d');
+  CH['bio-productos']=new Chart(ctx,{type:'bar',
+    data:{labels:prods,datasets:[
+      {label:'Aprobados',data:prods.map(function(p){return pm[p].aprob;}),backgroundColor:'#059669',borderRadius:3,stack:'a'},
+      {label:'Otros estados',data:prods.map(function(p){return pm[p].otro;}),backgroundColor:'#CBD5E1',borderRadius:3,stack:'a'}
+    ]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{stacked:true,grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}},
+              y:{stacked:true,grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}}}}});
+}
+
+function renderBIOEvolucion(){
+  var ing={},res={};
+  BIOF.forEach(function(d){
+    if(d.anioIngreso)ing[d.anioIngreso]=(ing[d.anioIngreso]||0)+1;
+    if(d.anioResol)res[d.anioResol]=(res[d.anioResol]||0)+1;
+  });
+  var anios={};Object.keys(ing).forEach(function(y){anios[y]=1;});Object.keys(res).forEach(function(y){anios[y]=1;});
+  var yrs=Object.keys(anios).sort();
+  dc('bio-evolucion');
+  var ctx=document.getElementById('bio-evolucion').getContext('2d');
+  CH['bio-evolucion']=new Chart(ctx,{type:'bar',
+    data:{labels:yrs,datasets:[
+      {label:'Ingresados',data:yrs.map(function(y){return ing[y]||0;}),backgroundColor:'#0891B2',borderRadius:5},
+      {label:'Resueltos',data:yrs.map(function(y){return res[y]||0;}),backgroundColor:'#059669',borderRadius:5}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
+}
+
+function renderBIOTiempos(){
+  /* KPIs de tiempo por etapa */
+  var etapas=[
+    {k:'dIngAnalisis',n:'Ingreso→Análisis'},
+    {k:'dAnalisis',n:'Análisis Lab'},
+    {k:'dIngCoA',n:'Ingreso CoA'},
+    {k:'dEvalCoA',n:'Evaluación'},
+    {k:'dTotal',n:'TOTAL'}
+  ];
+  setHTML('bio-time-kpis',etapas.map(function(e){
+    var p=Math.round(bioProm(BIOF,e.k));
+    var col=e.k==='dTotal'?'#7C3AED':'#0A9AA6';
+    return'<div class="kpi" style="border-top-color:'+col+'"><div class="kl">'+e.n+'</div><div class="kv" style="color:'+col+'">'+p+'d</div><div class="ks">días promedio</div></div>';
+  }).join(''));
+
+  /* Gráfica de etapas: min/prom/max en días */
+  var etapasG=[
+    {k:'dIngAnalisis',n:'Ingreso→Análisis'},
+    {k:'dAnalisis',n:'Análisis Lab'},
+    {k:'dIngCoA',n:'Ingreso CoA'},
+    {k:'dPostCoA',n:'Post-CoA'},
+    {k:'dEvalCoA',n:'Evaluación'}
+  ];
+  var mins=[],proms=[],maxs=[],labels=[];
+  etapasG.forEach(function(e){
+    var vals=BIOF.map(function(d){return d[e.k];}).filter(function(x){return x!==null&&x>0;});
+    labels.push(e.n);
+    if(vals.length){
+      mins.push(Math.min.apply(null,vals));
+      proms.push(Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length));
+      maxs.push(Math.max.apply(null,vals));
+    }else{mins.push(0);proms.push(0);maxs.push(0);}
+  });
+  dc('bio-etapas');
+  var ctx=document.getElementById('bio-etapas').getContext('2d');
+  CH['bio-etapas']=new Chart(ctx,{type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'Mínimo',data:mins,backgroundColor:'#059669',borderRadius:3},
+      {label:'Promedio',data:proms,backgroundColor:'#0A9AA6',borderRadius:3},
+      {label:'Máximo',data:maxs,backgroundColor:'#DC2626',borderRadius:{topLeft:4,topRight:4}}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'},title:{display:true,text:'Días',color:'#94A3B8',font:{size:9}}}}}});
+
+  /* Duración total por lote (barras horizontales, top por días) */
+  var conTotal=BIOF.filter(function(d){return d.dTotal&&d.dTotal>0;}).slice().sort(function(a,b){return b.dTotal-a.dTotal;}).slice(0,20);
+  var canvas=document.getElementById('bio-duracion');
+  if(canvas)canvas.parentNode.style.height=Math.max(240,conTotal.length*26+50)+'px';
+  dc('bio-duracion');
+  var ctx2=canvas.getContext('2d');
+  CH['bio-duracion']=new Chart(ctx2,{type:'bar',
+    data:{labels:conTotal.map(function(d){var n=(d.producto+' '+(d.lote||''));return n.length>28?n.slice(0,28)+'…':n;}),
+      datasets:[{label:'Días totales',data:conTotal.map(function(d){return d.dTotal;}),
+        backgroundColor:conTotal.map(function(d){return d.enRezago?'#DC2626':'#0A9AA6';}),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){var d=conTotal[c.dataIndex];return c.parsed.x+' días'+(d.enRezago?' (en rezago)':'');}}}},
+      scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'},title:{display:true,text:'Días',color:'#94A3B8',font:{size:9}}},
+              y:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}}}}});
+}
+
+function renderBIORezago(){
+  var t=BIOF.length;
+  var rez=BIOF.filter(function(d){return d.enRezago;});
+  var sinRez=t-rez.length;
+  setHTML('bio-rezago-kpis',[
+    {l:'Lotes en Rezago',v:rez.length,s:pct(rez.length,t)+'% del total',c:'#DC2626'},
+    {l:'Sin Rezago',v:sinRez,s:pct(sinRez,t)+'% en tiempo',c:'#059669'},
+    {l:'Productos afectados',v:Object.keys(rez.reduce(function(a,d){a[d.producto]=1;return a;},{})).length,s:'con al menos 1 rezago',c:'#D97706'}
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+
+  dc('bio-rezago-donut');
+  var ctx=document.getElementById('bio-rezago-donut').getContext('2d');
+  CH['bio-rezago-donut']=new Chart(ctx,{type:'doughnut',
+    data:{labels:['En rezago ('+rez.length+')','Sin rezago ('+sinRez+')'],
+      datasets:[{data:[rez.length,sinRez],backgroundColor:['#DC2626','#059669'],borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'bold'},boxWidth:12,padding:10}},
+        tooltip:{callbacks:{label:function(c){return c.label+': '+pct(c.parsed,t)+'%';}}}}}});
+
+  var pm={};rez.forEach(function(d){pm[d.producto]=(pm[d.producto]||0)+1;});
+  var prods=Object.keys(pm).sort(function(a,b){return pm[b]-pm[a];});
+  dc('bio-rezago-prod');
+  var ctx2=document.getElementById('bio-rezago-prod').getContext('2d');
+  CH['bio-rezago-prod']=new Chart(ctx2,{type:'bar',
+    data:{labels:prods,datasets:[{label:'Lotes en rezago',data:prods.map(function(p){return pm[p];}),backgroundColor:'#DC2626',borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}},
+              y:{grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}}}}});
+}
+
+function renderBIOLab(){
+  var labs=['CCAYAC','LEI'];
+  var stats={};
+  labs.forEach(function(L){
+    var arr=BIOF.filter(function(d){return d.analisisPor===L;});
+    var vals=arr.map(function(d){return d.dAnalisis;}).filter(function(x){return x!==null&&x>0;});
+    stats[L]={n:arr.length,prom:vals.length?Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length):0,
+      min:vals.length?Math.min.apply(null,vals):0,max:vals.length?Math.max.apply(null,vals):0};
+  });
+  var masRapido=stats['LEI'].prom&&stats['CCAYAC'].prom?(stats['LEI'].prom<stats['CCAYAC'].prom?'LEI':'CCAYAC'):'--';
+  setHTML('bio-lab-kpis',[
+    {l:'CCAYAC',v:stats['CCAYAC'].prom+'d',s:stats['CCAYAC'].n+' lotes · prom. análisis',c:'#7C3AED'},
+    {l:'LEI',v:stats['LEI'].prom+'d',s:stats['LEI'].n+' lotes · prom. análisis',c:'#0891B2'},
+    {l:'Más rápido',v:masRapido,s:'menor tiempo de análisis',c:'#059669'}
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+
+  dc('bio-lab-donut');
+  var lm={};BIOF.forEach(function(d){lm[d.analisisPor]=(lm[d.analisisPor]||0)+1;});
+  var lkeys=Object.keys(lm);
+  var lcolors={'CCAYAC':'#7C3AED','LEI':'#0891B2','Sin asignar':'#CBD5E1'};
+  var ctx=document.getElementById('bio-lab-donut').getContext('2d');
+  CH['bio-lab-donut']=new Chart(ctx,{type:'doughnut',
+    data:{labels:lkeys,datasets:[{data:lkeys.map(function(l){return lm[l];}),backgroundColor:lkeys.map(function(l){return lcolors[l]||'#94A3B8';}),borderWidth:2,borderColor:'#fff',hoverOffset:5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'bold'},boxWidth:12,padding:8}}}}});
+
+  dc('bio-lab-comp');
+  var ctx2=document.getElementById('bio-lab-comp').getContext('2d');
+  CH['bio-lab-comp']=new Chart(ctx2,{type:'bar',
+    data:{labels:['Mínimo','Promedio','Máximo'],datasets:[
+      {label:'CCAYAC',data:[stats['CCAYAC'].min,stats['CCAYAC'].prom,stats['CCAYAC'].max],backgroundColor:'#7C3AED',borderRadius:4},
+      {label:'LEI',data:[stats['LEI'].min,stats['LEI'].prom,stats['LEI'].max],backgroundColor:'#0891B2',borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'},title:{display:true,text:'Días',color:'#94A3B8',font:{size:9}}}}}});
+}
+
+function bioBadgeEstado(e){
+  var c=bioEstadoColor(e);
+  return'<span class="badge" style="background:'+c+'22;color:'+c+'">'+e+'</span>';
+}
+
+function renderBIODet(){
+  var q=(getEl('bio-srch')?document.getElementById('bio-srch').value:'').toLowerCase();
+  var data=BIOF.filter(function(d){
+    return !q||(d.producto||'').toLowerCase().indexOf(q)>=0||(d.lote||'').toLowerCase().indexOf(q)>=0||(d.entradaCofepris||'').toLowerCase().indexOf(q)>=0;
+  });
+  setTC('bio-det-cnt',data.length+' lotes');
+  setHTML('bio-det-body',data.map(function(d,i){
+    return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'">'+
+      '<td style="font-weight:700;font-size:11px">'+(d.producto||'--')+'</td>'+
+      '<td style="font-size:10px">'+(d.lote||'--')+'</td>'+
+      '<td>'+bioBadgeEstado(d.estado)+'</td>'+
+      '<td style="font-size:10px">'+(d.analisisPor||'--')+'</td>'+
+      '<td style="text-align:center">'+(d.enRezago?'<span style="color:#DC2626;font-weight:800">⚠️ Sí</span>':'<span style="color:#94A3B8">No</span>')+'</td>'+
+      '<td style="font-size:10px">'+(d.entradaCofepris||'--')+'</td>'+
+      '<td style="text-align:center;font-size:10px">'+(d.dAnalisis!==null?d.dAnalisis+'d':'--')+'</td>'+
+      '<td style="text-align:center;font-weight:700;color:#7C3AED">'+(d.dTotal!==null?d.dTotal+'d':'--')+'</td>'+
+      '<td>'+(d.anioResol||'--')+'</td></tr>';
+  }).join(''));
+}
+
 function showUniverse(id,btn){
   document.querySelectorAll('.universe').forEach(function(u){u.classList.remove('on');});
   document.querySelectorAll('.main-tab').forEach(function(b){b.classList.remove('on');});
@@ -967,6 +1396,7 @@ function showUniverse(id,btn){
     else if(id==='pag') renderPAG();
     else if(id==='ari') renderARI();
     else if(id==='rn') renderRN();
+    else if(id==='bio') renderBIO();
   }
 }
 
@@ -2309,6 +2739,8 @@ function renderARIDet(){
 ══════════════════════════════════════ */
 var RNF = [];
 var RNE = [];
+var BIO = {records:[]};
+var BIOF = [];
 var RNCFG = {
   'Aprobado':             {bg:'#DCFCE7',c:'#15803D',bar:'#059669'},
   'Evaluación':           {bg:'#CFFAFE',c:'#155E75',bar:'#0891B2'},
@@ -3569,6 +4001,63 @@ function mostrarCargando(estado){
 /* ════════════════════════════════════════════════════════════
    TRANSFORMAR ANÁLISIS DE REGISTROS NUEVOS (RN)
    ════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════
+   TRANSFORMADOR BIOLÓGICOS
+══════════════════════════════════════ */
+function _bioNum(v){
+  if(v===null||v===undefined||v==='')return null;
+  if(typeof v==='string'&&v.indexOf('INVALID')>=0)return null;
+  var n=parseFloat(v); return isNaN(n)?null:n;
+}
+function _bioDate(v){
+  if(!v||typeof v!=='string')return null;
+  if(v.indexOf('INVALID')>=0)return null;
+  return v.slice(0,10);
+}
+function _bioYear(v){
+  if(v===null||v===undefined)return null;
+  if(typeof v==='string'&&v.indexOf('INVALID')>=0)return null;
+  var n=parseInt(v,10); return isNaN(n)?null:n;
+}
+function _bioClean(v){
+  if(v===null||v===undefined)return null;
+  var s=String(v).trim(); return s===''?null:s;
+}
+function transformBio(rows){
+  var records=(rows||[]).map(function(r){
+    var estado=_bioClean(r['Estado']);
+    var conteoRezago=_bioNum(r['Conteo rezago']);
+    var enRezago=(conteoRezago&&conteoRezago>0)||!!_bioClean(r['EL Rezago']);
+    return {
+      no:_bioClean(r['No.']),
+      producto:_bioClean(r['Producto'])||'Sin producto',
+      lote:_bioClean(r['Lote']),
+      estado:estado||'Sin estado',
+      anioPlaneado:_bioYear(r['Año planeado']),
+      anioIngreso:_bioYear(r['Año ingreso']),
+      anioResol:_bioYear(r['Año resolución']),
+      analisisPor:_bioClean(r['Análisis por '])||'Sin asignar',
+      enRezago:enRezago,
+      pagado:_bioClean(r['Pagos'])==='Pagado',
+      entradaCofepris:_bioClean(r['No. Entrada COFEPRIS']),
+      entregaPlan:_bioDate(r['Entrega planeada de expediente']),
+      entregaReal:_bioDate(r['Entrega real de expediente']),
+      ingCofepris:_bioDate(r['Fecha ingreso a COFEPRIS']),
+      ingLab:_bioDate(r['Fecha de ingreso a CCAYAC/LEI']),
+      resLab:_bioDate(r['Fecha de Resultados CCAYAC/LEI']),
+      ingCoA:_bioDate(r['Fecha ingreso CoA en COFEPRIS']),
+      resolucion:_bioDate(r['Fecha de Recepción de Resolución']),
+      dIngAnalisis:_bioNum(r['Días ingreso vs análisis ']),
+      dAnalisis:_bioNum(r['Días en análisis CCAYAC/LEI']),
+      dIngCoA:_bioNum(r['Días en que se ingreso CoA']),
+      dPostCoA:_bioNum(r['Días posterior al ingreso del CoA']),
+      dEvalCoA:_bioNum(r['Días en evaluación posterior al CoA']),
+      dTotal:_bioNum(r['Días totales evaluación'])
+    };
+  });
+  return {records:records};
+}
+
 function transformRN(rows){
   var records=[];
 
@@ -3691,12 +4180,14 @@ function cargarDatosEnVivo(){
     fetch(WORKER_URL+'/?sheet=arn').then(function(r){return r.json();}),
     fetch(WORKER_URL+'/?sheet=pagos').then(function(r){return r.json();}),
     fetch(WORKER_URL+'/?sheet=ari').then(function(r){return r.json();}),
-    fetch(WORKER_URL+'/?sheet=rn').then(function(r){return r.json();}).catch(function(){return {rows:[]};})
+    fetch(WORKER_URL+'/?sheet=rn').then(function(r){return r.json();}).catch(function(){return {rows:[]};}),
+    fetch(WORKER_URL+'/?sheet=biologicos').then(function(r){return r.json();}).catch(function(){return {rows:[]};})
   ]).then(function(results){
     D   = transformARN(results[0].rows||[]);
     P   = transformPagos(results[1].rows||[]);
     ARI = transformARI(results[2].rows||[]);
     RN  = transformRN((results[3]&&results[3].rows)||[]);
+    BIO = transformBio((results[4]&&results[4].rows)||[]);
 
     // Resetear render flags y datos filtrados
     if(typeof AFILTERED!=='undefined') AFILTERED=D.records.slice();
@@ -3709,6 +4200,8 @@ function cargarDatosEnVivo(){
     if(typeof initFiltrosPAG==='function') initFiltrosPAG();
     if(typeof initFiltrosARI==='function') initFiltrosARI();
     if(typeof initFiltrosRN==='function') initFiltrosRN();
+    if(typeof BIOF!=='undefined') BIOF=BIO.records.slice();
+    if(typeof initFiltrosBIO==='function') initFiltrosBIO();
 
     // Re-renderizar el universo visible
     _rendered={arn:false,pag:false,ari:false,rn:false};
