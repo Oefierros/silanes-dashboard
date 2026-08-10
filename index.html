@@ -799,6 +799,10 @@ tr:hover td{background:#F8FAFC}
       <div class="ct">Evolución por año (ingresados vs resueltos)<span class="help-ico">i</span><span class="help-tip">Lotes ingresados a COFEPRIS por año vs lotes que obtuvieron resolución por año. Permite ver el ritmo de trabajo anual.</span></div>
       <div style="height:260px"><canvas id="bio-evolucion">Evolución</canvas></div>
     </div>
+    <div class="card">
+      <div class="ct">Próximas aprobaciones estimadas (lotes sin concluir)<span class="help-ico">i</span><span class="help-tip">Lotes que aún no tienen resolución pero sí una fecha estimada de aprobación, ordenados por proximidad. Útil para anticipar qué está por liberarse.</span></div>
+      <div id="bio-proximas"></div>
+    </div>
   </div>
 
   <!-- TIEMPOS DEL PROCESO -->
@@ -809,7 +813,7 @@ tr:hover td{background:#F8FAFC}
       <div style="height:300px"><canvas id="bio-etapas">Etapas</canvas></div>
     </div>
     <div class="card">
-      <div class="ct">Duración total por lote (días de evaluación)<span class="help-ico">i</span><span class="help-tip">Días totales de evaluación de cada lote, ordenados de mayor a menor. Permite identificar los lotes que más tardaron.</span></div>
+      <div class="ct">¿Cuánto tarda cada paso, lote por lote? (días)<span class="help-ico">i</span><span class="help-tip">Para cada lote se desglosa el tiempo de los tres pasos secuenciales: (1) del ingreso a COFEPRIS hasta que entra al laboratorio, (2) el análisis en CCAYAC/LEI, y (3) de los resultados hasta que se ingresa el CoA. Pasa el mouse para ver el total, el laboratorio y los días de notificación a AR. Los lotes marcados con ⚠️ están en rezago.</span></div>
       <div style="height:340px"><canvas id="bio-duracion">Duración</canvas></div>
     </div>
   </div>
@@ -853,7 +857,8 @@ tr:hover td{background:#F8FAFC}
       </div>
       <div class="tw"><table><thead><tr>
         <th>Producto</th><th>Lote</th><th>Estado</th><th>Análisis</th><th style="text-align:center">Rezago</th>
-        <th>Entrada COFEPRIS</th><th style="text-align:center">D. Análisis</th><th style="text-align:center">D. Total Eval.</th><th>Año Resol.</th>
+        <th>Entrada COFEPRIS</th><th style="text-align:center">D. Análisis</th><th style="text-align:center">D. Total Eval.</th>
+        <th>Resolución / Estimada</th><th>Año Resol.</th>
       </tr></thead><tbody id="bio-det-body"></tbody></table></div>
     </div>
   </div>
@@ -1100,6 +1105,7 @@ function renderBIO(){
   renderBIODonut();
   renderBIOProductos();
   renderBIOEvolucion();
+  renderBIOProximas();
   /* Las otras pestañas se renderizan al abrirlas (lazy), pero refrescamos si están visibles */
   var t=document.getElementById('bio-pg-tiempos'); if(t&&!t.classList.contains('hidden'))renderBIOTiempos();
   var rz=document.getElementById('bio-pg-rezago'); if(rz&&!rz.classList.contains('hidden'))renderBIORezago();
@@ -1217,6 +1223,32 @@ function renderBIOEvolucion(){
               y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
 }
 
+function renderBIOProximas(){
+  /* Lotes sin resolución real pero con fecha estimada */
+  var pend=BIOF.filter(function(d){return !d.resolucion&&d.estimAprob;})
+    .slice().sort(function(a,b){return a.estimAprob<b.estimAprob?-1:1;});
+  if(!pend.length){
+    setHTML('bio-proximas','<div style="padding:14px;color:#94A3B8;font-size:12px">No hay lotes pendientes con fecha estimada en este filtro.</div>');
+    return;
+  }
+  var hoy=new Date().toISOString().slice(0,10);
+  setHTML('bio-proximas','<div style="display:flex;flex-direction:column;gap:7px">'+
+    pend.map(function(d){
+      var vencida=d.estimAprob<hoy;
+      var col=vencida?'#DC2626':'#D97706';
+      var etiqueta=vencida?'fecha estimada ya pasó':'estimada';
+      return'<div style="display:flex;align-items:center;gap:12px;padding:9px 12px;background:#F8FAFC;border-radius:9px;border-left:4px solid '+col+'">'+
+        '<div style="flex:1;min-width:0">'+
+          '<div style="font-size:12px;font-weight:800;color:#1E293B">'+(d.producto||'--')+' <span style="color:#64748B;font-weight:600">'+(d.lote||'')+'</span></div>'+
+          '<div style="font-size:10px;color:#94A3B8">'+bioBadgeEstado(d.estado)+' · '+(d.analisisPor||'sin lab')+'</div>'+
+        '</div>'+
+        '<div style="text-align:right;flex-shrink:0">'+
+          '<div style="font-size:13px;font-weight:900;color:'+col+'">'+d.estimAprob+'</div>'+
+          '<div style="font-size:9px;color:#94A3B8">'+etiqueta+'</div>'+
+        '</div></div>';
+    }).join('')+'</div>');
+}
+
 function renderBIOTiempos(){
   /* KPIs de tiempo por etapa */
   var etapas=[
@@ -1263,20 +1295,61 @@ function renderBIOTiempos(){
       scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
               y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'},title:{display:true,text:'Días',color:'#94A3B8',font:{size:9}}}}}});
 
-  /* Duración total por lote (barras horizontales, top por días) */
-  var conTotal=BIOF.filter(function(d){return d.dTotal&&d.dTotal>0;}).slice().sort(function(a,b){return b.dTotal-a.dTotal;}).slice(0,20);
+  /* ── Duración por lote, desglosada por paso del proceso ── */
+  /* Días entre dos fechas (ISO) */
+  function bioDias(a,b){
+    if(!a||!b)return null;
+    var d1=new Date(a), d2=new Date(b);
+    var dd=Math.round((d2-d1)/86400000);
+    return dd;
+  }
+  var pasos=BIOF.map(function(d){
+    var t1=bioDias(d.ingCofepris,d.ingLab);      /* Ingreso COFEPRIS → laboratorio */
+    var t2=bioDias(d.ingLab,d.resLab);           /* Análisis en CCAYAC/LEI */
+    var t3=bioDias(d.resLab,d.ingCoA);           /* Resultados → ingreso CoA */
+    var tNotif=bioDias(d.resLab,d.notifAR);      /* Resultados → notificación AR (paso paralelo) */
+    /* Los negativos (fechas fuera de orden) se tratan como 0 */
+    t1=(t1!==null&&t1>0)?t1:0;
+    t2=(t2!==null&&t2>0)?t2:0;
+    t3=(t3!==null&&t3>0)?t3:0;
+    return {
+      nombre:(d.producto+' '+(d.lote||'')).trim(),
+      producto:d.producto, lote:d.lote, estado:d.estado, lab:d.analisisPor,
+      t1:t1, t2:t2, t3:t3, total:t1+t2+t3, tNotif:tNotif, rezago:d.enRezago
+    };
+  }).filter(function(x){return x.total>0;});
+
+  /* Ordenar por duración total (mayor primero) */
+  pasos.sort(function(a,b){return b.total-a.total;});
+
   var canvas=document.getElementById('bio-duracion');
-  if(canvas)canvas.parentNode.style.height=Math.max(240,conTotal.length*26+50)+'px';
+  if(canvas)canvas.parentNode.style.height=Math.max(260,pasos.length*24+60)+'px';
   dc('bio-duracion');
+  if(!pasos.length)return;
   var ctx2=canvas.getContext('2d');
   CH['bio-duracion']=new Chart(ctx2,{type:'bar',
-    data:{labels:conTotal.map(function(d){var n=(d.producto+' '+(d.lote||''));return n.length>28?n.slice(0,28)+'…':n;}),
-      datasets:[{label:'Días totales',data:conTotal.map(function(d){return d.dTotal;}),
-        backgroundColor:conTotal.map(function(d){return d.enRezago?'#DC2626':'#0A9AA6';}),borderRadius:4}]},
+    data:{labels:pasos.map(function(x){var n=x.nombre;return (x.rezago?'⚠️ ':'')+(n.length>26?n.slice(0,26)+'…':n);}),
+      datasets:[
+        {label:'1. Ingreso → Laboratorio',data:pasos.map(function(x){return x.t1;}),backgroundColor:'#065A62',borderRadius:2,stack:'a'},
+        {label:'2. Análisis CCAYAC/LEI',data:pasos.map(function(x){return x.t2;}),backgroundColor:'#0A9AA6',borderRadius:2,stack:'a'},
+        {label:'3. Resultados → CoA',data:pasos.map(function(x){return x.t3;}),backgroundColor:'#4DBAC2',borderRadius:{topRight:4,bottomRight:4},stack:'a'}
+      ]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){var d=conTotal[c.dataIndex];return c.parsed.x+' días'+(d.enRezago?' (en rezago)':'');}}}},
-      scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'},title:{display:true,text:'Días',color:'#94A3B8',font:{size:9}}},
-              y:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}}}}});
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}},
+        tooltip:{callbacks:{
+          afterLabel:function(c){var p=pasos[c.dataIndex];return 'Lab: '+(p.lab||'--');},
+          footer:function(its){
+            var p=pasos[its[0].dataIndex];
+            var txt='Total: '+p.total+' días';
+            if(p.tNotif!==null)txt+='\nNotificación a AR: '+p.tNotif+'d desde resultados';
+            if(p.rezago)txt+='\n⚠️ Lote en rezago';
+            return txt;
+          }
+        }}},
+      scales:{
+        x:{stacked:true,grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'},title:{display:true,text:'Días',color:'#94A3B8',font:{size:9}}},
+        y:{stacked:true,grid:{display:false},ticks:{font:{size:8,weight:'bold'},color:'#374151'}}
+      }}});
 }
 
 function renderBIORezago(){
@@ -1354,6 +1427,17 @@ function bioBadgeEstado(e){
   return'<span class="badge" style="background:'+c+'22;color:'+c+'">'+e+'</span>';
 }
 
+/* Devuelve la fecha de resolución (real) o la estimada, con indicador visual */
+function bioFechaResol(d){
+  if(d.resolucion){
+    return '<span style="color:#059669;font-weight:700" title="Fecha real de recepción de resolución">✓ '+d.resolucion+'</span>';
+  }
+  if(d.estimAprob){
+    return '<span style="color:#D97706;font-weight:600" title="Fecha estimada de aprobación (aún no concluye)">~ '+d.estimAprob+'</span>';
+  }
+  return '<span style="color:#CBD5E1">--</span>';
+}
+
 function renderBIODet(){
   var q=(getEl('bio-srch')?document.getElementById('bio-srch').value:'').toLowerCase();
   var data=BIOF.filter(function(d){
@@ -1370,6 +1454,7 @@ function renderBIODet(){
       '<td style="font-size:10px">'+(d.entradaCofepris||'--')+'</td>'+
       '<td style="text-align:center;font-size:10px">'+(d.dAnalisis!==null?d.dAnalisis+'d':'--')+'</td>'+
       '<td style="text-align:center;font-weight:700;color:#7C3AED">'+(d.dTotal!==null?d.dTotal+'d':'--')+'</td>'+
+      '<td style="font-size:10px">'+bioFechaResol(d)+'</td>'+
       '<td>'+(d.anioResol||'--')+'</td></tr>';
   }).join(''));
 }
@@ -4045,7 +4130,9 @@ function transformBio(rows){
       ingCofepris:_bioDate(r['Fecha ingreso a COFEPRIS']),
       ingLab:_bioDate(r['Fecha de ingreso a CCAYAC/LEI']),
       resLab:_bioDate(r['Fecha de Resultados CCAYAC/LEI']),
+      notifAR:_bioDate(r['Fecha de notificación a AR']),
       ingCoA:_bioDate(r['Fecha ingreso CoA en COFEPRIS']),
+      estimAprob:_bioDate(r['Fecha estimada de aprobación']),
       resolucion:_bioDate(r['Fecha de Recepción de Resolución']),
       dIngAnalisis:_bioNum(r['Días ingreso vs análisis ']),
       dAnalisis:_bioNum(r['Días en análisis CCAYAC/LEI']),
