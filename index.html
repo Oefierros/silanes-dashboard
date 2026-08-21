@@ -798,11 +798,11 @@ tr:hover td{background:#F8FAFC}
       </div>
     </div>
     <div class="card">
-      <div class="ct">Lotes en Evaluación<span class="help-ico">i</span><span class="help-tip">Lotes cuyo estado actual es "Evaluación": ya ingresaron y están siendo evaluados por COFEPRIS. Muestra cuántos días llevan desde su ingreso, si están en rezago, y su fecha estimada de resolución.</span></div>
+      <div class="ct">Lotes en Evaluación<span class="help-ico">i</span><span class="help-tip">Lotes cuyo estado actual es "Evaluación": ya ingresaron y están siendo evaluados por COFEPRIS. Muestra cuántos días llevan desde su ingreso, si están en rezago, la fecha en que el trámite se convierte en rezago y, por separado, la fecha estimada de aprobación (son dos datos distintos).</span></div>
       <div id="bio-evaluacion"></div>
     </div>
     <div class="card">
-      <div class="ct">Próximas aprobaciones estimadas (lotes sin concluir)<span class="help-ico">i</span><span class="help-tip">Lotes que aún no tienen resolución pero sí una fecha estimada de aprobación, ordenados por proximidad. Útil para anticipar qué está por liberarse.</span></div>
+      <div class="ct">Próximas aprobaciones estimadas (lotes sin concluir)<span class="help-ico">i</span><span class="help-tip">Lotes que aún no tienen resolución pero sí una fecha estimada de aprobación, ordenados por proximidad. Se muestran DOS fechas distintas: (1) "se vuelve rezago" / "es rezago desde", que es la fecha en que el trámite se convierte en rezago según el tracking, y (2) "aprob. estimada", que es la fecha estimada de aprobación. La etiqueta de color junto al lote indica los días que lleva acumulados en rezago (rojo) o los días que faltan para caer en rezago (ámbar).</span></div>
       <div id="bio-proximas"></div>
     </div>
     <div class="card">
@@ -1356,7 +1356,8 @@ function renderBIOEvaluacion(){
     '<div style="font-size:11px;color:#64748B;margin-bottom:10px"><b style="color:#0891B2;font-size:14px">'+enEval.length+'</b> lote(s) en evaluación</div>'+
     '<div class="tw" style="max-height:300px;overflow-y:auto"><table style="font-size:11px"><thead><tr>'+
       '<th>Producto</th><th>Lote</th><th style="text-align:center">Rezago</th>'+
-      '<th style="text-align:center">Días desde ingreso</th><th>Ingreso CCAYAC/LEI</th><th>Fecha estimada resol.</th>'+
+      '<th style="text-align:center">Días desde ingreso</th><th>Ingreso CCAYAC/LEI</th>'+
+      '<th>Se vuelve rezago</th><th>Aprob. estimada</th>'+
     '</tr></thead><tbody>'+
     enEval.map(function(d,i){
       var dias=diasDesdeIngreso(d);
@@ -1368,6 +1369,13 @@ function renderBIOEvaluacion(){
           ?'<span style="color:#DC2626;font-weight:700" title="La fecha estimada ya pasó">⚠ '+d.estimAprob+'</span>'
           :'<span style="color:#D97706;font-weight:600">~ '+d.estimAprob+'</span>')
         :'<span style="color:#CBD5E1">sin fecha</span>';
+      /* Fecha en que se convierte en rezago (columna del tracking, distinta a la estimada de aprobación) */
+      var hoyS=hoy.toISOString().slice(0,10);
+      var fRez=d.fechaRezago
+        ?(d.fechaRezago<=hoyS
+          ?'<span style="color:#DC2626;font-weight:700" title="Ya se convirtió en rezago">⚠ '+d.fechaRezago+'</span>'
+          :'<span style="color:#475569;font-weight:600">'+d.fechaRezago+'</span>')
+        :'<span style="color:#CBD5E1">sin fecha</span>';
       var lab=d.ingLab?d.ingLab+' <span style="color:#94A3B8;font-size:9px">('+(d.analisisPor||'--')+')</span>':'<span style="color:#CBD5E1">no ha entrado</span>';
       var colDias=(dias!==null&&dias>90)?'#DC2626':((dias!==null&&dias>60)?'#D97706':'#0891B2');
       return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'">'+
@@ -1376,34 +1384,77 @@ function renderBIOEvaluacion(){
         '<td style="text-align:center">'+rez+'</td>'+
         '<td style="text-align:center;font-weight:800;color:'+colDias+'">'+(dias!==null?dias+'d':'--')+'</td>'+
         '<td style="font-size:10px">'+lab+'</td>'+
+        '<td style="font-size:10px">'+fRez+'</td>'+
         '<td style="font-size:10px">'+estim+'</td></tr>';
     }).join('')+
     '</tbody></table></div>');
 }
 
+/* Diferencia en días entre dos fechas 'YYYY-MM-DD' (b - a) */
+function _bioDiffDias(a,b){
+  if(!a||!b)return null;
+  return Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000);
+}
+
 function renderBIOProximas(){
-  /* Lotes sin resolución real pero con fecha estimada */
-  var pend=BIOF.filter(function(d){return !d.resolucion&&d.estimAprob;})
-    .slice().sort(function(a,b){return a.estimAprob<b.estimAprob?-1:1;});
+  var hoy=new Date().toISOString().slice(0,10);
+  /* Lotes sin resolución real que tengan fecha estimada de aprobación y/o fecha de rezago */
+  var pend=BIOF.filter(function(d){return !d.resolucion&&(d.estimAprob||d.fechaRezago);})
+    .slice().sort(function(a,b){
+      /* Primero los que ya están en rezago (los de más días arriba), luego por fecha más próxima */
+      var ra=(a.fechaRezago&&a.fechaRezago<=hoy)?0:1, rb=(b.fechaRezago&&b.fechaRezago<=hoy)?0:1;
+      if(ra!==rb)return ra-rb;
+      if(ra===0)return (_bioDiffDias(b.fechaRezago,hoy)||0)-(_bioDiffDias(a.fechaRezago,hoy)||0);
+      var ka=a.estimAprob||a.fechaRezago, kb=b.estimAprob||b.fechaRezago;
+      return ka<kb?-1:1;
+    });
   if(!pend.length){
-    setHTML('bio-proximas','<div style="padding:14px;color:#94A3B8;font-size:12px">No hay lotes pendientes con fecha estimada en este filtro.</div>');
+    setHTML('bio-proximas','<div style="padding:14px;color:#94A3B8;font-size:12px">No hay lotes pendientes con fecha estimada ni fecha de rezago en este filtro.</div>');
     return;
   }
-  var hoy=new Date().toISOString().slice(0,10);
   setHTML('bio-proximas','<div style="display:flex;flex-direction:column;gap:7px">'+
     pend.map(function(d){
-      var vencida=d.estimAprob<hoy;
-      var col=vencida?'#DC2626':'#D97706';
-      var etiqueta=vencida?'fecha estimada ya pasó':'estimada';
+      /* --- Rezago: fecha en que se convierte en rezago + contador de días --- */
+      var yaRezago=!!(d.fechaRezago&&d.fechaRezago<=hoy);
+      var diasRez=yaRezago?_bioDiffDias(d.fechaRezago,hoy):null;
+      var faltan=(d.fechaRezago&&!yaRezago)?_bioDiffDias(hoy,d.fechaRezago):null;
+
+      /* El color del borde lo manda el rezago activo; si no, la fecha estimada */
+      var vencida=!!(d.estimAprob&&d.estimAprob<hoy);
+      var col=yaRezago?'#DC2626':(vencida?'#DC2626':'#D97706');
+
+      var chip;
+      if(yaRezago){
+        chip='<span style="display:inline-block;background:#FEE2E2;color:#B91C1C;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px" title="Días transcurridos desde que se convirtió en rezago">⏱ '+diasRez+' día'+(diasRez===1?'':'s')+' en rezago</span>';
+      }else if(faltan!==null){
+        chip='<span style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px" title="Días que faltan para convertirse en rezago">'+faltan+' día'+(faltan===1?'':'s')+' para rezago</span>';
+      }else{
+        chip='<span style="display:inline-block;background:#F1F5F9;color:#94A3B8;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px">sin fecha de rezago</span>';
+      }
+
+      var rzHTML=d.fechaRezago
+        ?'<div style="font-size:12px;font-weight:800;color:'+(yaRezago?'#DC2626':'#475569')+'">'+(yaRezago?'⚠️ ':'')+d.fechaRezago+'</div>'+
+         '<div style="font-size:9px;color:#94A3B8">'+(yaRezago?'es rezago desde':'se vuelve rezago')+'</div>'
+        :'<div style="font-size:12px;font-weight:700;color:#CBD5E1">--</div>'+
+         '<div style="font-size:9px;color:#CBD5E1">sin fecha de rezago</div>';
+
+      /* --- Aprobación estimada --- */
+      var colEst=vencida?'#DC2626':'#D97706';
+      var estHTML=d.estimAprob
+        ?'<div style="font-size:13px;font-weight:900;color:'+colEst+'">'+d.estimAprob+'</div>'+
+         '<div style="font-size:9px;color:#94A3B8">'+(vencida?'aprob. estimada ya pasó':'aprob. estimada')+'</div>'
+        :'<div style="font-size:13px;font-weight:800;color:#CBD5E1">--</div>'+
+         '<div style="font-size:9px;color:#CBD5E1">sin fecha estimada</div>';
+
       return'<div style="display:flex;align-items:center;gap:12px;padding:9px 12px;background:#F8FAFC;border-radius:9px;border-left:4px solid '+col+'">'+
         '<div style="flex:1;min-width:0">'+
           '<div style="font-size:12px;font-weight:800;color:#1E293B">'+(d.producto||'--')+' <span style="color:#64748B;font-weight:600">'+(d.lote||'')+'</span></div>'+
-          '<div style="font-size:10px;color:#94A3B8">'+bioBadgeEstado(d.estado)+' · '+(d.analisisPor||'sin lab')+'</div>'+
+          '<div style="font-size:10px;color:#94A3B8;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px">'+bioBadgeEstado(d.estado)+' <span>· '+(d.analisisPor||'sin lab')+'</span> '+chip+'</div>'+
         '</div>'+
-        '<div style="text-align:right;flex-shrink:0">'+
-          '<div style="font-size:13px;font-weight:900;color:'+col+'">'+d.estimAprob+'</div>'+
-          '<div style="font-size:9px;color:#94A3B8">'+etiqueta+'</div>'+
-        '</div></div>';
+        '<div style="text-align:right;flex-shrink:0;min-width:118px" title="Fecha en que se convierte en rezago">'+rzHTML+'</div>'+
+        '<div style="width:1px;align-self:stretch;background:#E2E8F0;flex-shrink:0"></div>'+
+        '<div style="text-align:right;flex-shrink:0;min-width:118px" title="Fecha estimada de aprobación">'+estHTML+'</div>'+
+      '</div>';
     }).join('')+'</div>');
 }
 
@@ -4292,6 +4343,10 @@ function transformBio(rows){
       notifAR:_bioDate(r['Fecha de notificación a AR']),
       ingCoA:_bioDate(r['Fecha ingreso CoA en COFEPRIS']),
       estimAprob:_bioDate(r['Fecha estimada de aprobación']),
+      /* Fecha en que el trámite se convierte legalmente en rezago (col. 19 del tracking).
+         OJO: es DISTINTA de 'Fecha estimada de aprobación'. */
+      fechaRezago:_bioDate(r['Fecha en que se convierte en rezago']),
+      fechaELRezago:_bioDate(r['Fecha EL Rezago']),
       resolucion:_bioDate(r['Fecha de Recepción de Resolución']),
       dIngAnalisis:_bioNum(r['Días ingreso vs análisis ']),
       dAnalisis:_bioNum(r['Días en análisis CCAYAC/LEI']),
