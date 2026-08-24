@@ -974,28 +974,46 @@ tr:hover td{background:#F8FAFC}
 
         /* En apiladas: total encima de cada columna (los segmentos chicos ya no imprimen su valor) */
         if(stacked && !horizontal){
+          /* Holgura arriba para que la barra más alta no toque la leyenda */
+          cfg.options.scales = cfg.options.scales || {};
+          cfg.options.scales.y = cfg.options.scales.y || {};
+          if(cfg.options.scales.y.grace===undefined)cfg.options.scales.y.grace='12%';
+
           cfg.plugins = cfg.plugins || [];
           cfg.plugins.push({
             id:'totalApilado',
             afterDatasetsDraw:function(chart){
-              var ctx2=chart.ctx, idx=chart.data.labels.length, i, j;
+              var ctx2=chart.ctx, area=chart.chartArea, i, j;
+              if(!area)return;
               ctx2.save();
               ctx2.font='bold 10px system-ui,-apple-system,Segoe UI,sans-serif';
               ctx2.fillStyle='#0F172A';
               ctx2.textAlign='center';
               ctx2.textBaseline='bottom';
-              for(i=0;i<idx;i++){
-                var total=0, topY=null, cx=null;
+              for(i=0;i<chart.data.labels.length;i++){
+                /* Se agrupa por 'stack': cada pila lleva su propio total.
+                   Datasets sin stack o solos no llevan total (su etiqueta ya lo muestra). */
+                var pilas={};
                 for(j=0;j<chart.data.datasets.length;j++){
                   if(typeof chart.isDatasetVisible==='function'&&!chart.isDatasetVisible(j))continue;
                   var meta=chart.getDatasetMeta(j);
                   if(meta.hidden)continue;
                   var val=Number(chart.data.datasets[j].data[i])||0;
-                  total+=val;
+                  if(!val)continue;
                   var el=meta.data[i];
-                  if(el&&val!==0){ if(topY===null||el.y<topY)topY=el.y; cx=el.x; }
+                  if(!el)continue;
+                  var key=chart.data.datasets[j].stack||meta.stack||('ds'+j);
+                  if(!pilas[key])pilas[key]={total:0,topY:el.y,cx:el.x,n:0};
+                  pilas[key].total+=val;
+                  pilas[key].n++;
+                  if(el.y<pilas[key].topY)pilas[key].topY=el.y;
                 }
-                if(total&&topY!==null)ctx2.fillText(abrevia(total,money),cx,topY-4);
+                Object.keys(pilas).forEach(function(k){
+                  var p=pilas[k];
+                  if(p.n<2)return; /* un solo segmento: la etiqueta interna ya basta */
+                  var y=Math.max(p.topY-4, area.top+10);
+                  ctx2.fillText(abrevia(p.total,money),p.cx,y);
+                });
               }
               ctx2.restore();
             }
