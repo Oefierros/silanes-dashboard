@@ -248,6 +248,19 @@ tr:hover td{background:#F8FAFC}
       <div class="tw"><table><thead><tr><th>#</th><th>Producto</th><th>RS</th><th>Tipo</th><th>Descripción</th><th>Responsable</th><th>Nueva Fecha Planeada</th><th>Estado</th><th>Motivo / Comentario</th></tr></thead><tbody id="a-bd-rp"></tbody></table></div>
     </div>
     <div class="card">
+      <div class="ct" style="color:#B91C1C">⏳ Rezago MCR (plazo de resolución)<span class="help-ico">i</span><span class="help-tip">Solo trámites tipo MCR. El plazo se cuenta desde la Fecha de ingreso: si ingresó ANTES del 01/08/2026 el trámite cae en rezago al día 46; si ingresó a partir del 01/08/2026, al día 25. Un MCR con Fecha de resolución ya NO cuenta como rezago, sin importar los días. Los que no tienen fecha de ingreso no tienen plazo corriendo y quedan fuera.</span></div>
+      <div id="a-mrz-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px"></div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+        <button class="stgl on" id="a-mrz-rez" onclick="setMRZ('rez')" style="background:#FEE2E2;color:#991B1B;border:1.5px solid #DC2626">⚠ En rezago</button>
+        <button class="stgl" id="a-mrz-prox" onclick="setMRZ('prox')" style="background:#FEF3C7;color:#92400E;border:1.5px solid #D97706">⏱ Próximos (≤10d)</button>
+        <button class="stgl" id="a-mrz-plazo" onclick="setMRZ('plazo')" style="background:#DCFCE7;color:#15803D;border:1.5px solid #059669">✓ En plazo</button>
+        <button class="stgl" id="a-mrz-res" onclick="setMRZ('res')" style="background:#F1F5F9;color:#334155;border:1.5px solid #94A3B8">✔ Resueltos</button>
+        <button class="stgl" id="a-mrz-all" onclick="setMRZ('all')" style="background:#E0F2F3;color:#087A84;border:1.5px solid #0A9AA6">Todos</button>
+        <span id="a-mrz-cnt" style="margin-left:auto;font-size:11px;font-weight:700;color:#64748B"></span>
+      </div>
+      <div class="tw"><table><thead><tr><th>#</th><th>Producto</th><th>RS</th><th>Responsable</th><th>F.Ingreso</th><th>Plazo</th><th>Cae en rezago</th><th>F.Resolución</th><th>Estatus</th></tr></thead><tbody id="a-mrz-body"></tbody></table></div>
+    </div>
+    <div class="card">
       <div class="ct" style="color:#087A84">📅 Próximos Vencimientos<span class="help-ico">i</span><span class="help-tip">Trámites cuya Fecha planeada está por llegar y aún no se ingresan, ordenados por urgencia (días restantes).</span></div>
       <div id="a-upcoming"></div>
     </div>
@@ -2082,6 +2095,121 @@ function renderARNResp(){
 function setAV(v){CUR_AV=v;['at','re','rp'].forEach(function(id){document.getElementById('a-av-'+id).classList.add('hidden');document.getElementById('a-tgl-'+id).classList.remove('on');});document.getElementById('a-av-'+v).classList.remove('hidden');document.getElementById('a-tgl-'+v).classList.add('on');renderARNAlView();}
 function setSV(v){CUR_SV=v;['all','tarde','atiempo'].forEach(function(id){document.getElementById('a-sub-'+id).classList.remove('on');});document.getElementById('a-sub-'+v).classList.add('on');renderARNAtrasados();}
 
+/* ══════════════════════════════════════
+   REZAGO MCR (plazo de resolución COFEPRIS)
+   Regla: el plazo corre desde la Fecha de ingreso.
+     - Ingreso ANTES de 2026-08-01 → cae en rezago al día 46
+     - Ingreso DESDE  2026-08-01 → cae en rezago al día 25
+   Un MCR con Fecha de resolución ya no se considera rezago.
+   ══════════════════════════════════════ */
+var MCR_CORTE='2026-08-01';   /* frontera del cambio de plazo */
+var MCR_PLAZO_ANT=46;         /* días para ingresos previos al corte */
+var MCR_PLAZO_NUE=25;         /* días para ingresos desde el corte */
+var MCR_UMBRAL_PROX=10;       /* días de anticipación para marcar "próximo" */
+var CUR_MRZ='rez';
+
+/* Suma días a una fecha 'YYYY-MM-DD' y devuelve 'YYYY-MM-DD' */
+function addDias(f,n){
+  if(!f)return null;
+  var t=new Date(f+'T00:00:00');
+  if(isNaN(t))return null;
+  t.setDate(t.getDate()+n);
+  return t.toISOString().slice(0,10);
+}
+/* Fecha real de hoy (esta alerta debe medirse contra el día actual, no contra el corte del plan) */
+function hoyISO(){return new Date().toISOString().slice(0,10);}
+
+/* Evalúa un trámite MCR y devuelve su estatus de rezago (o null si no aplica) */
+function mcrRezago(d){
+  if(!d||d.t!=='MCR')return null;
+  if(!d.fi)return null;                       /* sin ingreso el plazo no ha empezado a correr */
+  var plazo=(d.fi<MCR_CORTE)?MCR_PLAZO_ANT:MCR_PLAZO_NUE;
+  var limite=addDias(d.fi,plazo);
+  if(!limite)return null;
+  var hoy=hoyISO();
+  var o={plazo:plazo,limite:limite,dias:null,estado:'',color:'',etiqueta:''};
+
+  if(d.fr){                                   /* ya resuelto → no es rezago */
+    o.estado='res';
+    o.color='#64748B';
+    var tarde=dd(limite,d.fr);
+    o.etiqueta=(tarde!==null&&tarde>0)?('Resuelto ('+tarde+'d fuera de plazo)'):'Resuelto en plazo';
+    return o;
+  }
+  var diff=dd(hoy,limite);                    /* + = faltan días, - = ya se pasó */
+  o.dias=diff;
+  if(diff<0){
+    o.estado='rez'; o.color='#DC2626';
+    o.etiqueta='EN REZAGO · '+Math.abs(diff)+'d';
+  }else if(diff<=MCR_UMBRAL_PROX){
+    o.estado='prox'; o.color='#D97706';
+    o.etiqueta=(diff===0)?'Cae en rezago HOY':('Faltan '+diff+'d');
+  }else{
+    o.estado='plazo'; o.color='#059669';
+    o.etiqueta='En plazo · '+diff+'d';
+  }
+  return o;
+}
+
+function setMRZ(v){
+  CUR_MRZ=v;
+  ['rez','prox','plazo','res','all'].forEach(function(k){
+    var b=document.getElementById('a-mrz-'+k);
+    if(b)b.classList.toggle('on',k===v);
+  });
+  renderARNMcrRezago();
+}
+
+function renderARNMcrRezago(){
+  /* Se evalúa sobre los trámites ya filtrados por los filtros globales */
+  var lista=AFILTERED.map(function(d){
+    var r=mcrRezago(d);
+    return r?{d:d,r:r}:null;
+  }).filter(Boolean);
+
+  var n={rez:0,prox:0,plazo:0,res:0};
+  lista.forEach(function(x){n[x.r.estado]++;});
+
+  /* Tarjetas resumen (clic para filtrar la tabla) */
+  var kpis=[
+    {k:'rez',  l:'En rezago',       v:n.rez,   c:'#DC2626', s:'Plazo vencido sin resolución'},
+    {k:'prox', l:'Próximos',        v:n.prox,  c:'#D97706', s:'Caen en ≤'+MCR_UMBRAL_PROX+' días'},
+    {k:'plazo',l:'En plazo',        v:n.plazo, c:'#059669', s:'Con margen'},
+    {k:'res',  l:'Resueltos',       v:n.res,   c:'#64748B', s:'Ya no cuentan'}
+  ];
+  (document.getElementById('a-mrz-kpis')||{innerHTML:''}).innerHTML=kpis.map(function(x){
+    return'<div onclick="setMRZ(\''+x.k+'\')" style="cursor:pointer;background:#F8FAFC;border-radius:10px;padding:10px 12px;border-left:4px solid '+x.c+'">'+
+      '<div style="font-size:26px;font-weight:900;color:'+x.c+';line-height:1">'+x.v+'</div>'+
+      '<div style="font-size:11px;font-weight:800;color:#0F172A;margin-top:4px">'+x.l+'</div>'+
+      '<div style="font-size:9px;color:#94A3B8;margin-top:2px">'+x.s+'</div></div>';
+  }).join('');
+
+  var data=(CUR_MRZ==='all')?lista:lista.filter(function(x){return x.r.estado===CUR_MRZ;});
+  /* Orden: primero lo más urgente (menos días restantes) */
+  var peso={rez:0,prox:1,plazo:2,res:3};
+  data.sort(function(a,b){
+    if(peso[a.r.estado]!==peso[b.r.estado])return peso[a.r.estado]-peso[b.r.estado];
+    return (a.r.limite||'')>(b.r.limite||'')?1:-1;
+  });
+
+  setTC('a-mrz-cnt',data.length+' MCR'+(CUR_MRZ==='all'?'':' · '+({rez:'en rezago',prox:'próximos',plazo:'en plazo',res:'resueltos'}[CUR_MRZ]||'')));
+
+  (document.getElementById('a-mrz-body')||{innerHTML:''}).innerHTML=data.map(function(x,i){
+    var d=x.d, r=x.r;
+    var bg=r.estado==='rez'?'#FFF5F5':r.estado==='prox'?'#FFFBEB':'#fff';
+    return'<tr style="background:'+bg+'">'+
+      '<td style="font-weight:900;color:'+r.color+'">'+(i+1)+'</td>'+
+      '<td style="font-weight:700">'+(d.p||'--')+'</td>'+
+      '<td style="font-family:monospace;font-size:9px;color:#64748B">'+(d.rs||'--')+'</td>'+
+      '<td style="font-size:10px">'+rs(d.r)+'</td>'+
+      '<td style="font-family:monospace;font-size:10px;color:#087A84">'+d.fi+'</td>'+
+      '<td style="font-weight:800;font-size:10px;color:'+(r.plazo===MCR_PLAZO_ANT?'#0891B2':'#7C3AED')+'">'+r.plazo+' días</td>'+
+      '<td style="font-family:monospace;font-size:10px;font-weight:700;color:'+(r.estado==='rez'?'#DC2626':'#334155')+'">'+r.limite+'</td>'+
+      '<td style="font-family:monospace;font-size:10px;color:'+(d.fr?'#059669':'#CBD5E1')+'">'+(d.fr||'--')+'</td>'+
+      '<td style="font-weight:800;font-size:11px;color:'+r.color+'">'+r.etiqueta+'</td></tr>';
+  }).join('')||'<tr><td colspan="9" style="text-align:center;color:#94A3B8;padding:20px">Sin trámites MCR en esta categoría</td></tr>';
+}
+
 function renderARNAlertas(){
   var at=AFILTERED.filter(function(d){return d.c==='A tiempo';}).length;
   var atr=AFILTERED.filter(function(d){return d.c==='Atrasado';}).length;
@@ -2091,6 +2219,7 @@ function renderARNAlertas(){
   '<div class="sm-card" data-av="re" onclick="setAV(this.dataset.av)"><div style="font-size:34px">🔴</div><div style="font-size:40px;font-weight:900;color:#DC2626;line-height:1;margin:6px 0">'+atr+'</div><div style="font-size:12px;font-weight:800;color:#0F172A;margin-top:6px">Atrasados</div><div style="font-size:10px;color:#64748B;margin-top:3px">Accion inmediata</div></div>'+
   '<div class="sm-card" data-av="rp" onclick="setAV(this.dataset.av)"><div style="font-size:34px">🟡</div><div style="font-size:40px;font-weight:900;color:#D97706;line-height:1;margin:6px 0">'+rp+'</div><div style="font-size:12px;font-weight:800;color:#0F172A;margin-top:6px">Reprogramados</div><div style="font-size:10px;color:#64748B;margin-top:3px">Fecha modificada</div></div>';;
   renderARNAlView();
+  renderARNMcrRezago();
   var upcoming=AFILTERED.filter(function(d){return(d.c==='Pendiente')&&d.fp&&d.fp>=ARNTODAY;}).sort(function(a,b){return a.fp>b.fp?1:-1;}).slice(0,7);
   (document.getElementById('a-upcoming')||{innerHTML:''}).innerHTML=upcoming.map(function(d){var df=dd(ARNTODAY,d.fp);var uc=df<=7?'#DC2626':df<=30?'#D97706':'#059669';return'<div class="uc-item" style="border-left-color:'+uc+'"><div style="background:'+uc+'22;border-radius:8px;width:46px;height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><div style="font-size:16px;font-weight:900;color:'+uc+';line-height:1">'+df+'</div><div style="font-size:8px;color:'+uc+';font-weight:800">DÍAS</div></div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:12px">'+d.p+'</div><div style="font-size:10px;color:#64748B;margin-top:2px">'+(d.rs||'')+' · '+(d.t||'')+'</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:10px;color:#94A3B8;font-family:monospace">'+d.fp+'</div><div style="font-size:10px;color:#64748B;margin-top:2px;font-weight:600">'+rs(d.r)+'</div></div></div>';}).join('')||'<div style="text-align:center;color:#94A3B8;padding:16px">Sin vencimientos próximos</div>';
 }
