@@ -127,6 +127,7 @@ tr:hover td{background:#F8FAFC}
     <button class="main-tab" onclick="showUniverse('ari',this)">🌎 Plan de Trabajo ARI</button>
     <button class="main-tab" onclick="showUniverse('rn',this)">🧪 Análisis de Registros Nuevos</button>
     <button class="main-tab" onclick="showUniverse('bio',this)">🧬 Biológicos</button>
+    <button class="main-tab" onclick="showUniverse('nrr',this)">📑 Seguimiento NRR</button>
   </div>
 </div>
 
@@ -878,6 +879,84 @@ tr:hover td{background:#F8FAFC}
     </div>
   </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════════════
+     UNIVERSO NRR — Seguimiento Regulatorio de productos
+══════════════════════════════════════════════════════════ -->
+<div id="uni-nrr" class="universe">
+  <div class="sub-hdr">
+    <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
+    <div id="nrr-fr"></div>
+    <div id="nrr-fg"></div>
+    <div id="nrr-fs"></div>
+    <div id="nrr-fk"></div>
+    <span class="info" id="nrr-info">91 productos</span>
+  </div>
+  <div class="sec-tabs">
+    <button class="sec-tab on" onclick="showNRRTab('ov',this)">📊 Resumen</button>
+    <button class="sec-tab" onclick="showNRRTab('prod',this)">🔎 Ficha por Producto</button>
+    <button class="sec-tab" onclick="showNRRTab('det',this)">📋 Detalle</button>
+  </div>
+
+  <!-- RESUMEN -->
+  <div id="nrr-pg-ov" class="pg">
+    <div class="card" style="padding:12px 16px">
+      <div style="font-size:10px;color:#94A3B8;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">Requiere atención · haz clic para filtrar</div>
+      <div id="nrr-chips" style="display:flex;gap:9px;flex-wrap:wrap"></div>
+    </div>
+    <div class="g4" id="nrr-kpis"></div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Semáforo de renovación<span class="help-ico">i</span><span class="help-tip">Distribución de los productos según qué tan cerca están de su fecha límite de renovación (150 días antes de que venza la vigencia). Haz clic en un segmento para ver los productos.</span></div>
+        <div id="nrr-sem-hdr" style="display:none;margin-bottom:8px"></div>
+        <div style="height:230px"><canvas id="nrr-semaforo">Semáforo</canvas></div>
+        <div id="nrr-sem-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Carga por responsable<span class="help-ico">i</span><span class="help-tip">Cuántos productos tiene asignado cada responsable de Asuntos Regulatorios, separando los que están en rojo o vencidos.</span></div>
+        <div style="height:230px"><canvas id="nrr-resp">Responsables</canvas></div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="ct">Nivel de riesgo (NPR)<span class="help-ico">i</span><span class="help-tip">Distribución por Número de Prioridad de Riesgo: 4 = Alto, 3 = Medio, 2 = Bajo, 1 = Sin evaluar, 0 = No riesgo. Se usa el NPR porque está completo en todos los productos, a diferencia de la columna de texto.</span></div>
+        <div style="height:230px"><canvas id="nrr-riesgo">Riesgo</canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Vencimientos por trimestre<span class="help-ico">i</span><span class="help-tip">Cuántas vigencias vencen en cada trimestre, para anticipar la carga de renovaciones.</span></div>
+        <div style="height:230px"><canvas id="nrr-venc">Vencimientos</canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FICHA POR PRODUCTO -->
+  <div id="nrr-pg-prod" class="pg hidden">
+    <div style="display:grid;grid-template-columns:300px 1fr;gap:14px;align-items:start">
+      <div class="card" style="position:sticky;top:10px">
+        <div class="ct" style="margin-bottom:8px">Productos</div>
+        <input type="text" id="nrr-buscar" class="sf" placeholder="Buscar producto o registro..." oninput="renderNRRLista()" style="width:100%;margin-bottom:8px">
+        <div id="nrr-lista" style="max-height:600px;overflow-y:auto;display:flex;flex-direction:column;gap:2px"></div>
+      </div>
+      <div id="nrr-panel" style="min-width:0"></div>
+    </div>
+  </div>
+
+  <!-- DETALLE -->
+  <div id="nrr-pg-det" class="pg hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="ct" style="margin-bottom:0">Detalle de productos <span class="info" id="nrr-det-cnt" style="color:#94A3B8"></span></div>
+        <input type="text" id="nrr-srch" class="sf" placeholder="Buscar..." oninput="renderNRRDet()">
+      </div>
+      <div class="tw"><table><thead><tr>
+        <th>Producto</th><th>Registro</th><th>Responsable</th><th>Vigencia</th>
+        <th style="text-align:center">Días</th><th>Semáforo</th><th>Riesgo</th>
+        <th style="text-align:center">Crítico</th><th style="text-align:center">Eventos</th>
+      </tr></thead><tbody id="nrr-det-body"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
 
 
 <script>
@@ -1739,6 +1818,421 @@ function renderBIODet(){
   }).join(''));
 }
 
+/* ══════════════════════════════════════════════════════════
+   LÓGICA UNIVERSO NRR
+══════════════════════════════════════════════════════════ */
+function showNRRTab(id,btn){
+  ['ov','prod','det'].forEach(function(x){var el=document.getElementById('nrr-pg-'+x);if(el)el.classList.add('hidden');});
+  document.querySelectorAll('#uni-nrr .sec-tab').forEach(function(b){b.classList.remove('on');});
+  var pg=document.getElementById('nrr-pg-'+id); if(pg)pg.classList.remove('hidden');
+  if(btn)btn.classList.add('on');
+  if(id==='prod'){renderNRRLista();renderNRRPanel();}
+  else if(id==='det')renderNRRDet();
+}
+
+/* ── Colores ── */
+function nrrColSem(s){
+  var m={'Vencido':'#7F1D1D','Rojo':'#DC2626','Amarillo':'#D97706','Verde':'#059669'};
+  return m[s]||'#CBD5E1';
+}
+function nrrColNpr(n){
+  var m={4:'#DC2626',3:'#D97706',2:'#059669',1:'#94A3B8',0:'#0891B2'};
+  return m[n]||'#CBD5E1';
+}
+function nrrEtiqNpr(n){
+  var m={4:'Alto',3:'Medio',2:'Bajo',1:'Sin evaluar',0:'No riesgo'};
+  return m[n]||'Sin dato';
+}
+function nrrEsCritico(p){
+  var s=String(p.critico||'').toLowerCase();
+  return s==='sí'||s==='si';
+}
+function nrrEventosDe(rs){
+  if(!rs)return [];
+  return NRR.eventos.filter(function(e){return e.rs===rs;});
+}
+function nrrFichaDe(rs){
+  if(!rs)return null;
+  return NRR.ficha.filter(function(f){return f.rs===rs;})[0]||null;
+}
+
+/* ── Alertas de un producto ── */
+function nrrAlertas(p){
+  var out=[];
+  if(p.semRenov==='Vencido'||(p.diasRenov!==null&&p.diasRenov<0))
+    out.push({t:'vencido',ico:'⛔',txt:'Pasó la fecha límite para renovar'+(p.diasRenov!==null?' hace <b>'+Math.abs(Math.round(p.diasRenov))+' días</b>':'')+'.'});
+  else if(p.semRenov==='Rojo')
+    out.push({t:'rojo',ico:'⏰',txt:'Quedan <b>'+(p.diasRenov!==null?Math.round(p.diasRenov):'pocos')+' días</b> para la fecha límite de renovación.'});
+  if(nrrEsCritico(p))
+    out.push({t:'critico',ico:'🔺',txt:'Marcado como <b>producto crítico</b>.'});
+  if(p.npr===4)
+    out.push({t:'riesgo',ico:'⚠️',txt:'Nivel de riesgo <b>Alto</b> (NPR 4).'});
+  if(p.semCC==='Vencido')
+    out.push({t:'cc',ico:'🧪',txt:'Venció el plazo de la confirmación de caducidad'+(p.diasCC!==null?' hace <b>'+Math.abs(Math.round(p.diasCC))+' días</b>':'')+'.'});
+  else if(p.semCC==='Rojo')
+    out.push({t:'cc',ico:'🧪',txt:'La confirmación de caducidad entra en plazo crítico'+(p.diasCC!==null?' ('+Math.round(p.diasCC)+' días)':'')+'.'});
+  if(!p.resp)
+    out.push({t:'sinresp',ico:'👤',txt:'Sin responsable asignado.'});
+  if(!p.rs)
+    out.push({t:'sinrs',ico:'🔗',txt:'Sin registro sanitario: no se puede enlazar con sus eventos ni con su ficha.'});
+  var hoy=new Date().toISOString().slice(0,10);
+  nrrEventosDe(p.rs).forEach(function(e){
+    if(e.proximaRev&&/^\d{4}-\d{2}-\d{2}$/.test(e.proximaRev)&&e.proximaRev<hoy)
+      out.push({t:'revision',ico:'📌',txt:'La revisión del evento <b>'+(e.evento||'').slice(0,60)+'</b> venció el '+e.proximaRev+'.'});
+  });
+  return out;
+}
+function nrrColAlerta(t){
+  var m={vencido:'#7F1D1D',rojo:'#DC2626',critico:'#BE185D',riesgo:'#DC2626',cc:'#7C3AED',sinresp:'#64748B',sinrs:'#64748B',revision:'#D97706'};
+  return m[t]||'#64748B';
+}
+function nrrBgAlerta(t){
+  var m={vencido:'#FEF2F2',rojo:'#FEF2F2',critico:'#FDF2F8',riesgo:'#FEF2F2',cc:'#F5F3FF',sinresp:'#F8FAFC',sinrs:'#F8FAFC',revision:'#FFF7ED'};
+  return m[t]||'#F8FAFC';
+}
+
+/* ── Filtros ── */
+function initFiltrosNRR(){
+  if(!NRR||!NRR.productos.length)return;
+  var resp={};NRR.productos.forEach(function(p){if(p.resp)resp[p.resp]=1;});
+  msBuild('nrr-fr','Responsables',Object.keys(resp).sort().map(function(x){return{v:x,t:x};}),applyNRR);
+  var gr={};NRR.productos.forEach(function(p){if(p.grupo)gr[p.grupo]=1;});
+  msBuild('nrr-fg','Grupo terapéutico',Object.keys(gr).sort().map(function(x){return{v:x,t:x};}),applyNRR);
+  var orden=['Vencido','Rojo','Amarillo','Verde'];
+  var sem={};NRR.productos.forEach(function(p){if(p.semRenov)sem[p.semRenov]=1;});
+  msBuild('nrr-fs','Semáforo',orden.filter(function(x){return sem[x];}).map(function(x){return{v:x,t:x};}),applyNRR);
+  msBuild('nrr-fk','Riesgo',[4,3,2,1,0].map(function(n){return{v:String(n),t:nrrEtiqNpr(n)+' ('+n+')'};}),applyNRR);
+}
+
+function applyNRR(){
+  var fr=msGet('nrr-fr'), fg=msGet('nrr-fg'), fs=msGet('nrr-fs'), fk=msGet('nrr-fk');
+  NRRF=NRR.productos.filter(function(p){
+    if(fr.length&&fr.indexOf(p.resp)<0)return false;
+    if(fg.length&&fg.indexOf(p.grupo)<0)return false;
+    if(fs.length&&fs.indexOf(p.semRenov)<0)return false;
+    if(fk.length&&fk.indexOf(String(p.npr))<0)return false;
+    if(NRR_ALERTA&&!nrrAlertas(p).some(function(a){return a.t===NRR_ALERTA;}))return false;
+    return true;
+  });
+  setTC('nrr-info',NRRF.length+' producto'+(NRRF.length===1?'':'s'));
+  renderNRR();
+}
+
+function renderNRR(){
+  renderNRRChips();
+  renderNRRKpis();
+  renderNRRSemaforo();
+  renderNRRResp();
+  renderNRRRiesgo();
+  renderNRRVenc();
+  var pp=document.getElementById('nrr-pg-prod'); if(pp&&!pp.classList.contains('hidden')){renderNRRLista();renderNRRPanel();}
+  var pd=document.getElementById('nrr-pg-det'); if(pd&&!pd.classList.contains('hidden'))renderNRRDet();
+}
+
+/* ── Chips de alertas ── */
+function renderNRRChips(){
+  var base=NRR.productos;
+  function cuenta(t){return base.filter(function(p){return nrrAlertas(p).some(function(a){return a.t===t;});}).length;}
+  var chips=[
+    {k:'vencido',l:'Renovación vencida',v:cuenta('vencido'),c:'#7F1D1D',bg:'#FEF2F2'},
+    {k:'rojo',l:'En plazo crítico',v:cuenta('rojo'),c:'#DC2626',bg:'#FEF2F2'},
+    {k:'critico',l:'Productos críticos',v:cuenta('critico'),c:'#BE185D',bg:'#FDF2F8'},
+    {k:'riesgo',l:'Riesgo alto',v:cuenta('riesgo'),c:'#DC2626',bg:'#FEF2F2'},
+    {k:'cc',l:'Confirmación caducidad',v:cuenta('cc'),c:'#7C3AED',bg:'#F5F3FF'},
+    {k:'revision',l:'Revisión vencida',v:cuenta('revision'),c:'#D97706',bg:'#FFF7ED'}
+  ];
+  setHTML('nrr-chips',chips.map(function(c){
+    var on=NRR_ALERTA===c.k;
+    return '<button onclick="nrrToggleAlerta(\''+c.k+'\')" style="display:flex;align-items:center;gap:7px;padding:8px 13px;border-radius:9px;font-size:11.5px;font-weight:700;cursor:pointer;border:'+(on?'2px solid '+c.c:'1px solid transparent')+';background:'+c.bg+';color:'+c.c+'">'+
+      '<b style="font-size:16px;font-weight:900">'+c.v+'</b> '+c.l+'</button>';
+  }).join('')+(NRR_ALERTA?'<button onclick="nrrToggleAlerta(null)" style="padding:8px 13px;border-radius:9px;font-size:11.5px;font-weight:700;cursor:pointer;border:1px solid #E2E8F0;background:#F1F5F9;color:#475569">Ver todos</button>':''));
+}
+function nrrToggleAlerta(k){
+  NRR_ALERTA=(NRR_ALERTA===k)?null:k;
+  applyNRR();
+}
+
+function renderNRRKpis(){
+  var t=NRRF.length;
+  var venc=NRRF.filter(function(p){return p.semRenov==='Vencido';}).length;
+  var rojo=NRRF.filter(function(p){return p.semRenov==='Rojo';}).length;
+  var crit=NRRF.filter(nrrEsCritico).length;
+  var alto=NRRF.filter(function(p){return p.npr===4;}).length;
+  var evs=NRRF.reduce(function(s,p){return s+nrrEventosDe(p.rs).length;},0);
+  setHTML('nrr-kpis',[
+    {l:'Productos',v:t,s:'en seguimiento',c:'#065A62'},
+    {l:'Renovación vencida',v:venc,s:pct(venc,t)+'% del total',c:'#7F1D1D'},
+    {l:'En plazo crítico',v:rojo,s:'≤150 días para renovar',c:'#DC2626'},
+    {l:'Productos críticos',v:crit,s:pct(crit,t)+'% marcados',c:'#BE185D'},
+    {l:'Riesgo alto (NPR 4)',v:alto,s:'requieren vigilancia',c:'#D97706'},
+    {l:'Eventos abiertos',v:evs,s:'en los productos filtrados',c:'#0A9AA6'}
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+}
+
+/* ── Dona de semáforo con drill-down ── */
+var NRR_SEM_DRILL=null;
+function renderNRRSemaforo(){
+  var hdr=document.getElementById('nrr-sem-hdr');
+  var orden=['Vencido','Rojo','Amarillo','Verde'];
+  if(!NRR_SEM_DRILL){
+    if(hdr){hdr.style.display='none';hdr.innerHTML='';}
+    var cc={};NRRF.forEach(function(p){var s=p.semRenov||'Sin dato';cc[s]=(cc[s]||0)+1;});
+    var labels=orden.filter(function(s){return cc[s];});
+    if(cc['Sin dato'])labels.push('Sin dato');
+    var vals=labels.map(function(l){return cc[l];});
+    dc('nrr-semaforo');
+    if(!labels.length){setHTML('nrr-sem-leg','<span style="font-size:11px;color:#94A3B8">Sin datos</span>');return;}
+    var ctx=document.getElementById('nrr-semaforo').getContext('2d');
+    CH['nrr-semaforo']=new Chart(ctx,{type:'doughnut',
+      data:{labels:labels,datasets:[{data:vals,backgroundColor:labels.map(nrrColSem),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        onClick:function(evt,els){if(els&&els.length){NRR_SEM_DRILL=labels[els[0].index];renderNRRSemaforo();}},
+        onHover:function(evt,els){evt.native.target.style.cursor=els&&els.length?'pointer':'default';},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,NRRF.length)+'%) · clic para ver productos';}}}}}});
+    setHTML('nrr-sem-leg',labels.map(function(l,i){
+      return'<div onclick="NRR_SEM_DRILL=\''+l+'\';renderNRRSemaforo();" style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
+        '<span style="width:10px;height:10px;border-radius:2px;background:'+nrrColSem(l)+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
+    }).join(''));
+  } else {
+    var s=NRR_SEM_DRILL;
+    var lista=NRRF.filter(function(p){return (p.semRenov||'Sin dato')===s;})
+      .sort(function(a,b){return (a.diasRenov===null?99999:a.diasRenov)-(b.diasRenov===null?99999:b.diasRenov);});
+    if(hdr){hdr.style.display='block';
+      hdr.innerHTML='<button onclick="NRR_SEM_DRILL=null;renderNRRSemaforo();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
+        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+nrrColSem(s)+'">'+s+' · '+lista.length+' productos</span>';}
+    dc('nrr-semaforo');
+    var top=lista.slice(0,14);
+    var ctx2=document.getElementById('nrr-semaforo').getContext('2d');
+    CH['nrr-semaforo']=new Chart(ctx2,{type:'bar',
+      data:{labels:top.map(function(p){return p.producto.length>26?p.producto.slice(0,26)+'…':p.producto;}),
+        datasets:[{label:'Días a la fecha límite',data:top.map(function(p){return p.diasRenov;}),backgroundColor:nrrColSem(s),borderRadius:4}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        onClick:function(){NRR_SEM_DRILL=null;renderNRRSemaforo();},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.parsed.x+' días';}}}},
+        scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'}},
+                y:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}}}}});
+    setHTML('nrr-sem-leg',lista.length>14?'<span style="font-size:10px;color:#94A3B8">Mostrando los 14 más urgentes de '+lista.length+'</span>':'');
+  }
+}
+
+function renderNRRResp(){
+  var m={};
+  NRRF.forEach(function(p){
+    var r=p.resp||'Sin asignar';
+    if(!m[r])m[r]={urg:0,resto:0};
+    if(p.semRenov==='Vencido'||p.semRenov==='Rojo')m[r].urg++;else m[r].resto++;
+  });
+  var ks=Object.keys(m).sort(function(a,b){return (m[b].urg+m[b].resto)-(m[a].urg+m[a].resto);});
+  dc('nrr-resp');
+  var ctx=document.getElementById('nrr-resp').getContext('2d');
+  CH['nrr-resp']=new Chart(ctx,{type:'bar',
+    data:{labels:ks.map(function(k){return k.length>22?k.slice(0,22)+'…':k;}),datasets:[
+      {label:'Vencidos o en rojo',data:ks.map(function(k){return m[k].urg;}),backgroundColor:'#DC2626',borderRadius:3,stack:'a'},
+      {label:'En tiempo',data:ks.map(function(k){return m[k].resto;}),backgroundColor:'#0A9AA6',borderRadius:3,stack:'a'}
+    ]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:10,weight:'bold'},boxWidth:10,boxHeight:10}}},
+      scales:{x:{stacked:true,grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}},
+              y:{stacked:true,grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}}}}});
+}
+
+function renderNRRRiesgo(){
+  var m={};
+  NRRF.forEach(function(p){var n=(p.npr===null||p.npr===undefined)?'sd':p.npr;m[n]=(m[n]||0)+1;});
+  var ks=[4,3,2,1,0].filter(function(n){return m[n];});
+  dc('nrr-riesgo');
+  var ctx=document.getElementById('nrr-riesgo').getContext('2d');
+  CH['nrr-riesgo']=new Chart(ctx,{type:'bar',
+    data:{labels:ks.map(function(n){return nrrEtiqNpr(n);}),
+      datasets:[{label:'Productos',data:ks.map(function(n){return m[n];}),backgroundColor:ks.map(nrrColNpr),borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{title:function(i){return nrrEtiqNpr(ks[i[0].dataIndex])+' (NPR '+ks[i[0].dataIndex]+')';}}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
+}
+
+function renderNRRVenc(){
+  var m={};
+  NRRF.forEach(function(p){
+    if(!p.vigencia)return;
+    var y=p.vigencia.slice(0,4), mo=parseInt(p.vigencia.slice(5,7),10);
+    var q=y+' T'+Math.ceil(mo/3);
+    m[q]=(m[q]||0)+1;
+  });
+  var ks=Object.keys(m).sort();
+  dc('nrr-venc');
+  var ctx=document.getElementById('nrr-venc').getContext('2d');
+  CH['nrr-venc']=new Chart(ctx,{type:'bar',
+    data:{labels:ks,datasets:[{label:'Vigencias que vencen',data:ks.map(function(k){return m[k];}),backgroundColor:'#7C3AED',borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151',maxRotation:45,minRotation:45}},
+              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
+}
+
+/* ── Lista lateral de productos ── */
+function renderNRRLista(){
+  var q=(getEl('nrr-buscar')?document.getElementById('nrr-buscar').value:'').toLowerCase();
+  var lista=NRRF.filter(function(p){
+    return !q||(p.producto||'').toLowerCase().indexOf(q)>=0||(p.rs||'').toLowerCase().indexOf(q)>=0;
+  }).sort(function(a,b){
+    var da=(a.diasRenov===null||a.diasRenov===undefined)?99999:a.diasRenov;
+    var db=(b.diasRenov===null||b.diasRenov===undefined)?99999:b.diasRenov;
+    return da-db;
+  });
+  setHTML('nrr-lista',lista.length?lista.map(function(p,i){
+    var n=nrrEventosDe(p.rs).length;
+    var sel=NRR_SEL&&NRR_SEL.producto===p.producto&&NRR_SEL.rs===p.rs;
+    return '<button onclick="nrrElegir('+i+')" data-k="'+i+'" style="display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;cursor:pointer;border:none;width:100%;text-align:left;font-family:inherit;background:'+(sel?'#065A62':'transparent')+';color:'+(sel?'#fff':'#1E293B')+'">'+
+      '<span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;background:'+nrrColSem(p.semRenov)+'"></span>'+
+      '<span style="min-width:0;flex:1"><span style="font-size:12px;font-weight:700;line-height:1.25;display:block">'+p.producto+'</span>'+
+      '<span style="font-size:10px;color:'+(sel?'#A7D8DC':'#94A3B8')+'">'+(p.rs||'sin registro')+'</span></span>'+
+      (n?'<span style="font-size:10px;font-weight:800;background:'+(sel?'rgba(255,255,255,.22)':'#E0F2F3')+';color:'+(sel?'#fff':'#065A62')+';padding:2px 6px;border-radius:20px;flex-shrink:0">'+n+'</span>':'')+
+    '</button>';
+  }).join(''):'<div style="padding:16px;color:#94A3B8;font-size:12px;text-align:center">Ningún producto coincide.</div>');
+  window._nrrLista=lista;
+}
+function nrrElegir(i){
+  var l=window._nrrLista||[];
+  NRR_SEL=l[i]||null;
+  renderNRRLista(); renderNRRPanel();
+}
+
+/* ── Bitácora: convierte "14 feb 2025: texto" en línea de tiempo ── */
+function nrrBitacora(txt){
+  if(!txt)return null;
+  var re=/(\d{1,2}\s+[a-záéíóúA-ZÁÉÍÓÚ]{3,10}\.?\s+\d{2,4})\s*:\s*/g;
+  var partes=[],m,ultimo=null,idx=0;
+  while((m=re.exec(txt))!==null){
+    if(ultimo!==null)partes.push({f:ultimo,t:txt.slice(idx,m.index).trim()});
+    ultimo=m[1]; idx=m.index+m[0].length;
+  }
+  if(ultimo!==null)partes.push({f:ultimo,t:txt.slice(idx).trim()});
+  return partes.length>=2?partes:null;
+}
+
+function renderNRRPanel(){
+  var el=document.getElementById('nrr-panel');
+  if(!el)return;
+  if(!NRR_SEL){
+    setHTML('nrr-panel','<div class="card" style="padding:50px 30px;text-align:center"><div style="font-size:15px;font-weight:700;color:#334155;margin-bottom:6px">Elige un producto</div><div style="font-size:12px;color:#94A3B8">Selecciona uno de la lista para ver su estado, sus alertas y el seguimiento de cada evento.</div></div>');
+    return;
+  }
+  var p=NRR_SEL, evs=nrrEventosDe(p.rs), fic=nrrFichaDe(p.rs), al=nrrAlertas(p);
+  var colD=(p.diasRenov===null)?'#94A3B8':nrrColSem(p.semRenov);
+
+  var h='<div class="card">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">'+
+      '<div><div style="font-size:21px;font-weight:800;letter-spacing:-.3px;line-height:1.15">'+p.producto+'</div>'+
+      '<div style="font-size:12px;color:#64748B;margin-top:4px">'+(p.rs||'sin registro')+
+        (p.generico?' · '+p.generico:'')+(p.ff?' · '+p.ff:'')+'</div>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px">'+
+        (p.grupo?'<span class="badge" style="background:#E0F2F3;color:#065A62">'+p.grupo+'</span>':'')+
+        (p.tramite?'<span class="badge" style="background:#EDE9FE;color:#5B21B6">'+p.tramite+'</span>':'')+
+        (p.comercial?'<span class="badge" style="background:#F1F5F9;color:#475569">'+p.comercial+'</span>':'')+
+        (nrrEsCritico(p)?'<span class="badge" style="background:#FDF2F8;color:#BE185D">Crítico</span>':'')+
+      '</div></div>'+
+      '<div style="text-align:right"><div style="font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase">Responsable</div>'+
+      '<div style="font-size:13px;font-weight:700;color:#334155;margin-top:2px">'+(p.resp||'Sin asignar')+'</div></div>'+
+    '</div>';
+
+  if(al.length){
+    h+='<div style="display:flex;flex-direction:column;gap:7px;margin-top:14px">'+al.map(function(a){
+      return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border-radius:9px;font-size:12.5px;line-height:1.4;background:'+nrrBgAlerta(a.t)+';color:'+nrrColAlerta(a.t)+'">'+
+        '<span style="font-size:15px;flex-shrink:0">'+a.ico+'</span><span>'+a.txt+'</span></div>';
+    }).join('')+'</div>';
+  }
+
+  h+='<div class="g4" style="margin-top:16px">'+
+    '<div class="kpi" style="border-top-color:'+colD+'"><div class="kl">Días a fecha límite</div>'+
+      '<div class="kv" style="color:'+colD+'">'+(p.diasRenov===null?'--':Math.round(p.diasRenov))+'</div>'+
+      '<div class="ks">'+(p.vigencia?'vence '+p.vigencia:'sin vigencia')+'</div></div>'+
+    '<div class="kpi" style="border-top-color:'+nrrColSem(p.semRenov)+'"><div class="kl">Semáforo renovación</div>'+
+      '<div class="kv" style="color:'+nrrColSem(p.semRenov)+';font-size:17px">'+(p.semRenov||'Sin dato')+'</div>'+
+      '<div class="ks">'+(p.fecha150?'límite '+p.fecha150:'--')+'</div></div>'+
+    '<div class="kpi" style="border-top-color:'+nrrColNpr(p.npr)+'"><div class="kl">Nivel de riesgo</div>'+
+      '<div class="kv" style="color:'+nrrColNpr(p.npr)+';font-size:17px">'+nrrEtiqNpr(p.npr)+'</div>'+
+      '<div class="ks">NPR '+(p.npr===null?'--':p.npr)+'</div></div>'+
+    '<div class="kpi" style="border-top-color:'+nrrColSem(p.semCC)+'"><div class="kl">Confirmación caducidad</div>'+
+      '<div class="kv" style="color:'+nrrColSem(p.semCC)+';font-size:17px">'+(p.semCC||'No aplica')+'</div>'+
+      '<div class="ks">'+(p.diasCC!==null?Math.round(p.diasCC)+' días':'--')+'</div></div>'+
+  '</div></div>';
+
+  if(fic){
+    h+='<div class="card"><div class="ct">Ficha técnica</div><div class="g2" style="gap:10px">'+
+      [['Fabricante del API',fic.fabricanteApi],['Fabricante producto terminado',fic.fabricantePt],
+       ['Vida útil',fic.vidaUtil?fic.vidaUtil+' meses':null],['Condiciones de almacenamiento',fic.almacenamiento],
+       ['Presentaciones registradas',fic.presentacionesReg],['Presentaciones comercializadas',fic.presentacionesCom]]
+      .filter(function(x){return x[1];}).map(function(x){
+        return '<div style="background:#F8FAFC;border-radius:8px;padding:10px 12px">'+
+          '<div style="font-size:10px;font-weight:800;color:#0A9AA6;text-transform:uppercase;letter-spacing:.4px">'+x[0]+'</div>'+
+          '<div style="font-size:12px;color:#334155;margin-top:3px;line-height:1.45">'+x[1]+'</div></div>';
+      }).join('')+'</div></div>';
+  }
+
+  h+='<div style="font-size:12px;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px;display:flex;align-items:center;gap:8px">'+
+    'Qué le está pasando <span style="background:#E0F2F3;color:#065A62;padding:2px 8px;border-radius:20px;font-size:11px">'+evs.length+' evento'+(evs.length===1?'':'s')+'</span></div>';
+
+  if(!evs.length){
+    h+='<div class="card" style="padding:26px;text-align:center;color:#94A3B8;font-size:12px">'+
+      (p.rs?'Este producto no tiene eventos registrados.':'Sin registro sanitario no se pueden enlazar los eventos.')+'</div>';
+  } else {
+    h+=evs.map(function(e,i){
+      var bit=nrrBitacora(e.seguimiento);
+      var abierto=(i===0);
+      var est=(e.estatus||'').split('\n')[0];
+      var hoy=new Date().toISOString().slice(0,10);
+      var revVencida=e.proximaRev&&/^\d{4}-\d{2}-\d{2}$/.test(e.proximaRev)&&e.proximaRev<hoy;
+      return '<div class="card" id="nrrev'+i+'" style="padding:0;overflow:hidden;margin-bottom:10px">'+
+        '<div onclick="var x=document.getElementById(\'nrrev'+i+'\');x.classList.toggle(\'abierto\');var b=x.querySelector(\'.nrr-cuerpo\');b.style.display=b.style.display===\'block\'?\'none\':\'block\';var ch=x.querySelector(\'.nrr-chev\');ch.textContent=b.style.display===\'block\'?\'▾\':\'▸\';" '+
+          'style="padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:11px;border-left:5px solid '+(revVencida?'#D97706':'#0A9AA6')+'">'+
+          '<span style="width:25px;height:25px;border-radius:7px;background:#065A62;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(e.noEvento||(i+1))+'</span>'+
+          '<span style="flex:1;min-width:0"><span style="font-size:13.5px;font-weight:800;line-height:1.25;display:block">'+(e.evento||'Evento sin nombre')+'</span>'+
+          '<span style="font-size:11px;color:#64748B">'+(est||'Sin estatus')+(e.proximaRev&&e.proximaRev!=='No aplica'?' · revisión '+e.proximaRev+(revVencida?' ⚠️':''):'')+'</span></span>'+
+          '<span class="nrr-chev" style="color:#94A3B8;font-size:12px">'+(abierto?'▾':'▸')+'</span>'+
+        '</div>'+
+        '<div class="nrr-cuerpo" style="display:'+(abierto?'block':'none')+';padding:0 16px 16px;border-top:1px solid #F1F5F9">'+
+          (e.situacion?'<div style="margin-top:13px"><div style="font-size:10px;font-weight:800;color:#0A9AA6;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Situación actual</div><div style="font-size:12.5px;line-height:1.55;color:#334155;white-space:pre-line">'+e.situacion+'</div></div>':'')+
+          (e.propuesta?'<div style="margin-top:13px"><div style="font-size:10px;font-weight:800;color:#0A9AA6;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Propuesta</div><div style="font-size:12.5px;line-height:1.55;color:#334155;white-space:pre-line">'+e.propuesta+'</div></div>':'')+
+          (bit?'<div style="margin-top:13px"><div style="font-size:10px;font-weight:800;color:#0A9AA6;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Bitácora del evento</div><div style="padding-left:4px">'+
+            bit.map(function(b,bi){
+              var ult=(bi===bit.length-1);
+              return '<div style="display:flex;gap:11px;padding-bottom:13px;position:relative">'+
+                (bi<bit.length-1?'<span style="position:absolute;left:5.5px;top:14px;bottom:0;width:2px;background:#E2E8F0"></span>':'')+
+                '<span style="width:13px;height:13px;border-radius:50%;background:'+(ult?'#059669':'#fff')+';border:3px solid '+(ult?'#059669':'#0A9AA6')+';flex-shrink:0;margin-top:2px;z-index:1"></span>'+
+                '<div><div style="font-size:11px;font-weight:800;color:#065A62">'+b.f+'</div>'+
+                '<div style="font-size:12.5px;color:#334155;line-height:1.5;margin-top:1px">'+b.t+'</div></div></div>';
+            }).join('')+'</div></div>':
+            (e.seguimiento?'<div style="margin-top:13px"><div style="font-size:10px;font-weight:800;color:#0A9AA6;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Seguimiento</div><div style="font-size:12.5px;line-height:1.55;color:#334155;white-space:pre-line">'+e.seguimiento+'</div></div>':''))+
+          (e.estabilidad?'<div style="margin-top:13px"><div style="font-size:10px;font-weight:800;color:#0A9AA6;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Tracking de estabilidad</div><div style="font-size:12.5px;line-height:1.55;color:#334155;white-space:pre-line">'+e.estabilidad+'</div></div>':'')+
+          (e.estatus?'<div style="margin-top:13px"><div style="font-size:10px;font-weight:800;color:#0A9AA6;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Estatus regulatorio</div><div style="font-size:12.5px;line-height:1.55;color:#334155;white-space:pre-line">'+e.estatus+'</div></div>':'')+
+        '</div></div>';
+    }).join('');
+  }
+  setHTML('nrr-panel',h);
+}
+
+function renderNRRDet(){
+  var q=(getEl('nrr-srch')?document.getElementById('nrr-srch').value:'').toLowerCase();
+  var data=NRRF.filter(function(p){
+    return !q||(p.producto||'').toLowerCase().indexOf(q)>=0||(p.rs||'').toLowerCase().indexOf(q)>=0||(p.resp||'').toLowerCase().indexOf(q)>=0;
+  });
+  setTC('nrr-det-cnt',data.length+' productos');
+  setHTML('nrr-det-body',data.map(function(p,i){
+    var n=nrrEventosDe(p.rs).length;
+    return '<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'">'+
+      '<td style="font-weight:700;font-size:11px">'+p.producto+'</td>'+
+      '<td style="font-size:10px">'+(p.rs||'--')+'</td>'+
+      '<td style="font-size:10px">'+(p.resp||'Sin asignar')+'</td>'+
+      '<td style="font-size:10px">'+(p.vigencia||'--')+'</td>'+
+      '<td style="text-align:center;font-weight:700;color:'+nrrColSem(p.semRenov)+'">'+(p.diasRenov===null?'--':Math.round(p.diasRenov))+'</td>'+
+      '<td><span class="badge" style="background:'+nrrColSem(p.semRenov)+'22;color:'+nrrColSem(p.semRenov)+'">'+(p.semRenov||'Sin dato')+'</span></td>'+
+      '<td style="font-size:10px;color:'+nrrColNpr(p.npr)+';font-weight:700">'+nrrEtiqNpr(p.npr)+'</td>'+
+      '<td style="text-align:center">'+(nrrEsCritico(p)?'<span style="color:#BE185D;font-weight:800">Sí</span>':'<span style="color:#94A3B8">No</span>')+'</td>'+
+      '<td style="text-align:center;font-weight:700;color:#0A9AA6">'+(n||'--')+'</td></tr>';
+  }).join(''));
+}
+
 function showUniverse(id,btn){
   document.querySelectorAll('.universe').forEach(function(u){u.classList.remove('on');});
   document.querySelectorAll('.main-tab').forEach(function(b){b.classList.remove('on');});
@@ -1762,6 +2256,7 @@ function showUniverse(id,btn){
     else if(id==='ari') renderARI();
     else if(id==='rn') renderRN();
     else if(id==='bio') renderBIO();
+    else if(id==='nrr') renderNRR();
   }
 }
 
@@ -3221,6 +3716,10 @@ function renderARIDet(){
 var RNF = [];
 var RNE = [];
 var BIO = {records:[]};
+var NRR = {productos:[],eventos:[],ficha:[]};
+var NRRF = [];            /* productos filtrados */
+var NRR_SEL = null;       /* producto seleccionado */
+var NRR_ALERTA = null;    /* filtro por tipo de alerta */
 var BIOF = [];
 var BIOF_SINANIO = []; /* mismos filtros excepto el de año (para la gráfica de evolución) */
 var RNCFG = {
@@ -4484,6 +4983,100 @@ function mostrarCargando(estado){
    TRANSFORMAR ANÁLISIS DE REGISTROS NUEVOS (RN)
    ════════════════════════════════════════════════════════════ */
 /* ══════════════════════════════════════
+   TRANSFORMADORES NRR (Seguimiento Regulatorio)
+══════════════════════════════════════ */
+function _nrrTxt(v){
+  if(v===null||v===undefined)return null;
+  var s=String(v).trim();
+  if(!s||s==='#INVALID DATA TYPE')return null;
+  return s;
+}
+function _nrrNum(v){
+  if(v===null||v===undefined||v==='')return null;
+  var s=String(v).replace(/,/g,'').trim();
+  if(s.indexOf('INVALID')>=0)return null;
+  var n=parseFloat(s);
+  return isNaN(n)?null:n;
+}
+function _nrrFecha(v){
+  var s=_nrrTxt(v); if(!s)return null;
+  /* ISO directo */
+  if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
+  /* dd/mm/yyyy que a veces entrega Smartsheet */
+  var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m){var d=('0'+m[1]).slice(-2),mo=('0'+m[2]).slice(-2);return m[3]+'-'+mo+'-'+d;}
+  var t=Date.parse(s);
+  if(!isNaN(t))return new Date(t).toISOString().slice(0,10);
+  return null;
+}
+
+function transformNRRProductos(rows){
+  return (rows||[]).map(function(r){
+    return {
+      producto:_nrrTxt(r['producto_display'])||_nrrTxt(r['PRODUCTO'])||'Sin nombre',
+      rs:_nrrTxt(r['registro_sanitario']),
+      grupo:_nrrTxt(r['grupo_terapeutico']),
+      generico:_nrrTxt(r['denominacion_generica']),
+      ff:_nrrTxt(r['forma_farmaceutica']),
+      resp:_nrrTxt(r['responsable_dra']),
+      vigencia:_nrrFecha(r['vigencia']),
+      fecha150:_nrrFecha(r['fecha_renovacion_150']),
+      diasRenov:_nrrNum(r['dias_a_renovacion']),
+      semRenov:_nrrTxt(r['semaforo_renovacion']),
+      riesgo:_nrrTxt(r['riesgo_vigente']),
+      npr:_nrrNum(r['npr']),
+      requiereCC:_nrrTxt(r['requiere_confirmacion_caducidad']),
+      fechaCC:_nrrFecha(r['fecha_cc_300']),
+      diasCC:_nrrNum(r['dias_a_cc']),
+      semCC:_nrrTxt(r['semaforo_cc']),
+      critico:_nrrTxt(r['producto_critico']),
+      tramite:_nrrTxt(r['tramite_vigente']),
+      comercial:_nrrTxt(r['estatus_comercial'])
+    };
+  }).filter(function(p){return p.producto&&p.producto!=='Sin nombre';});
+}
+
+/* Las hojas de eventos y ficha usan jerarquía: las filas PADRE traen solo el
+   nombre del producto y ningún dato. Se descartan quedándonos con las que
+   tienen registro sanitario. */
+function transformNRREventos(rows){
+  return (rows||[]).map(function(r){
+    return {
+      producto:_nrrTxt(r['producto']),
+      rs:_nrrTxt(r['registro_sanitario']),
+      noEvento:_nrrNum(r['no_evento']),
+      evento:_nrrTxt(r['evento']),
+      situacion:_nrrTxt(r['situacion_actual']),
+      propuesta:_nrrTxt(r['propuesta']),
+      estabilidad:_nrrTxt(r['tracking_estabilidad']),
+      seguimiento:_nrrTxt(r['seguimiento_evento']),
+      sometimiento:_nrrTxt(r['seguimiento_sometimiento']),
+      estatus:_nrrTxt(r['estatus_regulatorio']),
+      generaNuevo:_nrrTxt(r['genera_nuevo_evento']),
+      proximaRev:_nrrFecha(r['proxima_revision'])||_nrrTxt(r['proxima_revision'])
+    };
+  }).filter(function(e){return e.rs&&e.evento;});
+}
+
+function transformNRRFicha(rows){
+  return (rows||[]).map(function(r){
+    return {
+      producto:_nrrTxt(r['producto']),
+      rs:_nrrTxt(r['registro_sanitario']),
+      notasSeguimiento:_nrrTxt(r['notas_seguimiento']),
+      notasCambios:_nrrTxt(r['notas_cambios_autorizados']),
+      fabricanteApi:_nrrTxt(r['fabricante_api']),
+      fabricantePt:_nrrTxt(r['fabricante_producto_terminado']),
+      vidaUtil:_nrrNum(r['vida_util_meses']),
+      almacenamiento:_nrrTxt(r['condiciones_almacenamiento']),
+      presentacionesReg:_nrrTxt(r['presentaciones_registradas']),
+      presentacionesCom:_nrrTxt(r['presentaciones_comercializadas']),
+      comentario:_nrrTxt(r['comentario_regulatorio_ultimo_corte'])
+    };
+  }).filter(function(f){return f.rs;});
+}
+
+/* ══════════════════════════════════════
    TRANSFORMADOR BIOLÓGICOS
 ══════════════════════════════════════ */
 function _bioNum(v){
@@ -4669,13 +5262,21 @@ function cargarDatosEnVivo(){
     fetch(WORKER_URL+'/?sheet=pagos').then(function(r){return r.json();}),
     fetch(WORKER_URL+'/?sheet=ari').then(function(r){return r.json();}),
     fetch(WORKER_URL+'/?sheet=rn').then(function(r){return r.json();}).catch(function(){return {rows:[]};}),
-    fetch(WORKER_URL+'/?sheet=biologicos').then(function(r){return r.json();}).catch(function(){return {rows:[]};})
+    fetch(WORKER_URL+'/?sheet=biologicos').then(function(r){return r.json();}).catch(function(){return {rows:[]};}),
+    fetch(WORKER_URL+'/?sheet=nrr_productos').then(function(r){return r.json();}).catch(function(){return {rows:[]};}),
+    fetch(WORKER_URL+'/?sheet=nrr_eventos').then(function(r){return r.json();}).catch(function(){return {rows:[]};}),
+    fetch(WORKER_URL+'/?sheet=nrr_ficha').then(function(r){return r.json();}).catch(function(){return {rows:[]};})
   ]).then(function(results){
     D   = transformARN(results[0].rows||[]);
     P   = transformPagos(results[1].rows||[]);
     ARI = transformARI(results[2].rows||[]);
     RN  = transformRN((results[3]&&results[3].rows)||[]);
     BIO = transformBio((results[4]&&results[4].rows)||[]);
+    NRR = {
+      productos: transformNRRProductos((results[5]&&results[5].rows)||[]),
+      eventos:   transformNRREventos((results[6]&&results[6].rows)||[]),
+      ficha:     transformNRRFicha((results[7]&&results[7].rows)||[])
+    };
 
     // Resetear render flags y datos filtrados
     if(typeof AFILTERED!=='undefined') AFILTERED=D.records.slice();
@@ -4690,6 +5291,8 @@ function cargarDatosEnVivo(){
     if(typeof initFiltrosRN==='function') initFiltrosRN();
     if(typeof BIOF!=='undefined') BIOF=BIO.records.slice();
     if(typeof initFiltrosBIO==='function') initFiltrosBIO();
+    if(typeof NRRF!=='undefined') NRRF=NRR.productos.slice();
+    if(typeof initFiltrosNRR==='function') initFiltrosNRR();
 
     // Re-renderizar el universo visible
     _rendered={arn:false,pag:false,ari:false,rn:false};
