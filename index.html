@@ -32,19 +32,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .sec-tab.on{color:#087A84;border-bottom-color:#087A84}
 .sec-tab:hover{color:#374151}
 /* ── CONTENIDO ── */
-.pg{padding:14px 18px;display:flex;flex-direction:column;gap:14px}
+.pg{padding:16px 20px;display:flex;flex-direction:column;gap:16px}
 .hidden{display:none!important}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-.card{background:#fff;border-radius:12px;padding:15px 18px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
-.ct{font-size:10px;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.card{background:#fff;border-radius:14px;padding:16px 19px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 2px 10px rgba(15,23,42,.05);border:1px solid #EEF2F6;transition:box-shadow .18s}
+.ct{font-size:10.5px;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:.07em;margin-bottom:13px}
 /* ── KPI ── */
-.kpi{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-top:4px solid}
-.kl{font-size:9px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
-.kv{font-size:26px;font-weight:900;line-height:1}
-.ks{font-size:10px;color:#64748B;margin-top:3px}
-.kb{height:4px;background:#E2E8F0;border-radius:3px;margin-top:7px}
+.kpi{background:#fff;border-radius:12px;padding:13px 15px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 2px 8px rgba(15,23,42,.05);border:1px solid #EEF2F6;border-top:4px solid;transition:box-shadow .18s,transform .18s}
+.kpi:hover{box-shadow:0 4px 16px rgba(15,23,42,.09);transform:translateY(-1px)}
+.kl{font-size:9px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.kv{font-size:27px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.ks{font-size:10.5px;color:#64748B;margin-top:4px}
+.kb{height:4px;background:#EEF2F6;border-radius:3px;margin-top:8px}
 .kbf{height:4px;border-radius:3px}
 /* ── PROGRESS BARS ── */
 .pr{margin-bottom:10px}
@@ -52,23 +53,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .pb{background:#F1F5F9;border-radius:5px;height:9px;overflow:hidden}
 .pbf{height:9px;border-radius:5px}
 /* ── TABLES ── */
-.tw{overflow-x:auto;max-height:440px;overflow-y:auto}
+.tw{overflow-x:auto;max-height:440px;overflow-y:auto;border-radius:8px}
 table{width:100%;border-collapse:collapse;min-width:500px}
-th{padding:7px 9px;font-size:9px;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #E2E8F0;text-align:left;background:#F8FAFC;white-space:nowrap;position:sticky;top:0;z-index:1}
-td{padding:6px 9px;border-bottom:1px solid #F1F5F9;color:#1E293B;vertical-align:middle}
-tr:hover td{background:#F8FAFC}
+th{padding:8px 10px;font-size:9px;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #E2E8F0;text-align:left;background:#F8FAFC;white-space:nowrap;position:sticky;top:0;z-index:1;cursor:pointer;user-select:none;transition:color .15s,background .15s}
+th:hover{color:#087A84;background:#EFF8F9}
+th.srt-a::after{content:' \25B2';font-size:7px;color:#087A84}
+th.srt-d::after{content:' \25BC';font-size:7px;color:#087A84}
+td{padding:7px 10px;border-bottom:1px solid #F1F5F9;color:#1E293B;vertical-align:middle}
+tbody tr:nth-child(even) td{background:#FAFBFC}
+tr:hover td{background:#F1F8F9}
 /* ── BADGES ── */
-.badge{display:inline-block;border-radius:5px;padding:2px 8px;font-size:9px;font-weight:800;white-space:nowrap}
+.badge{display:inline-block;border-radius:6px;padding:3px 9px;font-size:9px;font-weight:800;white-space:nowrap}
+/* ── Donas con leyenda (componente compartido) ── */
+.donut-wrap{display:flex;gap:20px;flex:1;min-height:0}
+.donut-canvas-box{flex:0 0 220px;height:220px;align-self:center}
+.donut-leg{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;overflow-y:auto}
+.donut-leg-item{padding:8px 10px;border-radius:9px;border-left:3px solid;background:#F8FAFC;transition:background .15s}
+.donut-leg-item.clk{cursor:pointer}
+.donut-leg-item.clk:hover{background:#EFF6FF}
+.donut-leg-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.donut-leg-name{font-size:11px;font-weight:700;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.donut-leg-nums{flex-shrink:0;display:flex;align-items:baseline;gap:4px}
+.donut-leg-n{font-size:15px;font-weight:900}
+.donut-leg-p{font-size:10px;color:#94A3B8;font-weight:600}
+.donut-leg-bar{height:3px;background:#E2E8F0;border-radius:3px;margin-top:5px}
+.donut-leg-fill{height:3px;border-radius:3px;transition:width .4s}
+/* ── Tarjetas comparativas (donas de 2-3 categorías) ── */
+.cmp-row{display:flex;gap:14px;flex-wrap:wrap}
+.cmp-card{flex:1;min-width:150px;background:#F8FAFC;border-radius:12px;padding:14px 16px;border-left:4px solid;transition:transform .15s,box-shadow .15s}
+.cmp-card.clk{cursor:pointer}
+.cmp-card.clk:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(15,23,42,.10);background:#fff}
+.cmp-card .cl{font-size:10px;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:.05em}
+.cmp-card .cv{font-size:28px;font-weight:900;line-height:1.15;margin-top:5px;font-variant-numeric:tabular-nums}
+.cmp-card .cs{font-size:10.5px;color:#94A3B8;margin-top:3px;font-weight:600}
+.cmp-card .cbar{height:5px;background:#E2E8F0;border-radius:4px;margin-top:10px}
+.cmp-card .cfill{height:5px;border-radius:4px;transition:width .5s}
 /* ── TOGGLES / ALERTS ── */
-.tgl-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.tgl-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:#fff;border-radius:12px;box-shadow:0 1px 2px rgba(15,23,42,.04),0 2px 8px rgba(15,23,42,.05);border:1px solid #EEF2F6}
 .tgl{padding:6px 14px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;opacity:.6;transition:all .15s}
 .tgl.on{opacity:1;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.tgl:focus-visible,.stgl:focus-visible,.sf:focus-visible,.ms-btn:focus-visible{outline:2px solid #0A9AA6;outline-offset:1px}
 .stgl{padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;opacity:.55;transition:all .15s}
 .stgl.on{opacity:1}
 .sm{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.sm-card{background:#fff;border-radius:12px;padding:20px 14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.07);cursor:pointer;transition:transform .15s}
-.sm-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
-.sf{font-size:11px;padding:6px 12px;border-radius:8px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#0F172A;min-width:200px}
+.sm-card{background:#fff;border-radius:14px;padding:20px 14px;text-align:center;box-shadow:0 1px 2px rgba(15,23,42,.04),0 2px 8px rgba(15,23,42,.05);border:1px solid #EEF2F6;cursor:pointer;transition:transform .18s,box-shadow .18s}
+.sm-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.10)}
+.sf{font-size:11px;padding:7px 12px;border-radius:9px;border:1.5px solid #E2E8F0;background:#F8FAFC;color:#0F172A;min-width:200px;transition:border-color .15s}
 .sf:focus{outline:none;border-color:#0A9AA6}
 .uc-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:#F8FAFC;border-radius:10px;margin-bottom:8px;border-left:4px solid}
 @media(max-width:600px){.g2,.g3,.sm{grid-template-columns:1fr}}
@@ -164,15 +194,17 @@ tr:hover td{background:#F8FAFC}
         </div>
         <div class="g3" id="a-gauge-stats" style="gap:8px;margin-top:12px"></div>
       </div>
-      <div class="card">
+      <div class="card" style="display:flex;flex-direction:column">
         <div class="ct">Cumplimiento General<span class="help-ico">i</span><span class="help-tip">Distribución de todos los trámites según su estatus de cumplimiento: A tiempo, Ingresado tarde, Atrasado, Pendiente, Reprogramado y Cancelado. Se calcula con la regla de Fecha planeada vs Fecha de ingreso.</span></div>
-        <div style="height:190px"><canvas id="a-cumpl">Cumplimiento</canvas></div>
-        <div id="a-cumpl-lg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:8px"></div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-box"><canvas id="a-cumpl">Cumplimiento</canvas></div>
+          <div id="a-cumpl-lg" class="donut-leg"></div>
+        </div>
       </div>
     </div>
     <div class="card">
       <div class="ct">Trámites por año de plan<span class="help-ico">i</span><span class="help-tip">Agrupa los trámites por el año de su Fecha planeada. Cada barra apila los estatus de ese año. Al filtrar un año, solo aparece la barra de ese año.</span></div>
-      <div style="height:270px"><canvas id="a-year">Año</canvas></div>
+      <div style="height:clamp(240px,32vh,360px)"><canvas id="a-year">Año</canvas></div>
     </div>
     <div class="g2">
       <div class="card">
@@ -181,7 +213,7 @@ tr:hover td{background:#F8FAFC}
       </div>
       <div class="card">
         <div class="ct">Por estado<span class="help-ico">i</span><span class="help-tip">Distribución según la columna 'Estado' de Smartsheet (Aprobado, Planeado, Sometido, Cancelado, Reprogramado, etc.).</span></div>
-        <div style="height:240px"><canvas id="a-estado">Estado</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="a-estado">Estado</canvas></div>
       </div>
     </div>
   </div>
@@ -190,20 +222,20 @@ tr:hover td{background:#F8FAFC}
     <div class="g2">
       <div class="card">
         <div class="ct">MCR por complejidad<span class="help-ico">i</span><span class="help-tip">De los trámites tipo MCR, los desglosa por complejidad (Mayor, Moderada, Menor) según la columna 'Descripción del Tramite'.</span></div>
-        <div style="height:210px"><canvas id="a-mcr">MCR</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="a-mcr">MCR</canvas></div>
       </div>
       <div class="card">
         <div class="ct">Tiempos de resolución (días: Ingreso → Resolución)<span class="help-ico">i</span><span class="help-tip">Mide los días naturales entre Fecha de Ingreso y Fecha de Resolución, por tipo de trámite. Solo incluye trámites que ya tienen ambas fechas.</span></div>
-        <div style="height:210px"><canvas id="a-timing">Tiempos</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="a-timing">Tiempos</canvas></div>
       </div>
     </div>
     <div class="card">
       <div class="ct">Cumplimiento cruzado por tipo<span class="help-ico">i</span><span class="help-tip">Cruza el tipo de trámite con su estatus de cumplimiento, para ver qué tipos concentran más atrasos o aprobaciones.</span></div>
-      <div style="height:250px"><canvas id="a-ct">Cumpl tipo</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="a-ct">Cumpl tipo</canvas></div>
     </div>
     <div class="card">
       <div class="ct">Presupuestados vs No Presupuestados<span class="help-ico">i</span><span class="help-tip">Separa los trámites según la columna 'Presupuestado' (Sí/No), para ver cuántos están dentro del presupuesto planeado.</span></div>
-      <div style="height:170px"><canvas id="a-pr">Presup</canvas></div>
+      <div style="height:clamp(150px,24vh,220px)"><canvas id="a-pr">Presup</canvas></div>
     </div>
   </div>
   <!-- ARN: Equipo -->
@@ -211,11 +243,11 @@ tr:hover td{background:#F8FAFC}
     <div class="g2">
       <div class="card">
         <div class="ct">Carga total por responsable<span class="help-ico">i</span><span class="help-tip">Reparte el total de trámites entre los responsables del equipo, mostrando la carga de trabajo de cada uno.</span></div>
-        <div style="height:250px"><canvas id="a-resp">Resp</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="a-resp">Resp</canvas></div>
       </div>
       <div class="card">
         <div class="ct">Cumplimiento por responsable<span class="help-ico">i</span><span class="help-tip">Para cada responsable, apila sus trámites por estatus: A tiempo, Ingresado tarde, Atrasado y Pendiente. Permite comparar desempeño individual.</span></div>
-        <div style="height:250px"><canvas id="a-rc">Resp cumpl</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="a-rc">Resp cumpl</canvas></div>
       </div>
     </div>
     <div class="g2" id="a-resp-cards"></div>
@@ -347,22 +379,22 @@ tr:hover td{background:#F8FAFC}
     <!-- Grafica planeado vs real por mes -->
     <div class="card">
       <div class="ct">Planeado vs Real por mes (monto $)<span class="help-ico">i</span><span class="help-tip">Compara el presupuesto total planeado (todo lo cargado) contra el gasto real ejecutado (con llave + número de entrada), mes a mes.</span></div>
-      <div style="height:290px"><canvas id="p-pvrmes">PvR mes</canvas></div>
+      <div style="height:clamp(240px,32vh,360px)"><canvas id="p-pvrmes">PvR mes</canvas></div>
     </div>
     <div class="g2">
-      <div class="card"><div class="ct">Monto por tipo de trámite<span class="help-ico">i</span><span class="help-tip">Suma el monto de los pagos agrupados por tipo de trámite.</span></div><div style="height:220px"><canvas id="p-tramite">Tram</canvas></div></div>
-      <div class="card"><div class="ct">Por dirección (PLANTA vs REGULATORIO)<span class="help-ico">i</span><span class="help-tip">Reparte el monto de los pagos según la columna 'Dirección' que indica el área que originó el gasto.</span></div><div style="height:220px"><canvas id="p-dir">Dir</canvas></div></div>
+      <div class="card"><div class="ct">Monto por tipo de trámite<span class="help-ico">i</span><span class="help-tip">Suma el monto de los pagos agrupados por tipo de trámite.</span></div><div style="height:clamp(200px,28vh,300px)"><canvas id="p-tramite">Tram</canvas></div></div>
+      <div class="card"><div class="ct">Por dirección (PLANTA vs REGULATORIO)<span class="help-ico">i</span><span class="help-tip">Reparte el monto de los pagos según la columna 'Dirección' que indica el área que originó el gasto.</span></div><div style="height:clamp(200px,28vh,300px)"><canvas id="p-dir">Dir</canvas></div></div>
     </div>
   </div>
   <!-- Pagos: Por Mes -->
   <div id="p-pg-mes" class="pg hidden">
     <div class="card">
       <div class="ct">Real vs Planeado por mes - Monto ($)<span class="help-ico">i</span><span class="help-tip">Por mes: el monto total planeado (todo lo cargado) vs el real ejecutado. Real = pagos con llave Y número de entrada.</span></div>
-      <div style="height:290px"><canvas id="p-mes2">Mes m</canvas></div>
+      <div style="height:clamp(240px,32vh,360px)"><canvas id="p-mes2">Mes m</canvas></div>
     </div>
     <div class="card">
       <div class="ct">Real vs Planeado por mes - Cantidad de pagos<span class="help-ico">i</span><span class="help-tip">Igual que el anterior pero contando número de pagos en lugar de monto.</span></div>
-      <div style="height:250px"><canvas id="p-mes3">Mes c</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="p-mes3">Mes c</canvas></div>
     </div>
     <div class="card">
       <div class="ct">Detalle mensual - Planeado vs Real<span class="help-ico">i</span><span class="help-tip">Desglose mensual. Planeado = pagos solicitados ese mes (col. Solicitado a Finanzas). Real = pagos entregados ese mes (col. Fecha Entregado) con número de entrada válido y llave. % Ejecución = Pagos Reales / Pagos Planeados del mes (por cantidad). Puede superar 100% si se entregaron más pagos de los solicitados ese mes.</span></div>
@@ -378,7 +410,7 @@ tr:hover td{background:#F8FAFC}
   <div id="p-pg-tram" class="pg hidden">
     <div class="card">
       <div class="ct">Real vs Planeado por tipo de tramite ($)<span class="help-ico">i</span><span class="help-tip">Por cada tipo de trámite: monto total planeado vs monto real ejecutado.</span></div>
-      <div style="height:440px"><canvas id="p-tr2">T m</canvas></div>
+      <div style="height:clamp(300px,38vh,460px)"><canvas id="p-tr2">T m</canvas></div>
     </div>
     <div class="card">
       <div class="ct">Desglose completo por tramite<span class="help-ico">i</span><span class="help-tip">Barra de progreso por tipo de trámite mostrando qué porcentaje del presupuesto ya se ejecutó (real sobre planeado).</span></div>
@@ -389,7 +421,7 @@ tr:hover td{background:#F8FAFC}
   <div id="p-pg-resp" class="pg hidden">
     <div class="card">
       <div class="ct">Real vs Planeado por responsable ($)<span class="help-ico">i</span><span class="help-tip">Por responsable: monto total planeado vs monto real ejecutado.</span></div>
-      <div style="height:260px"><canvas id="p-r2">R m</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="p-r2">R m</canvas></div>
     </div>
     <div class="g2" id="p-resp-cards"></div>
   </div>
@@ -398,40 +430,42 @@ tr:hover td{background:#F8FAFC}
     <div class="g4" id="p-presup-kpis"></div>
     <div class="g2">
       <div class="card">
-        <div class="ct">Trámites: presupuestados vs no presupuestados<span class="help-ico">i</span><span class="help-tip">Cuántos trámites estaban contemplados en el presupuesto (SI) y cuántos no (NO). El anillo muestra la proporción por número de trámites.</span></div>
-        <div style="height:240px"><canvas id="p-presup-donut">Presupuestado</canvas></div>
+        <div class="ct">Trámites: presupuestados vs no presupuestados<span class="help-ico">i</span><span class="help-tip">Cuántos trámites estaban contemplados en el presupuesto (SI) y cuántos no (NO).</span></div>
+        <div id="p-presup-cmp"></div>
       </div>
       <div class="card">
         <div class="ct">Monto: presupuestado vs no presupuestado<span class="help-ico">i</span><span class="help-tip">Cuánto dinero (en monto) corresponde a trámites presupuestados vs no presupuestados. Ayuda a dimensionar el impacto económico de lo no contemplado.</span></div>
-        <div style="height:240px"><canvas id="p-presup-monto">Monto presupuesto</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="p-presup-monto">Monto presupuesto</canvas></div>
       </div>
     </div>
     <div class="card">
       <div class="ct">Por trámite: cuáles se salen más del presupuesto<span class="help-ico">i</span><span class="help-tip">Para cada tipo de trámite, cuántos fueron presupuestados vs no. Los que tienen mucha barra roja (no presupuestado) son los que más se salen del plan.</span></div>
-      <div style="height:300px"><canvas id="p-presup-tram">Por trámite</canvas></div>
+      <div style="height:clamp(240px,32vh,360px)"><canvas id="p-presup-tram">Por trámite</canvas></div>
     </div>
     <div class="g2">
       <div class="card">
         <div class="ct">Por dirección/área: gasto no presupuestado<span class="help-ico">i</span><span class="help-tip">Qué área o dirección genera más trámites no presupuestados. Útil para identificar dónde se concentra el gasto no contemplado.</span></div>
-        <div style="height:280px"><canvas id="p-presup-dir">Por dirección</canvas></div>
+        <div style="height:clamp(240px,32vh,360px)"><canvas id="p-presup-dir">Por dirección</canvas></div>
       </div>
       <div class="card">
         <div class="ct">Evolución mensual de lo no presupuestado<span class="help-ico">i</span><span class="help-tip">Cómo evoluciona mes a mes la cantidad de trámites no presupuestados. Permite ver si el problema crece o se controla en el tiempo.</span></div>
-        <div style="height:280px"><canvas id="p-presup-mes">Evolución mensual</canvas></div>
+        <div style="height:clamp(240px,32vh,360px)"><canvas id="p-presup-mes">Evolución mensual</canvas></div>
       </div>
     </div>
   </div>
   <div id="p-pg-llaves" class="pg hidden">
     <div class="g4" id="p-llaves-kpis"></div>
     <div class="g2">
-      <div class="card">
+      <div class="card" style="display:flex;flex-direction:column">
         <div class="ct">Distribucion de llaves de pago<span class="help-ico">i</span><span class="help-tip">Clasifica los pagos en Real (entregado + número de entrada válido + llave) y Planeado (todo lo demás cargado, aún no ejecutado).</span></div>
-        <div style="height:220px"><canvas id="p-llaves-donut">Llaves</canvas></div>
-        <div id="p-llaves-leg" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-box"><canvas id="p-llaves-donut">Llaves</canvas></div>
+          <div id="p-llaves-leg" class="donut-leg"></div>
+        </div>
       </div>
       <div class="card">
         <div class="ct">Monto por estado de llave ($)<span class="help-ico">i</span><span class="help-tip">Suma los montos según el estado de la llave: Real, Planeado o Sin datos.</span></div>
-        <div style="height:220px"><canvas id="p-llaves-monto">Monto llaves</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="p-llaves-monto">Monto llaves</canvas></div>
       </div>
     </div>
     <div class="card">
@@ -499,11 +533,9 @@ tr:hover td{background:#F8FAFC}
       <div class="card" style="display:flex;flex-direction:column">
         <div class="ct">Distribución por Dictamen (estatus actual)<span class="help-ico">i</span><span class="help-tip">Distribución de los trámites internacionales según la columna DICTAMEN, que indica el estatus actual de cada uno.</span></div>
         <div id="ri-donut-drill-hdr" style="display:none;margin-bottom:10px"></div>
-        <div style="display:flex;gap:20px;flex:1;min-height:0">
-          <div style="flex:0 0 220px;height:220px;align-self:center">
-            <canvas id="ri-donut">Dictamen</canvas>
-          </div>
-          <div id="ri-donut-leg" style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;overflow-y:auto"></div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-box"><canvas id="ri-donut">Dictamen</canvas></div>
+          <div id="ri-donut-leg" class="donut-leg"></div>
         </div>
       </div>
       <div class="card">
@@ -513,7 +545,7 @@ tr:hover td{background:#F8FAFC}
     </div>
     <div class="card">
       <div class="ct">Volumen por mes programado y estatus<span class="help-ico">i</span><span class="help-tip">Agrupa los trámites internacionales por mes de sometimiento programado, apilando su estatus actual.</span></div>
-      <div style="height:220px"><canvas id="ri-mes">Mes</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="ri-mes">Mes</canvas></div>
     </div>
     <div class="g2">
       <div class="card">
@@ -522,9 +554,9 @@ tr:hover td{background:#F8FAFC}
       </div>
       <div class="card">
         <div class="ct">Nuevos vs Continuación<span class="help-ico">i</span><span class="help-tip">Separa los trámites según la columna 'Nuevos / Continuación' para ver la proporción de registros nuevos contra renovaciones.</span></div>
-        <div style="height:180px"><canvas id="ri-nc">NC</canvas></div>
+        <div id="ri-nc-cmp"></div>
         <div class="ct" style="margin-top:14px">Por año programado<span class="help-ico">i</span><span class="help-tip">Cuenta los trámites internacionales según el año programado de sometimiento.</span></div>
-        <div style="height:120px"><canvas id="ri-anio">Anio</canvas></div>
+        <div style="height:clamp(150px,24vh,220px)"><canvas id="ri-anio">Anio</canvas></div>
       </div>
     </div>
   </div>
@@ -533,11 +565,11 @@ tr:hover td{background:#F8FAFC}
   <div id="ri-pg-pais" class="pg hidden">
     <div class="card">
       <div class="ct">Aprobados vs Total por país<span class="help-ico">i</span><span class="help-tip">Compara, por país, el total de trámites contra cuántos están aprobados.</span></div>
-      <div style="height:260px"><canvas id="ri-pais2">País2</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="ri-pais2">País2</canvas></div>
     </div>
     <div class="card">
       <div class="ct">Cumplimiento por país (apilado)<span class="help-ico">i</span><span class="help-tip">Para cada país, apila los trámites según su estatus (Aprobado, En evaluación, Programado, Reprogramado, Cancelado).</span></div>
-      <div style="height:260px"><canvas id="ri-pais3">País3</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="ri-pais3">País3</canvas></div>
     </div>
     <div class="card">
       <div class="ct">Desglose por país<span class="help-ico">i</span><span class="help-tip">Barra de progreso por país mostrando su porcentaje de aprobación y el detalle de cada estatus.</span></div>
@@ -550,11 +582,11 @@ tr:hover td{background:#F8FAFC}
     <div class="g3" id="ri-time-kpis"></div>
     <div class="card">
       <div class="ct">Tiempo de evaluación por tipo (días naturales: mín / prom / máx)<span class="help-ico">i</span><span class="help-tip">Por tipo de trámite internacional, muestra el tiempo mínimo, promedio y máximo de evaluación en días naturales.</span></div>
-      <div style="height:230px"><canvas id="ri-timing">Timing</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="ri-timing">Timing</canvas></div>
     </div>
     <div class="card">
       <div class="ct">Distribución de tiempos (días naturales) — trámites resueltos<span class="help-ico">i</span><span class="help-tip">Histograma que agrupa los trámites resueltos por rangos de días de evaluación (0-30, 31-90, etc.).</span></div>
-      <div style="height:210px"><canvas id="ri-tdist">Dist</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="ri-tdist">Dist</canvas></div>
     </div>
     <div class="card">
       <div class="ct">Detalle de tiempos por trámite<span class="help-ico">i</span><span class="help-tip">Tabla con los trámites de mayor tiempo de evaluación, mostrando fechas y número de prevenciones.</span></div>
@@ -657,22 +689,26 @@ tr:hover td{background:#F8FAFC}
       <div id="rn-funnel"></div>
     </div>
     <div class="g2">
-      <div class="card">
+      <div class="card" style="display:flex;flex-direction:column">
         <div class="ct">Distribución por estatus (RN Resultado)<span class="help-ico">i</span><span class="help-tip">Clasifica los proyectos según su resultado actual: Aprobado, Evaluación, Prevenido Contestado o Desecho (1er intento no otorgado).</span></div>
-        <div id="rn-donut-drill-hdr" style="display:none;margin-bottom:8px"></div>
-        <div style="height:210px"><canvas id="rn-donut">Estatus</canvas></div>
-        <div id="rn-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
+        <div id="rn-donut-drill-hdr" style="display:none;margin-bottom:10px"></div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-box"><canvas id="rn-donut">Estatus</canvas></div>
+          <div id="rn-donut-leg" class="donut-leg"></div>
+        </div>
       </div>
-      <div class="card">
+      <div class="card" style="display:flex;flex-direction:column">
         <div class="ct">Resultado del CMN por producto<span class="help-ico">i</span><span class="help-tip">Distribución de dictámenes del Comité de Moléculas Nuevas por resultado. Haz clic en cualquier segmento (ej. Favorable) para ver qué productos lo componen. Usa "volver" para regresar a la vista general.</span></div>
-        <div id="rn-cmn-drill-hdr" style="display:none;margin-bottom:8px"></div>
-        <div style="height:210px"><canvas id="rn-cmn-donut">CMN</canvas></div>
-        <div id="rn-cmn-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
+        <div id="rn-cmn-drill-hdr" style="display:none;margin-bottom:10px"></div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-box"><canvas id="rn-cmn-donut">CMN</canvas></div>
+          <div id="rn-cmn-leg" class="donut-leg"></div>
+        </div>
       </div>
     </div>
     <div class="card">
       <div class="ct">Aprobaciones por año<span class="help-ico">i</span><span class="help-tip">Cuenta los proyectos aprobados según su año de aprobación, para ver la tendencia de registros logrados.</span></div>
-      <div style="height:210px"><canvas id="rn-anio">Año</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="rn-anio">Año</canvas></div>
     </div>
   </div>
 
@@ -686,11 +722,11 @@ tr:hover td{background:#F8FAFC}
     </div>
     <div class="card">
       <div class="ct">Etapas del proceso (meses: mín / prom / máx)<span class="help-ico">i</span><span class="help-tip">Compara el tiempo (en meses) de cada etapa: Evaluación CMN, Evaluación Inicial, respuesta de Silanes, Evaluación de prevención y Evaluación RN.</span></div>
-      <div style="height:250px"><canvas id="rn-etapas">Etapas</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="rn-etapas">Etapas</canvas></div>
     </div>
     <div class="card">
       <div class="ct">Tiempo total del proceso por año de aprobación (meses)<span class="help-ico">i</span><span class="help-tip">Promedio de meses que tomó el proceso completo (incluyendo CMN) para los proyectos aprobados en cada año. Permite ver si el proceso se acelera o se alarga.</span></div>
-      <div style="height:210px"><canvas id="rn-ttotal">Total</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="rn-ttotal">Total</canvas></div>
     </div>
     <div class="card">
       <div class="ct">Proyectos por duración total del proceso<span class="help-ico">i</span><span class="help-tip">Tabla de proyectos ordenada por el tiempo total del proceso, con el desglose de tiempos de cada etapa.</span></div>
@@ -707,11 +743,11 @@ tr:hover td{background:#F8FAFC}
     <div class="g2">
       <div class="card">
         <div class="ct">Resultado CMN por año de presentación<span class="help-ico">i</span><span class="help-tip">Para los proyectos que pasaron por CMN, apila los resultados Favorable/No Favorable según el año en que se presentaron al comité.</span></div>
-        <div style="height:230px"><canvas id="rn-cmn-anio">CMN año</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="rn-cmn-anio">CMN año</canvas></div>
       </div>
       <div class="card">
         <div class="ct">Tiempo de evaluación CMN (meses)<span class="help-ico">i</span><span class="help-tip">Los proyectos con mayor tiempo de evaluación en el Comité de Moléculas Nuevas.</span></div>
-        <div style="height:230px"><canvas id="rn-cmn-tiempo">CMN t</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="rn-cmn-tiempo">CMN t</canvas></div>
       </div>
     </div>
     <div class="card">
@@ -733,11 +769,11 @@ tr:hover td{background:#F8FAFC}
     <div class="g2">
       <div class="card">
         <div class="ct">Intentos de registro por proyecto<span class="help-ico">i</span><span class="help-tip">Cuántos proyectos salieron con un solo intento de registro y cuántos necesitaron un segundo intento (reingreso). Se cuenta por proyecto consolidado, usando la columna oficial "No. de intento registro".</span></div>
-        <div style="height:230px"><canvas id="rn-int-reg">Intentos registro</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="rn-int-reg">Intentos registro</canvas></div>
       </div>
       <div class="card">
         <div class="ct">Intentos de CMN por proyecto<span class="help-ico">i</span><span class="help-tip">Cuántas veces cada proyecto pasó por el Comité de Moléculas Nuevas. Algunos necesitaron 2, 3 o hasta 4 intentos. Se cuenta por proyecto consolidado, usando la columna oficial "No. de intento CMN".</span></div>
-        <div style="height:230px"><canvas id="rn-int-cmn">Intentos CMN</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="rn-int-cmn">Intentos CMN</canvas></div>
       </div>
     </div>
     <div class="card">
@@ -747,11 +783,11 @@ tr:hover td{background:#F8FAFC}
     <div class="g2">
       <div class="card">
         <div class="ct">Orgánico vs Inorgánico — volumen y éxito<span class="help-ico">i</span><span class="help-tip">Compara los dos orígenes de producto por volumen total y cuántos fueron aprobados.</span></div>
-        <div style="height:230px"><canvas id="rn-origen">Origen</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="rn-origen">Origen</canvas></div>
       </div>
       <div class="card">
         <div class="ct">Distribución por forma farmacéutica<span class="help-ico">i</span><span class="help-tip">Cuenta los proyectos según su forma farmacéutica (Tableta, Cápsula, Suspensión, etc.).</span></div>
-        <div style="height:230px"><canvas id="rn-ffchart">FF</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="rn-ffchart">FF</canvas></div>
       </div>
     </div>
     <div class="card">
@@ -802,16 +838,18 @@ tr:hover td{background:#F8FAFC}
   <div id="bio-pg-ov" class="pg">
     <div class="g4" id="bio-kpis"></div>
     <div class="g2">
-      <div class="card">
+      <div class="card" style="display:flex;flex-direction:column">
         <div class="ct">Distribución por Estado<span class="help-ico">i</span><span class="help-tip">Estado actual de cada lote biológico. Haz clic en un segmento (ej. Aprobado) para ver qué productos lo componen. Usa "volver" para regresar.</span></div>
-        <div id="bio-est-drill-hdr" style="display:none;margin-bottom:8px"></div>
-        <div style="height:230px"><canvas id="bio-donut">Estado</canvas></div>
-        <div id="bio-donut-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
+        <div id="bio-est-drill-hdr" style="display:none;margin-bottom:10px"></div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-box"><canvas id="bio-donut">Estado</canvas></div>
+          <div id="bio-donut-leg" class="donut-leg"></div>
+        </div>
       </div>
       <div class="card">
         <div class="ct">Lotes pendientes por producto (sin aprobados)<span class="help-ico">i</span><span class="help-tip">Solo muestra los lotes que NO están aprobados, es decir, los que todavía requieren seguimiento. Haz clic en la barra de un producto para desplegar el detalle de cada lote: número de lote, estado, si está en rezago, cuándo entró a CCAYAC/LEI y su fecha estimada de resolución.</span></div>
         <div id="bio-prod-hdr" style="display:none;margin-bottom:8px"></div>
-        <div style="height:230px"><canvas id="bio-productos">Productos</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="bio-productos">Productos</canvas></div>
         <div id="bio-prod-detalle" style="margin-top:12px"></div>
       </div>
     </div>
@@ -821,7 +859,7 @@ tr:hover td{background:#F8FAFC}
     </div>
     <div class="card">
       <div class="ct">Evolución por año (ingresados vs resueltos)<span class="help-ico">i</span><span class="help-tip">Ritmo de trabajo anual. La barra azul son los lotes que INGRESARON ese año. La barra de al lado son los RESUELTOS ese año, dividida en dos: en verde los que se resolvieron el mismo año en que entraron, y en ámbar los que venían arrastrados de años anteriores. Ejemplo: en 2026 ingresaron 11 lotes, y se resolvieron 11 en total, pero solo 5 eran de 2026 — los otros 6 eran trámites de años previos. Esta gráfica siempre muestra todos los años (el filtro de "Año ingreso" no la recorta, porque es una línea de tiempo); los filtros de producto, estado y laboratorio sí aplican.</span></div>
-      <div style="height:260px"><canvas id="bio-evolucion">Evolución</canvas></div>
+      <div style="height:clamp(200px,28vh,300px)"><canvas id="bio-evolucion">Evolución</canvas></div>
     </div>
   </div>
 
@@ -830,7 +868,7 @@ tr:hover td{background:#F8FAFC}
     <div class="g4" id="bio-time-kpis"></div>
     <div class="card">
       <div class="ct">¿Cuánto tarda cada etapa del proceso? (días promedio)<span class="help-ico">i</span><span class="help-tip">Tiempo promedio en días que toma cada etapa del proceso de liberación de un lote: desde el ingreso a análisis, el análisis en laboratorio, el ingreso del CoA, hasta la evaluación final. La suma da el tiempo total.</span></div>
-      <div style="height:300px"><canvas id="bio-etapas">Etapas</canvas></div>
+      <div style="height:clamp(240px,32vh,360px)"><canvas id="bio-etapas">Etapas</canvas></div>
     </div>
     <div class="card">
       <div class="ct">¿Cuánto tarda cada paso, lote por lote? (días)<span class="help-ico">i</span><span class="help-tip">Para cada lote se desglosa el tiempo de los tres pasos secuenciales: (1) del ingreso a COFEPRIS hasta que entra al laboratorio, (2) el análisis en CCAYAC/LEI, y (3) de los resultados hasta que se ingresa el CoA. Pasa el mouse para ver el total, el laboratorio y los días de notificación a AR. Los lotes marcados con ⚠️ están en rezago.</span></div>
@@ -844,11 +882,11 @@ tr:hover td{background:#F8FAFC}
     <div class="g2">
       <div class="card">
         <div class="ct">Lotes en rezago vs sin rezago<span class="help-ico">i</span><span class="help-tip">Solo cuenta el rezago ACTIVO: lotes que se atrasaron y todavía NO tienen resolución. Si un lote tuvo rezago pero ya se resolvió, deja de contarse porque el problema ya no está vigente.</span></div>
-        <div style="height:230px"><canvas id="bio-rezago-donut">Rezago</canvas></div>
+        <div id="bio-rezago-cmp"></div>
       </div>
       <div class="card">
         <div class="ct">Rezago por producto<span class="help-ico">i</span><span class="help-tip">Cuántos lotes de cada producto están en rezago activo (atrasados y sin resolución). Ayuda a identificar dónde enfocar el seguimiento.</span></div>
-        <div style="height:230px"><canvas id="bio-rezago-prod">Rezago producto</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="bio-rezago-prod">Rezago producto</canvas></div>
       </div>
     </div>
   </div>
@@ -859,11 +897,11 @@ tr:hover td{background:#F8FAFC}
     <div class="g2">
       <div class="card">
         <div class="ct">Lotes analizados por laboratorio<span class="help-ico">i</span><span class="help-tip">Cuántos lotes analizó cada laboratorio (CCAYAC o LEI).</span></div>
-        <div style="height:230px"><canvas id="bio-lab-donut">Laboratorio</canvas></div>
+        <div id="bio-lab-cmp"></div>
       </div>
       <div class="card">
         <div class="ct">Tiempo de análisis: CCAYAC vs LEI (días)<span class="help-ico">i</span><span class="help-tip">Comparación del tiempo promedio, mínimo y máximo de análisis de cada laboratorio. Un laboratorio más rápido agiliza toda la liberación del lote.</span></div>
-        <div style="height:230px"><canvas id="bio-lab-comp">Comparación</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="bio-lab-comp">Comparación</canvas></div>
       </div>
     </div>
   </div>
@@ -910,26 +948,28 @@ tr:hover td{background:#F8FAFC}
     </div>
     <div class="g4" id="nrr-kpis"></div>
     <div class="g2">
-      <div class="card">
+      <div class="card" style="display:flex;flex-direction:column">
         <div class="ct">Semáforo de renovación<span class="help-ico">i</span><span class="help-tip">Distribución de los productos según qué tan cerca están de su fecha límite de renovación (150 días antes de que venza la vigencia). Haz clic en un segmento para ver los productos.</span></div>
-        <div id="nrr-sem-hdr" style="display:none;margin-bottom:8px"></div>
-        <div style="height:230px"><canvas id="nrr-semaforo">Semáforo</canvas></div>
-        <div id="nrr-sem-leg" style="display:flex;flex-wrap:wrap;gap:7px;margin-top:10px"></div>
+        <div id="nrr-sem-hdr" style="display:none;margin-bottom:10px"></div>
+        <div id="nrr-sem-wrap" class="donut-wrap">
+          <div id="nrr-sem-canvas-box" class="donut-canvas-box"><canvas id="nrr-semaforo">Semáforo</canvas></div>
+          <div id="nrr-sem-leg" class="donut-leg"></div>
+        </div>
       </div>
       <div class="card">
         <div class="ct">Carga por responsable<span class="help-ico">i</span><span class="help-tip">Cuántos productos tiene asignado cada responsable de Asuntos Regulatorios, separando los que están en rojo o vencidos.</span></div>
-        <div style="height:230px"><canvas id="nrr-resp">Responsables</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="nrr-resp">Responsables</canvas></div>
       </div>
     </div>
     <div class="g2">
       <div class="card">
         <div class="ct">Nivel de riesgo (NPR)<span class="help-ico">i</span><span class="help-tip">Distribución por Número de Prioridad de Riesgo: 4 = Alto, 3 = Medio, 2 = Bajo, 1 = Sin evaluar, 0 = No riesgo. Se usa el NPR porque está completo en todos los productos, a diferencia de la columna de texto.</span></div>
-        <div style="height:230px"><canvas id="nrr-riesgo">Riesgo</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="nrr-riesgo">Riesgo</canvas></div>
       </div>
       <div class="card">
         <div class="ct">Vencimientos por trimestre<span class="help-ico">i</span><span class="help-tip">Cuántas vigencias vencen en cada trimestre. Selecciona uno o varios años para comparar.</span></div>
         <div id="nrr-venc-años" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px"></div>
-        <div style="height:210px"><canvas id="nrr-venc">Vencimientos</canvas></div>
+        <div style="height:clamp(200px,28vh,300px)"><canvas id="nrr-venc">Vencimientos</canvas></div>
       </div>
     </div>
   </div>
@@ -1168,6 +1208,145 @@ function rs(r){return ARESP_S[r]||r||'--';}
 function badgeA(c){var cf=kc(c);return '<span class="badge" style="background:'+cf.bg+';color:'+cf.c+'">'+c+'</span>';}
 function badgeT(t,tc){return '<span class="badge" style="background:'+tc(t)+'22;color:'+tc(t)+'">'+(t||'--')+'</span>';}
 
+/* ══════════════════════════════════════════════════════════
+   COMPONENTES COMPARTIDOS: dona con leyenda / tarjetas comparativas
+══════════════════════════════════════════════════════════ */
+var _donutCenterPlugin={
+  id:'donutCenterText',
+  afterDraw:function(chart){
+    var ds=chart.data.datasets[0];if(!ds)return;
+    var total=ds.data.reduce(function(a,b){return a+(Number(b)||0);},0);
+    var ctx=chart.ctx,a=chart.chartArea;
+    var cx=(a.left+a.right)/2,cy=(a.top+a.bottom)/2;
+    ctx.save();
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font='900 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillStyle='#0F172A';
+    ctx.fillText(total,cx,cy-10);
+    ctx.font='600 11px -apple-system,sans-serif';
+    ctx.fillStyle='#94A3B8';
+    ctx.fillText(chart._centerSub||'total',cx,cy+13);
+    ctx.restore();
+  }
+};
+
+function _donutLegItem(label,n,total,color,clickable){
+  var p=pct(n,total);
+  return '<div class="donut-leg-item'+(clickable?' clk':'')+'" style="border-left-color:'+color+'">'+
+    '<div class="donut-leg-row">'+
+      '<div class="donut-leg-name" title="'+label+'">'+label+'</div>'+
+      '<div class="donut-leg-nums"><span class="donut-leg-n" style="color:'+color+'">'+n+'</span><span class="donut-leg-p">'+p+'%</span></div>'+
+    '</div>'+
+    '<div class="donut-leg-bar"><div class="donut-leg-fill" style="width:'+p+'%;background:'+color+'"></div></div>'+
+  '</div>';
+}
+
+/* Dona con total al centro + leyenda como tarjetas. Componente compartido por todos los universos.
+   opts:{canvasId,legendId,headerId?,headerHtml?,labels,values,colors,cutout?,centerSub?,
+         onSegmentClick?:fn(label,i), legendClickable?:bool (default = !!onSegmentClick),
+         tooltipSuffix?:fn(label,value,total)} */
+function renderDonutConLeyenda(opts){
+  var labels=opts.labels||[], values=opts.values||[], colors=opts.colors||[];
+  var total=values.reduce(function(a,b){return a+(Number(b)||0);},0);
+  var canvas=document.getElementById(opts.canvasId);
+  if(opts.headerId){
+    var hdr=document.getElementById(opts.headerId);
+    if(hdr){
+      if(opts.headerHtml){hdr.style.display='block';hdr.innerHTML=opts.headerHtml;}
+      else{hdr.style.display='none';hdr.innerHTML='';}
+    }
+  }
+  dc(opts.canvasId);
+  if(!canvas)return null;
+  var onSeg=opts.onSegmentClick;
+  var ctx=canvas.getContext('2d');
+  var chart=new Chart(ctx,{type:'doughnut',
+    plugins:[_donutCenterPlugin],
+    data:{labels:labels,datasets:[{data:values,backgroundColor:colors,borderWidth:3,borderColor:'#fff',hoverOffset:10,hoverBorderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:opts.cutout||'58%',
+      onClick:onSeg?function(evt,els){if(els&&els.length)onSeg(labels[els[0].index],els[0].index);}:undefined,
+      onHover:onSeg?function(evt,els){evt.native.target.style.cursor=els&&els.length?'pointer':'default';}:undefined,
+      plugins:{legend:{display:false},datalabels:{display:false},
+        tooltip:{callbacks:{label:function(c){
+          if(opts.tooltipSuffix)return ' '+opts.tooltipSuffix(c.label,c.parsed,total);
+          return ' '+c.label+': '+c.parsed+' ('+pct(c.parsed,total)+'%)';
+        }}}}}});
+  chart._centerSub=opts.centerSub||'total';
+  CH[opts.canvasId]=chart;
+  var leg=document.getElementById(opts.legendId);
+  if(leg){
+    var clickable=opts.legendClickable!==undefined?opts.legendClickable:!!onSeg;
+    leg.innerHTML=labels.map(function(l,i){return _donutLegItem(l,values[i],total,colors[i],clickable);}).join('');
+    if(clickable&&onSeg){
+      var items=leg.querySelectorAll('.donut-leg-item');
+      items.forEach(function(el,i){el.addEventListener('click',function(){onSeg(labels[i],i);});});
+    }
+  }
+  return chart;
+}
+
+/* Tarjetas comparativas para donas de 2-3 categorías fijas (más claro que un anillo).
+   items:[{label,valor,color,sublabel?,pct?(0-100),onClick?:fn}] */
+function renderTarjetasComparativas(containerId, items){
+  var el=document.getElementById(containerId);
+  if(!el)return;
+  var total=items.reduce(function(s,it){return s+(Number(it.valor)||0);},0);
+  el.innerHTML='<div class="cmp-row">'+items.map(function(it,i){
+    var p=(it.pct!==undefined)?it.pct:pct(Number(it.valor)||0,total);
+    return '<div class="cmp-card'+(it.onClick?' clk':'')+'" data-i="'+i+'" style="border-left-color:'+it.color+'">'+
+      '<div class="cl">'+it.label+'</div>'+
+      '<div class="cv" style="color:'+it.color+'">'+it.valor+'</div>'+
+      '<div class="cs">'+(it.sublabel||(p+'% del total'))+'</div>'+
+      '<div class="cbar"><div class="cfill" style="width:'+p+'%;background:'+it.color+'"></div></div>'+
+    '</div>';
+  }).join('')+'</div>';
+  items.forEach(function(it,i){
+    if(it.onClick){
+      var card=el.querySelector('.cmp-card[data-i="'+i+'"]');
+      if(card)card.addEventListener('click',it.onClick);
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════
+   TABLAS ORDENABLES: clic en encabezado para ordenar
+══════════════════════════════════════════════════════════ */
+function _tsCellValue(td){
+  if(!td)return null;
+  var t=td.textContent.trim();
+  if(!t||t==='--'||t==='-')return null;
+  if(/^\d{4}-\d{2}-\d{2}/.test(t))return t;
+  var cleaned=t.replace(/[^\d.\-]/g,'');
+  if(cleaned&&/^-?\d+(\.\d+)?$/.test(cleaned)&&/^[\s$%,.\d\-a-zA-Z°]+$/.test(t))return parseFloat(cleaned);
+  return t.toLowerCase();
+}
+function initTablasOrdenables(){
+  document.addEventListener('click',function(e){
+    var th=e.target.closest('.tw table thead th');
+    if(!th)return;
+    var table=th.closest('table');
+    var tbody=table&&table.querySelector('tbody');
+    if(!tbody)return;
+    var row=th.parentNode;
+    var idx=Array.prototype.indexOf.call(row.children,th);
+    var asc=!th.classList.contains('srt-a');
+    Array.prototype.forEach.call(row.children,function(h){h.classList.remove('srt-a','srt-d');});
+    th.classList.add(asc?'srt-a':'srt-d');
+    var rows=Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+    rows.sort(function(r1,r2){
+      var a=_tsCellValue(r1.children[idx]), b=_tsCellValue(r2.children[idx]);
+      if(a===null&&b===null)return 0;
+      if(a===null)return 1;
+      if(b===null)return -1;
+      if(a<b)return asc?-1:1;
+      if(a>b)return asc?1:-1;
+      return 0;
+    });
+    rows.forEach(function(r){tbody.appendChild(r);});
+  });
+}
+initTablasOrdenables();
+
 var CH={};
 var AFILTERED=[], PFILTERED=[];
 var CUR_AV='at', CUR_SV='all';
@@ -1369,49 +1548,34 @@ function renderBIOKpis(){
 
 var BIO_EST_DRILL=null;
 function renderBIODonut(){
-  var hdr=document.getElementById('bio-est-drill-hdr');
   if(!BIO_EST_DRILL){
-    if(hdr){hdr.style.display='none';hdr.innerHTML='';}
     var cc={};BIOF.forEach(function(d){cc[d.estado]=(cc[d.estado]||0)+1;});
     var labels=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];});
     var vals=labels.map(function(l){return cc[l];});
     var colors=labels.map(bioEstadoColor);
-    dc('bio-donut');
-    var ctx=document.getElementById('bio-donut').getContext('2d');
-    CH['bio-donut']=new Chart(ctx,{type:'doughnut',
-      data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-        onClick:function(evt,els){if(els&&els.length){BIO_EST_DRILL=labels[els[0].index];renderBIODonut();}},
-        onHover:function(evt,els){evt.native.target.style.cursor=els&&els.length?'pointer':'default';},
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,BIOF.length)+'%) · clic para productos';}}}}}});
-    setHTML('bio-donut-leg',labels.map(function(l,i){
-      return'<div onclick="BIO_EST_DRILL=\''+l.replace(/'/g,"\\'")+'\';renderBIODonut();" style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
-        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
-    }).join(''));
+    renderDonutConLeyenda({
+      canvasId:'bio-donut',legendId:'bio-donut-leg',headerId:'bio-est-drill-hdr',
+      labels:labels,values:vals,colors:colors,centerSub:'lotes',
+      tooltipSuffix:function(l,v,t){return l+': '+v+' ('+pct(v,t)+'%) · clic para productos';},
+      onSegmentClick:function(l){BIO_EST_DRILL=l;renderBIODonut();}
+    });
   } else {
     var est=BIO_EST_DRILL;
     var delEst=BIOF.filter(function(d){return d.estado===est;});
     var baseColor=bioEstadoColor(est);
-    if(hdr){hdr.style.display='block';
-      hdr.innerHTML='<button onclick="BIO_EST_DRILL=null;renderBIODonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
-        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+est+' · '+delEst.length+' lotes</span>';
-    }
     var pm={};delEst.forEach(function(d){pm[d.producto]=(pm[d.producto]||0)+1;});
     var prods=Object.keys(pm).sort(function(a,b){return pm[b]-pm[a];});
     var vals=prods.map(function(p){return pm[p];});
     var colors=prods.map(function(p,i){return rnTono(baseColor,i);});
-    dc('bio-donut');
-    var ctx=document.getElementById('bio-donut').getContext('2d');
-    CH['bio-donut']=new Chart(ctx,{type:'doughnut',
-      data:{labels:prods,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-        onClick:function(evt,els){BIO_EST_DRILL=null;renderBIODonut();},
-        onHover:function(evt,els){evt.native.target.style.cursor='pointer';},
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+(c.parsed>1?' lotes':' lote');}}}}}});
-    setHTML('bio-donut-leg',prods.map(function(p,i){
-      return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
-        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+p+' ('+vals[i]+')</div>';
-    }).join(''));
+    renderDonutConLeyenda({
+      canvasId:'bio-donut',legendId:'bio-donut-leg',headerId:'bio-est-drill-hdr',
+      labels:prods,values:vals,colors:colors,centerSub:'lotes',
+      headerHtml:'<button onclick="BIO_EST_DRILL=null;renderBIODonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
+        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+est+' · '+delEst.length+' lotes</span>',
+      tooltipSuffix:function(l,v){return l+': '+v+(v>1?' lotes':' lote');},
+      onSegmentClick:function(){BIO_EST_DRILL=null;renderBIODonut();},
+      legendClickable:false
+    });
   }
 }
 
@@ -1726,14 +1890,10 @@ function renderBIORezago(){
     {l:'Productos afectados',v:Object.keys(rez.reduce(function(a,d){a[d.producto]=1;return a;},{})).length,s:'con al menos 1 rezago',c:'#D97706'}
   ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
 
-  dc('bio-rezago-donut');
-  var ctx=document.getElementById('bio-rezago-donut').getContext('2d');
-  CH['bio-rezago-donut']=new Chart(ctx,{type:'doughnut',
-    data:{labels:['Rezago activo ('+rez.length+')','Sin rezago activo ('+sinRez+')'],
-      datasets:[{data:[rez.length,sinRez],backgroundColor:['#DC2626','#059669'],borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
-      plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'bold'},boxWidth:12,padding:10}},
-        tooltip:{callbacks:{label:function(c){return c.label+': '+pct(c.parsed,t)+'%';}}}}}});
+  renderTarjetasComparativas('bio-rezago-cmp',[
+    {label:'Rezago activo',valor:rez.length,color:'#DC2626',sublabel:pct(rez.length,t)+'% del total · sin resolver'},
+    {label:'Sin rezago activo',valor:sinRez,color:'#059669',sublabel:pct(sinRez,t)+'% del total · resueltos o en tiempo'}
+  ]);
 
   var pm={};rez.forEach(function(d){pm[d.producto]=(pm[d.producto]||0)+1;});
   var prods=Object.keys(pm).sort(function(a,b){return pm[b]-pm[a];});
@@ -1763,15 +1923,12 @@ function renderBIOLab(){
     {l:'Más rápido',v:masRapido,s:'menor tiempo de análisis',c:'#059669'}
   ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+';text-align:center"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
 
-  dc('bio-lab-donut');
   var lm={};BIOF.forEach(function(d){lm[d.analisisPor]=(lm[d.analisisPor]||0)+1;});
-  var lkeys=Object.keys(lm);
+  var lkeys=Object.keys(lm).sort(function(a,b){return lm[b]-lm[a];});
   var lcolors={'CCAYAC':'#7C3AED','LEI':'#0891B2','Sin asignar':'#CBD5E1'};
-  var ctx=document.getElementById('bio-lab-donut').getContext('2d');
-  CH['bio-lab-donut']=new Chart(ctx,{type:'doughnut',
-    data:{labels:lkeys,datasets:[{data:lkeys.map(function(l){return lm[l];}),backgroundColor:lkeys.map(function(l){return lcolors[l]||'#94A3B8';}),borderWidth:2,borderColor:'#fff',hoverOffset:5}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
-      plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'bold'},boxWidth:12,padding:8}}}}});
+  renderTarjetasComparativas('bio-lab-cmp',lkeys.map(function(l){
+    return {label:l,valor:lm[l],color:lcolors[l]||'#94A3B8'};
+  }));
 
   dc('bio-lab-comp');
   var ctx2=document.getElementById('bio-lab-comp').getContext('2d');
@@ -1974,34 +2131,36 @@ function renderNRRKpis(){
   ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
 }
 
-/* ── Dona de semáforo con drill-down ── */
+/* ── Dona de semáforo con drill-down (el drill cambia a barra horizontal, por eso el layout se alterna) ── */
 var NRR_SEM_DRILL=null;
+function _nrrSemLayout(mode){
+  var wrap=document.getElementById('nrr-sem-wrap');
+  var box=document.getElementById('nrr-sem-canvas-box');
+  if(!wrap||!box)return;
+  if(mode==='bar'){wrap.style.flexDirection='column';box.style.cssText='flex:1 1 auto;width:100%;height:320px';}
+  else{wrap.style.cssText='';box.style.cssText='';}
+}
 function renderNRRSemaforo(){
-  var hdr=document.getElementById('nrr-sem-hdr');
   var orden=['Vencido','Rojo','Amarillo','Verde'];
   if(!NRR_SEM_DRILL){
-    if(hdr){hdr.style.display='none';hdr.innerHTML='';}
+    _nrrSemLayout('donut');
     var cc={};NRRF.forEach(function(p){var s=p.semRenov||'Sin dato';cc[s]=(cc[s]||0)+1;});
     var labels=orden.filter(function(s){return cc[s];});
     if(cc['Sin dato'])labels.push('Sin dato');
     var vals=labels.map(function(l){return cc[l];});
-    dc('nrr-semaforo');
-    if(!labels.length){setHTML('nrr-sem-leg','<span style="font-size:11px;color:#94A3B8">Sin datos</span>');return;}
-    var ctx=document.getElementById('nrr-semaforo').getContext('2d');
-    CH['nrr-semaforo']=new Chart(ctx,{type:'doughnut',
-      data:{labels:labels,datasets:[{data:vals,backgroundColor:labels.map(nrrColSem),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-        onClick:function(evt,els){if(els&&els.length){NRR_SEM_DRILL=labels[els[0].index];renderNRRSemaforo();}},
-        onHover:function(evt,els){evt.native.target.style.cursor=els&&els.length?'pointer':'default';},
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,NRRF.length)+'%) · clic para ver productos';}}}}}});
-    setHTML('nrr-sem-leg',labels.map(function(l,i){
-      return'<div onclick="NRR_SEM_DRILL=\''+l+'\';renderNRRSemaforo();" style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
-        '<span style="width:10px;height:10px;border-radius:2px;background:'+nrrColSem(l)+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
-    }).join(''));
+    if(!labels.length){dc('nrr-semaforo');setHTML('nrr-sem-leg','<span style="font-size:11px;color:#94A3B8">Sin datos</span>');return;}
+    renderDonutConLeyenda({
+      canvasId:'nrr-semaforo',legendId:'nrr-sem-leg',headerId:'nrr-sem-hdr',
+      labels:labels,values:vals,colors:labels.map(nrrColSem),centerSub:'productos',
+      tooltipSuffix:function(l,v,t){return l+': '+v+' ('+pct(v,t)+'%) · clic para ver productos';},
+      onSegmentClick:function(l){NRR_SEM_DRILL=l;renderNRRSemaforo();}
+    });
   } else {
+    _nrrSemLayout('bar');
     var s=NRR_SEM_DRILL;
     var lista=NRRF.filter(function(p){return (p.semRenov||'Sin dato')===s;})
       .sort(function(a,b){return (a.diasRenov===null?99999:a.diasRenov)-(b.diasRenov===null?99999:b.diasRenov);});
+    var hdr=document.getElementById('nrr-sem-hdr');
     if(hdr){hdr.style.display='block';
       hdr.innerHTML='<button onclick="NRR_SEM_DRILL=null;renderNRRSemaforo();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
         '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+nrrColSem(s)+'">'+s+' · '+lista.length+' productos</span>';}
@@ -2432,15 +2591,11 @@ function renderPAGPresup(){
     {l:'Monto No Presup.',v:fmt(montoNo),s:pct(montoNo,montoTotal)+'% del gasto',c:'#B8000F'}
   ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+';font-size:'+(String(k.v).length>6?'20px':'26px')+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
 
-  /* 1. Donut trámites presupuestado vs no */
-  dc('p-presup-donut');
-  var ctxD=document.getElementById('p-presup-donut').getContext('2d');
-  CH['p-presup-donut']=new Chart(ctxD,{type:'doughnut',
-    data:{labels:['Presupuestado ('+si.length+')','No presupuestado ('+no.length+')'],
-      datasets:[{data:[si.length,no.length],backgroundColor:['#059669','#DC2626'],borderWidth:3,borderColor:'#fff',hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
-      plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'bold'},boxWidth:12,padding:10}},
-        tooltip:{callbacks:{label:function(c){return c.label+': '+pct(c.parsed,total)+'%';}}}}}});
+  /* 1. Trámites presupuestado vs no (tarjetas comparativas) */
+  renderTarjetasComparativas('p-presup-cmp',[
+    {label:'Presupuestado',valor:si.length,color:'#059669',sublabel:pct(si.length,total)+'% de '+total+' trámites'},
+    {label:'No presupuestado',valor:no.length,color:'#DC2626',sublabel:pct(no.length,total)+'% de '+total+' trámites'}
+  ]);
 
   /* 2. Monto presupuestado vs no (barras) */
   dc('p-presup-monto');
@@ -2584,6 +2739,58 @@ function renderARNKPIs(){
   }).join('');
 }
 
+/* Velocímetro semicircular con zonas de color (rojo/ámbar/verde) dibujado directo en canvas */
+function drawGaugeARN(sp,col){
+  var canvas=document.getElementById('a-gauge');
+  if(!canvas)return;
+  var w=canvas.width,h=canvas.height;
+  var ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,w,h);
+  var cx=w/2, cy=h-14, r=Math.min(w/2-16,h-32);
+  var lw=16;
+  var a0=Math.PI, a1=2*Math.PI;
+  var val=Math.max(0,Math.min(100,sp));
+
+  /* Zonas de fondo por desempeño */
+  var zones=[{from:0,to:40,c:'#FEE2E2'},{from:40,to:60,c:'#FEF3C7'},{from:60,to:100,c:'#DCFCE7'}];
+  ctx.lineCap='butt';
+  zones.forEach(function(z){
+    ctx.beginPath();
+    ctx.arc(cx,cy,r,a0+(z.from/100)*(a1-a0),a0+(z.to/100)*(a1-a0));
+    ctx.lineWidth=lw;
+    ctx.strokeStyle=z.c;
+    ctx.stroke();
+  });
+
+  /* Arco de progreso */
+  var progAngle=a0+(val/100)*(a1-a0);
+  ctx.beginPath();
+  ctx.arc(cx,cy,r,a0,progAngle);
+  ctx.lineWidth=lw;
+  ctx.lineCap='round';
+  ctx.strokeStyle=col;
+  ctx.stroke();
+
+  /* Marcador en la punta del arco */
+  var ex=cx+r*Math.cos(progAngle), ey=cy+r*Math.sin(progAngle);
+  ctx.beginPath();
+  ctx.arc(ex,ey,lw/2+2,0,2*Math.PI);
+  ctx.fillStyle='#fff';
+  ctx.fill();
+  ctx.lineWidth=3;
+  ctx.strokeStyle=col;
+  ctx.stroke();
+
+  /* Texto central */
+  ctx.textAlign='center';
+  ctx.fillStyle=col;
+  ctx.font='900 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  ctx.fillText(val+'%',cx,cy-16);
+  ctx.font='700 10px -apple-system,sans-serif';
+  ctx.fillStyle='#94A3B8';
+  ctx.fillText('SALUD ARN',cx,cy-1);
+}
+
 function renderARNGauge(){
   var t=AFILTERED.length;
   var at=AFILTERED.filter(function(d){return d.c==='A tiempo';}).length;
@@ -2593,18 +2800,17 @@ function renderARNGauge(){
   var tarde=AFILTERED.filter(function(d){return d.c==='Ingresado tarde';}).length;
   var sp=pct(at+ap,t);
   var col=sp>=60?'#059669':sp>=40?'#D97706':'#DC2626';
-  dc('a-gauge');
-  var ctx=document.getElementById('a-gauge').getContext('2d');
-  CH['a-gauge']=new Chart(ctx,{type:'doughnut',data:{datasets:[{data:[sp,100-sp],backgroundColor:[col,'#E2E8F0'],borderWidth:0,circumference:240,rotation:-120}]},options:{responsive:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{onComplete:function(){var c=document.getElementById('a-gauge'),x=c.getContext('2d');x.font='bold 24px -apple-system,sans-serif';x.fillStyle=col;x.textAlign='center';x.fillText(sp+'%',c.width/2,c.height/2+8);x.font='bold 10px -apple-system,sans-serif';x.fillStyle='#94A3B8';x.fillText('SALUD ARN',c.width/2,c.height/2+22);}}}});
+  drawGaugeARN(sp,col);
   setTC('a-gauge-txt',sp>=60?'Desempeño aceptable':sp>=40?'Desempeño en riesgo':'Requiere atención urgente');
   (document.getElementById('a-gauge-stats')||{innerHTML:''}).innerHTML=[['A tiempo',at,'#059669'],['Atrasados',atr,'#DC2626'],['Pendientes',pe,'#D97706']].map(function(x){return '<div style="background:#F8FAFC;border-radius:8px;padding:8px;text-align:center"><div style="font-size:20px;font-weight:900;color:'+x[2]+'">'+x[1]+'</div><div style="font-size:9px;color:#94A3B8;font-weight:700;text-transform:uppercase;margin-top:2px">'+x[0]+'</div></div>';}).join('');
 }
 
 function renderARNCumpl(){
-  var cc=cnt(AFILTERED,'c');var labels=Object.keys(cc);var vals=labels.map(function(l){return cc[l];});var colors=labels.map(function(l){return kc(l).bar;});var t=AFILTERED.length;
-  dc('a-cumpl');var ctx=document.getElementById('a-cumpl').getContext('2d');
-  CH['a-cumpl']=new Chart(ctx,{type:'doughnut',data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,t)+'%)';}}}}}});
-  (document.getElementById('a-cumpl-lg')||{innerHTML:''}).innerHTML=labels.map(function(l,i){return '<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600"><span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';flex-shrink:0;display:inline-block"></span>'+l+' ('+vals[i]+')</div>';}).join('');
+  var cc=cnt(AFILTERED,'c');var labels=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];});var vals=labels.map(function(l){return cc[l];});var colors=labels.map(function(l){return kc(l).bar;});
+  renderDonutConLeyenda({
+    canvasId:'a-cumpl',legendId:'a-cumpl-lg',
+    labels:labels,values:vals,colors:colors,centerSub:'trámites'
+  });
 }
 
 function renderARNYear(){
@@ -3160,11 +3366,12 @@ function renderPAGLlaves(){
     {l:'Monto Sin Datos',v:fmt(mSin),s:'revisar',c:'#94A3B8',p:0},
     {l:'Ejecucion',v:pct(mUsada,totM)+'%',s:'del presupuesto',c:'#065A62',p:pct(mUsada,totM)},
   ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div><div class="kb"><div class="kbf" style="width:'+k.p+'%;background:'+k.c+'"></div></div></div>';}).join('');
-  dc('p-llaves-donut');
-  var c1=document.getElementById('p-llaves-donut').getContext('2d');
   var dd2=[{l:'Real (con Num. Entrada)',n:usadas.length,c:'#059669'},{l:'Planeado (sin Num. Entrada)',n:disp.length,c:'#D97706'},{l:'Sin datos',n:sinD.length,c:'#94A3B8'}].filter(function(x){return x.n>0;});
-  CH['p-llaves-donut']=new Chart(c1,{type:'doughnut',data:{labels:dd2.map(function(x){return x.l;}),datasets:[{data:dd2.map(function(x){return x.n;}),backgroundColor:dd2.map(function(x){return x.c;}),borderWidth:3,borderColor:'#fff',hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,tot)+'%)';}}}}}});
-  (document.getElementById('p-llaves-leg')||{innerHTML:''}).innerHTML=dd2.map(function(x){return'<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#374151;font-weight:600"><span style="width:12px;height:12px;border-radius:3px;background:'+x.c+';flex-shrink:0;display:inline-block"></span>'+x.l+' ('+x.n+')</div>';}).join('');
+  renderDonutConLeyenda({
+    canvasId:'p-llaves-donut',legendId:'p-llaves-leg',
+    labels:dd2.map(function(x){return x.l;}),values:dd2.map(function(x){return x.n;}),colors:dd2.map(function(x){return x.c;}),
+    centerSub:'pagos'
+  });
   dc('p-llaves-monto');
   var c2=document.getElementById('p-llaves-monto').getContext('2d');
   var bd=[{l:'Real',m:mUsada,c:'#059669'},{l:'Planeado',m:mDisp,c:'#D97706'},{l:'Sin datos',m:mSin,c:'#94A3B8'}].filter(function(x){return x.m>0;});
@@ -3273,77 +3480,22 @@ function renderARIKPIs(){
 
 var ARI_DIC_DRILL = null; /* drill-down de la dona de dictamen ARI */
 
-var _ARIDonutCenterPlugin={
-  id:'ariCenterText',
-  afterDraw:function(chart){
-    var ds=chart.data.datasets[0];if(!ds)return;
-    var total=ds.data.reduce(function(a,b){return a+(b||0);},0);
-    var ctx=chart.ctx,a=chart.chartArea;
-    var cx=(a.left+a.right)/2,cy=(a.top+a.bottom)/2;
-    ctx.save();
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.font='900 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-    ctx.fillStyle='#0F172A';
-    ctx.fillText(total,cx,cy-10);
-    ctx.font='600 11px -apple-system,sans-serif';
-    ctx.fillStyle='#94A3B8';
-    ctx.fillText('trámites',cx,cy+13);
-    ctx.restore();
-  }
-};
-
-function _ariLegItem(label,n,total,color,onclick){
-  var p=pct(n,total);
-  var base='padding:8px 10px;border-radius:9px;border-left:3px solid '+color+';background:#F8FAFC;';
-  var inner='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'+
-    '<div style="font-size:11px;font-weight:700;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="'+label+'">'+label+'</div>'+
-    '<div style="flex-shrink:0;display:flex;align-items:baseline;gap:4px">'+
-      '<span style="font-size:15px;font-weight:900;color:'+color+'">'+n+'</span>'+
-      '<span style="font-size:10px;color:#94A3B8;font-weight:600">'+p+'%</span>'+
-    '</div>'+
-  '</div>'+
-  '<div style="height:3px;background:#E2E8F0;border-radius:3px;margin-top:5px">'+
-    '<div style="height:3px;border-radius:3px;background:'+color+';width:'+p+'%;transition:width .4s"></div>'+
-  '</div>';
-  if(onclick){
-    return '<div onclick="'+onclick+'" style="cursor:pointer;'+base+'" onmouseover="this.style.background=\'#EFF6FF\'" onmouseout="this.style.background=\'#F8FAFC\'">'+inner+'</div>';
-  }
-  return '<div style="'+base+'">'+inner+'</div>';
-}
-
 function renderARIDonut(){
-  var hdr=document.getElementById('ri-donut-drill-hdr');
-  var leg=document.getElementById('ri-donut-leg');
   if(!ARI_DIC_DRILL){
-    if(hdr){hdr.style.display='none';hdr.innerHTML='';}
     var cc={};ARIF.forEach(function(d){cc[d.cu]=(cc[d.cu]||0)+1;});
     var labels=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];});
     var vals=labels.map(function(l){return cc[l];});
     var colors=labels.map(function(l){return dclr(l);});
-    var total=ARIF.length;
-    dc('ri-donut');
-    var ctx=document.getElementById('ri-donut').getContext('2d');
-    CH['ri-donut']=new Chart(ctx,{type:'doughnut',
-      plugins:[_ARIDonutCenterPlugin],
-      data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:3,borderColor:'#fff',hoverOffset:10,hoverBorderWidth:0}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
-        onClick:function(evt,els){if(els&&els.length){ARI_DIC_DRILL=labels[els[0].index];renderARIDonut();}},
-        onHover:function(evt,els){evt.native.target.style.cursor=els&&els.length?'pointer':'default';},
-        plugins:{legend:{display:false},datalabels:{display:false},
-          tooltip:{callbacks:{label:function(c){return ' '+c.label+': '+c.parsed+' ('+pct(c.parsed,total)+'%) — clic para ver productos';}}}}}});
-    if(leg) leg.innerHTML=labels.map(function(l,i){
-      return _ariLegItem(l,vals[i],total,colors[i],'ARI_DIC_DRILL=\''+l.replace(/'/g,"\\'")+'\';renderARIDonut();');
-    }).join('');
+    renderDonutConLeyenda({
+      canvasId:'ri-donut',legendId:'ri-donut-leg',headerId:'ri-donut-drill-hdr',
+      labels:labels,values:vals,colors:colors,centerSub:'trámites',
+      tooltipSuffix:function(l,v,t){return l+': '+v+' ('+pct(v,t)+'%) — clic para ver productos';},
+      onSegmentClick:function(l){ARI_DIC_DRILL=l;renderARIDonut();}
+    });
   } else {
     var dic=ARI_DIC_DRILL;
     var delDic=ARIF.filter(function(d){return d.cu===dic;});
     var baseColor=dclr(dic);
-    var total=delDic.length;
-    if(hdr){
-      hdr.style.display='block';
-      hdr.innerHTML='<button onclick="ARI_DIC_DRILL=null;renderARIDonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
-        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+dic+' · '+delDic.length+' trámites</span>';
-    }
     var pm={};
     delDic.forEach(function(d){
       var nom=(d.pr||'(sin producto)')+(d.pa?' · '+d.pa:'');
@@ -3352,20 +3504,15 @@ function renderARIDonut(){
     var prods=Object.keys(pm).sort(function(a,b){return pm[b]-pm[a];});
     var vals=prods.map(function(p){return pm[p];});
     var colors=prods.map(function(p,i){return rnTono(baseColor,i);});
-    dc('ri-donut');
-    var ctx=document.getElementById('ri-donut').getContext('2d');
-    CH['ri-donut']=new Chart(ctx,{type:'doughnut',
-      plugins:[_ARIDonutCenterPlugin],
-      data:{labels:prods,datasets:[{data:vals,backgroundColor:colors,borderWidth:3,borderColor:'#fff',hoverOffset:10,hoverBorderWidth:0}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
-        onClick:function(evt,els){ARI_DIC_DRILL=null;renderARIDonut();},
-        onHover:function(evt,els){evt.native.target.style.cursor='pointer';},
-        plugins:{legend:{display:false},datalabels:{display:false},
-          tooltip:{callbacks:{label:function(c){return ' '+c.label+': '+c.parsed+(c.parsed>1?' trámites':' trámite');}}}}}});
-    if(leg) leg.innerHTML=prods.map(function(p,i){
-      var nom=p.length>36?p.slice(0,36)+'…':p;
-      return _ariLegItem(nom,vals[i],total,colors[i],null);
-    }).join('');
+    renderDonutConLeyenda({
+      canvasId:'ri-donut',legendId:'ri-donut-leg',headerId:'ri-donut-drill-hdr',
+      labels:prods,values:vals,colors:colors,centerSub:'trámites',
+      headerHtml:'<button onclick="ARI_DIC_DRILL=null;renderARIDonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
+        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+dic+' · '+delDic.length+' trámites</span>',
+      tooltipSuffix:function(l,v){return l+': '+v+(v>1?' trámites':' trámite');},
+      onSegmentClick:function(){ARI_DIC_DRILL=null;renderARIDonut();},
+      legendClickable:false
+    });
   }
 }
 
@@ -3582,13 +3729,9 @@ function renderARITipo(){
 
 function renderARINC(){
   var nc={};ARIF.forEach(function(d){if(d.nc){nc[d.nc]=(nc[d.nc]||0)+1;}});
-  dc('ri-nc');
-  var ctx1=document.getElementById('ri-nc').getContext('2d');
-  CH['ri-nc']=new Chart(ctx1,{type:'doughnut',
-    data:{labels:Object.keys(nc),datasets:[{data:Object.values(nc),
-      backgroundColor:['#065A62','#059669'],borderWidth:3,borderColor:'#fff',hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
-      plugins:{legend:{position:'right',labels:{font:{size:10,weight:'bold'},boxWidth:10,padding:8}}}}});
+  var nck=Object.keys(nc);
+  var ncColors=['#065A62','#059669','#7C3AED','#D97706'];
+  renderTarjetasComparativas('ri-nc-cmp',nck.map(function(k,i){return {label:k,valor:nc[k],color:ncColors[i%ncColors.length]};}));
   var ym={};ARIF.forEach(function(d){if(d.ap){ym[d.ap]=(ym[d.ap]||0)+1;}});
   dc('ri-anio');
   var ctx2=document.getElementById('ri-anio').getContext('2d');
@@ -4009,57 +4152,34 @@ function renderRNFunnel(){
 var RN_EST_DRILL = null; /* drill-down de la dona de estatus */
 
 function renderRNDonut(){
-  var hdr=document.getElementById('rn-donut-drill-hdr');
   if(!RN_EST_DRILL){
-    /* Vista general por estatus */
-    if(hdr){hdr.style.display='none';hdr.innerHTML='';}
     var cc={};RNF.forEach(function(d){cc[d.estatus]=(cc[d.estatus]||0)+1;});
     var labels=Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];});
     var vals=labels.map(function(l){return cc[l];});
     var colors=labels.map(function(l){return rnclr(l);});
-    dc('rn-donut');
-    var ctx=document.getElementById('rn-donut').getContext('2d');
-    CH['rn-donut']=new Chart(ctx,{type:'doughnut',
-      data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-        onClick:function(evt,els){ if(els&&els.length){ RN_EST_DRILL=labels[els[0].index]; renderRNDonut(); } },
-        onHover:function(evt,els){ evt.native.target.style.cursor=els&&els.length?'pointer':'default'; },
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' ('+pct(c.parsed,RNF.length)+'%) · clic para productos';}}}}}});
-    setHTML('rn-donut-leg',labels.map(function(l,i){
-      return'<div onclick="RN_EST_DRILL=\''+l.replace(/'/g,"\\'")+'\';renderRNDonut();" style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
-        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
-    }).join(''));
+    renderDonutConLeyenda({
+      canvasId:'rn-donut',legendId:'rn-donut-leg',headerId:'rn-donut-drill-hdr',
+      labels:labels,values:vals,colors:colors,centerSub:'proyectos',
+      tooltipSuffix:function(l,v,t){return l+': '+v+' ('+pct(v,t)+'%) · clic para productos';},
+      onSegmentClick:function(l){RN_EST_DRILL=l;renderRNDonut();}
+    });
   } else {
-    /* Drill-down: productos dentro del estatus seleccionado */
+    /* Drill-down: productos dentro del estatus seleccionado (sin agrupar: 1 segmento por proyecto, como en el original) */
     var est=RN_EST_DRILL;
     var delEst=RNF.filter(function(d){return d.estatus===est;});
     var baseColor=rnclr(est);
-    if(hdr){
-      hdr.style.display='block';
-      hdr.innerHTML='<button onclick="RN_EST_DRILL=null;renderRNDonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
-        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+est+' · '+delEst.length+' proyectos</span>';
-    }
     var prods=delEst.map(function(d){return d.prod||d.proyecto||'(sin nombre)';});
     var vals=prods.map(function(){return 1;});
-    /* Todos los productos con 1 c/u; usar tonos del color base */
-    var colors=prods.map(function(p,i){
-      var op=[1,0.82,0.66,0.5,0.38,0.28];
-      return baseColor;
+    var colors=prods.map(function(p,i){return rnTono(baseColor,i);});
+    renderDonutConLeyenda({
+      canvasId:'rn-donut',legendId:'rn-donut-leg',headerId:'rn-donut-drill-hdr',
+      labels:prods,values:vals,colors:colors,centerSub:'proyectos',
+      headerHtml:'<button onclick="RN_EST_DRILL=null;renderRNDonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
+        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+est+' · '+delEst.length+' proyectos</span>',
+      tooltipSuffix:function(l){return l;},
+      onSegmentClick:function(){RN_EST_DRILL=null;renderRNDonut();},
+      legendClickable:false
     });
-    /* Para distinguir, alternar opacidad via rgba no es trivial con hex; usar variación */
-    dc('rn-donut');
-    var ctx=document.getElementById('rn-donut').getContext('2d');
-    CH['rn-donut']=new Chart(ctx,{type:'doughnut',
-      data:{labels:prods,datasets:[{data:vals,backgroundColor:prods.map(function(p,i){return rnTono(baseColor,i);}),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-        onClick:function(evt,els){ RN_EST_DRILL=null; renderRNDonut(); },
-        onHover:function(evt,els){ evt.native.target.style.cursor='pointer'; },
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label;}}}}}});
-    setHTML('rn-donut-leg',prods.map(function(p,i){
-      var nom=p.length>28?p.slice(0,28)+'…':p;
-      return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
-        '<span style="width:10px;height:10px;border-radius:2px;background:'+rnTono(baseColor,i)+';display:inline-block"></span>'+nom+'</div>';
-    }).join(''));
   }
 }
 
@@ -4092,43 +4212,27 @@ function renderRNCmnDonut(){
   });
 
   var cmap={'FAVORABLE':'#059669','COMPLETADO FAVORABLE':'#15803D','NO FAVORABLE':'#DC2626','NO PROCEDENTE':'#D97706'};
-  var hdr=document.getElementById('rn-cmn-drill-hdr');
 
   if(!RN_CMN_DRILL){
-    /* ── VISTA GENERAL: por categoría de resultado ── */
-    if(hdr){hdr.style.display='none';hdr.innerHTML='';}
     var cc={};
     dictamenes.forEach(function(d){cc[d.cmn]=(cc[d.cmn]||0)+1;});
     var labels=Object.keys(cc);
-    if(!labels.length){setHTML('rn-cmn-leg','<span style="font-size:11px;color:#94A3B8">Sin datos de CMN en este filtro</span>');dc('rn-cmn-donut');return;}
+    if(!labels.length){
+      var hdr0=document.getElementById('rn-cmn-drill-hdr');if(hdr0){hdr0.style.display='none';hdr0.innerHTML='';}
+      setHTML('rn-cmn-leg','<span style="font-size:11px;color:#94A3B8">Sin datos de CMN en este filtro</span>');dc('rn-cmn-donut');return;
+    }
     var vals=labels.map(function(l){return cc[l];});
     var colors=labels.map(function(l){return cmap[l]||'#94A3B8';});
-    dc('rn-cmn-donut');
-    var ctx=document.getElementById('rn-cmn-donut').getContext('2d');
-    CH['rn-cmn-donut']=new Chart(ctx,{type:'doughnut',
-      data:{labels:labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-        onClick:function(evt,els){
-          if(els&&els.length){ RN_CMN_DRILL=labels[els[0].index]; renderRNCmnDonut(); }
-        },
-        onHover:function(evt,els){ evt.native.target.style.cursor=els&&els.length?'pointer':'default'; },
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+' (clic para ver productos)';}}}}}});
-    setHTML('rn-cmn-leg',labels.map(function(l,i){
-      return'<div onclick="RN_CMN_DRILL=\''+l.replace(/'/g,"\\'")+'\';renderRNCmnDonut();" style="cursor:pointer;display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
-        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+l+' ('+vals[i]+')</div>';
-    }).join(''));
+    renderDonutConLeyenda({
+      canvasId:'rn-cmn-donut',legendId:'rn-cmn-leg',headerId:'rn-cmn-drill-hdr',
+      labels:labels,values:vals,colors:colors,centerSub:'dictámenes',
+      tooltipSuffix:function(l,v){return l+': '+v+' (clic para ver productos)';},
+      onSegmentClick:function(l){RN_CMN_DRILL=l;renderRNCmnDonut();}
+    });
   } else {
-    /* ── DRILL-DOWN: productos dentro de la categoría seleccionada ── */
     var cat=RN_CMN_DRILL;
     var delCat=dictamenes.filter(function(d){return d.cmn===cat;});
     var baseColor=cmap[cat]||'#94A3B8';
-    /* Botón volver */
-    if(hdr){
-      hdr.style.display='block';
-      hdr.innerHTML='<button onclick="RN_CMN_DRILL=null;renderRNCmnDonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
-        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+cat+' · '+delCat.length+' dictámenes</span>';
-    }
-    /* Agrupar por producto */
     var pm={};
     delCat.forEach(function(d){
       var nom=d.prod||d.proyecto||'(sin nombre)';
@@ -4136,25 +4240,20 @@ function renderRNCmnDonut(){
     });
     var prods=Object.keys(pm).sort(function(a,b){return pm[b]-pm[a];});
     var vals=prods.map(function(p){return pm[p];});
-    /* Paleta de tonos de la categoría */
     var tonos=['#059669','#10B981','#34D399','#6EE7B7','#A7F3D0'];
     if(baseColor==='#DC2626')tonos=['#DC2626','#EF4444','#F87171','#FCA5A5','#FECACA'];
     if(baseColor==='#D97706')tonos=['#D97706','#F59E0B','#FBBF24','#FCD34D','#FDE68A'];
     if(baseColor==='#15803D')tonos=['#15803D','#059669','#10B981','#34D399','#6EE7B7'];
     var colors=prods.map(function(p,i){return tonos[i%tonos.length];});
-    dc('rn-cmn-donut');
-    var ctx=document.getElementById('rn-cmn-donut').getContext('2d');
-    CH['rn-cmn-donut']=new Chart(ctx,{type:'doughnut',
-      data:{labels:prods,datasets:[{data:vals,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
-      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
-        onClick:function(evt,els){ RN_CMN_DRILL=null; renderRNCmnDonut(); },
-        onHover:function(evt,els){ evt.native.target.style.cursor='pointer'; },
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.label+': '+c.parsed+(c.parsed>1?' dictámenes':' dictamen');}}}}}});
-    setHTML('rn-cmn-leg',prods.map(function(p,i){
-      var nom=p.length>30?p.slice(0,30)+'…':p;
-      return'<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#475569;font-weight:600">'+
-        '<span style="width:10px;height:10px;border-radius:2px;background:'+colors[i]+';display:inline-block"></span>'+nom+' ('+vals[i]+')</div>';
-    }).join(''));
+    renderDonutConLeyenda({
+      canvasId:'rn-cmn-donut',legendId:'rn-cmn-leg',headerId:'rn-cmn-drill-hdr',
+      labels:prods,values:vals,colors:colors,centerSub:'dictámenes',
+      headerHtml:'<button onclick="RN_CMN_DRILL=null;renderRNCmnDonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
+        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+cat+' · '+delCat.length+' dictámenes</span>',
+      tooltipSuffix:function(l,v){return l+': '+v+(v>1?' dictámenes':' dictamen');},
+      onSegmentClick:function(){RN_CMN_DRILL=null;renderRNCmnDonut();},
+      legendClickable:false
+    });
   }
 }
 
