@@ -923,8 +923,9 @@ tr:hover td{background:#F8FAFC}
         <div style="height:230px"><canvas id="nrr-riesgo">Riesgo</canvas></div>
       </div>
       <div class="card">
-        <div class="ct">Vencimientos por trimestre<span class="help-ico">i</span><span class="help-tip">Cuántas vigencias vencen en cada trimestre, para anticipar la carga de renovaciones.</span></div>
-        <div style="height:230px"><canvas id="nrr-venc">Vencimientos</canvas></div>
+        <div class="ct">Vencimientos por trimestre<span class="help-ico">i</span><span class="help-tip">Cuántas vigencias vencen en cada trimestre. Selecciona uno o varios años para comparar.</span></div>
+        <div id="nrr-venc-años" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px"></div>
+        <div style="height:210px"><canvas id="nrr-venc">Vencimientos</canvas></div>
       </div>
     </div>
   </div>
@@ -2051,23 +2052,89 @@ function renderNRRRiesgo(){
               y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
 }
 
+var _vencAñosSel=[];
+var _vencPaleta=['#7C3AED','#E2001A','#0A9AA6','#F59E0B','#10B981','#6366F1','#EC4899','#F97316'];
+
 function renderNRRVenc(){
-  var m={};
+  /* — Recolectar todos los años disponibles — */
+  var añosSet={};
   NRRF.forEach(function(p){
     if(!p.vigencia)return;
-    var y=p.vigencia.slice(0,4), mo=parseInt(p.vigencia.slice(5,7),10);
-    var q=y+' T'+Math.ceil(mo/3);
-    m[q]=(m[q]||0)+1;
+    añosSet[p.vigencia.slice(0,4)]=1;
   });
-  var ks=Object.keys(m).sort();
+  var todosAños=Object.keys(añosSet).sort();
+
+  /* — Inicializar selección al primer render — */
+  if(!_vencAñosSel.length) _vencAñosSel=todosAños.slice();
+
+  /* — Botones de año — */
+  var cont=document.getElementById('nrr-venc-años');
+  if(cont){
+    cont.innerHTML='';
+    /* Botón "Todos" */
+    var btnT=document.createElement('button');
+    var todosSel=_vencAñosSel.length===todosAños.length;
+    btnT.textContent='Todos';
+    btnT.style.cssText='padding:3px 10px;border-radius:6px;border:1.5px solid #7C3AED;font-size:10px;font-weight:800;cursor:pointer;transition:all .15s;'+(todosSel?'background:#7C3AED;color:#fff;':'background:#fff;color:#7C3AED;');
+    btnT.onclick=function(){
+      _vencAñosSel=todosAños.slice();
+      renderNRRVenc();
+    };
+    cont.appendChild(btnT);
+
+    todosAños.forEach(function(y,i){
+      var sel=_vencAñosSel.indexOf(y)>=0;
+      var col=_vencPaleta[i%_vencPaleta.length];
+      var btn=document.createElement('button');
+      btn.textContent=y;
+      btn.style.cssText='padding:3px 10px;border-radius:6px;border:1.5px solid '+col+';font-size:10px;font-weight:800;cursor:pointer;transition:all .15s;'+(sel?'background:'+col+';color:#fff;':'background:#fff;color:'+col+';');
+      btn.onclick=function(){
+        var idx=_vencAñosSel.indexOf(y);
+        if(idx>=0){
+          if(_vencAñosSel.length===1)return; /* siempre al menos 1 */
+          _vencAñosSel.splice(idx,1);
+        } else {
+          _vencAñosSel.push(y);
+          _vencAñosSel.sort();
+        }
+        renderNRRVenc();
+      };
+      cont.appendChild(btn);
+    });
+  }
+
+  /* — Construir datos agrupados por año seleccionado — */
+  var labels=['T1','T2','T3','T4'];
+  var datasets=_vencAñosSel.map(function(y,i){
+    var col=_vencPaleta[todosAños.indexOf(y)%_vencPaleta.length];
+    var data=labels.map(function(q){
+      var count=0;
+      NRRF.forEach(function(p){
+        if(!p.vigencia)return;
+        if(p.vigencia.slice(0,4)!==y)return;
+        var mo=parseInt(p.vigencia.slice(5,7),10);
+        var pq='T'+Math.ceil(mo/3);
+        if(pq===q)count++;
+      });
+      return count;
+    });
+    return {label:y,data:data,backgroundColor:col,borderRadius:5};
+  });
+
   dc('nrr-venc');
   var ctx=document.getElementById('nrr-venc').getContext('2d');
+  var mostrarLeyenda=_vencAñosSel.length>1;
   CH['nrr-venc']=new Chart(ctx,{type:'bar',
-    data:{labels:ks,datasets:[{label:'Vigencias que vencen',data:ks.map(function(k){return m[k];}),backgroundColor:'#7C3AED',borderRadius:5}]},
+    data:{labels:labels,datasets:datasets},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
-      scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151',maxRotation:45,minRotation:45}},
-              y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}}}});
+      plugins:{
+        legend:{display:mostrarLeyenda,position:'top',labels:{font:{size:10,weight:'bold'},boxWidth:12,padding:8}},
+        tooltip:{callbacks:{title:function(i){return i[0].dataset.label+' · '+i[0].label;}}}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11,weight:'bold'},color:'#374151'}},
+        y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}}
+      }}});
 }
 
 /* ── Lista lateral de productos ── */
