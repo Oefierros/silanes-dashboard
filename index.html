@@ -158,6 +158,7 @@ tr:hover td{background:#F1F8F9}
     <button class="main-tab" onclick="showUniverse('rn',this)">🧪 Análisis de Registros Nuevos</button>
     <button class="main-tab" onclick="showUniverse('bio',this)">🧬 Biológicos</button>
     <button class="main-tab" onclick="showUniverse('nrr',this)">📑 Seguimiento NRR</button>
+    <button class="main-tab" onclick="showUniverse('port',this)">🗂️ Portafolio Regulatorio</button>
   </div>
 </div>
 
@@ -998,6 +999,62 @@ tr:hover td{background:#F1F8F9}
         <th style="text-align:center">Días</th><th>Semáforo</th><th>Riesgo</th>
         <th style="text-align:center">Crítico</th><th style="text-align:center">Eventos</th>
       </tr></thead><tbody id="nrr-det-body"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     UNIVERSO PORTAFOLIO REGULATORIO — Excel de Box (actualización manual)
+══════════════════════════════════════════════════════════ -->
+<div id="uni-port" class="universe">
+  <div class="sub-hdr">
+    <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
+    <div id="port-fc"></div>
+    <div id="port-fs"></div>
+    <span class="info" id="port-info">43 proyectos</span>
+  </div>
+  <div class="sec-tabs">
+    <button class="sec-tab on" onclick="showPORTTab('ov',this)">📊 Resumen</button>
+    <button class="sec-tab" onclick="showPORTTab('det',this)">📋 Detalle</button>
+  </div>
+
+  <!-- RESUMEN -->
+  <div id="port-pg-ov" class="pg">
+    <div class="card" style="padding:9px 16px;background:#FFFBEB;border-color:#FDE68A">
+      <span style="font-size:11px;color:#92400E;font-weight:700">📁 Fuente: Excel "Portafolio_Regulatorio_Matriz.xlsx" en Box · actualización manual (no en vivo) · <span id="port-updated"></span></span>
+    </div>
+    <div class="g4" id="port-kpis"></div>
+    <div class="g2">
+      <div class="card" style="display:flex;flex-direction:column">
+        <div class="ct">Semáforo de cumplimiento<span class="help-ico">i</span><span class="help-tip">Compara el avance real de cada proyecto contra su fecha de registro autorizado (línea base). Verde = en tiempo, Ámbar = 15 a 30 días de desviación, Rojo = más de 30 días de desviación.</span></div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-box"><canvas id="port-semaforo">Semáforo</canvas></div>
+          <div id="port-semaforo-leg" class="donut-leg"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Distribución por categoría operativa<span class="help-ico">i</span><span class="help-tip">En qué etapa del proceso regulatorio está cada proyecto, desde Desarrollo (sin etapa regulatoria) hasta Aprobado (E10). Incluye Cancelados.</span></div>
+        <div style="height:clamp(220px,30vh,320px)"><canvas id="port-categoria">Categoría</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct" style="color:#B91C1C">⚠ Proyectos con mayor desviación (meses de atraso vs. línea base)<span class="help-ico">i</span><span class="help-tip">Proyectos cuya etapa más atrasada supera la fecha planeada. Solo se muestran los que están atrasados (desviación positiva); los adelantados no se consideran un riesgo.</span></div>
+      <div style="height:clamp(240px,32vh,360px)"><canvas id="port-desviacion">Desviación</canvas></div>
+    </div>
+  </div>
+
+  <!-- DETALLE -->
+  <div id="port-pg-det" class="pg hidden">
+    <div class="card">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <input class="sf" id="port-srch" placeholder="Buscar proyecto..." oninput="renderPORTDet()">
+        <span id="port-det-cnt" style="font-size:11px;font-weight:700;color:#0A9AA6"></span>
+      </div>
+      <div class="tw"><table><thead><tr>
+        <th>Proyecto</th><th>Estado</th><th>Etapa actual</th><th>Categoría operativa</th>
+        <th>Versión</th><th style="text-align:center">Δ vs V1 (meses)</th><th style="text-align:center">Máx. desviación (meses)</th>
+        <th>% cumplimiento</th><th>Etapa más atrasada</th><th>Fecha registro (línea base)</th>
+      </tr></thead><tbody id="port-det-body"></tbody></table></div>
     </div>
   </div>
 </div>
@@ -2487,6 +2544,7 @@ function showUniverse(id,btn){
     else if(id==='rn') renderRN();
     else if(id==='bio') renderBIO();
     else if(id==='nrr') renderNRR();
+    else if(id==='port') renderPORT();
   }
 }
 
@@ -5461,6 +5519,198 @@ function transformRN(rows){
   return {records:consolidados, entradas:records};
 }
 
+/* ══════════════════════════════════════════════════════════
+   UNIVERSO PORTAFOLIO REGULATORIO
+   Fuente: Excel "Portafolio_Regulatorio_Matriz.xlsx" en Box (hojas Dashboard + Plan actual).
+   NO se lee en vivo: Box exige inicio de sesión incluso con el link "compartido", así que
+   estos datos se recargan a mano (pidiéndole a Claude que vuelva a leer el Excel y actualice
+   este bloque) en vez de por un fetch automático como los demás universos.
+   ══════════════════════════════════════════════════════════ */
+var PORT_META = {
+  updatedAt: '11-Sep-2026 (capturado 14-Sep-2026)',
+  proyectosTotales: 43,
+  replanificados: 27,
+  noAprobacion: 14,
+  maxDeltaHistorico: 84,
+  deltaHistoricoProm: 13.0,
+  pctPortafolioRiesgo: 37.2
+};
+
+/* proy, prio, fechaReg (línea base E10), estado (semáforo tiempos), maxDesv (meses, +atraso/-adelanto),
+   etapaAtrasada, pctCumpl, version, deltaV1 (meses), etapaActual, categoria */
+var PORT_RAW = [
+  {proy:'Cianocobalamina / Etoricoxib 3CMN',fechaReg:'30-Oct-27',estado:'>30D',maxDesv:45,etapaAtrasada:'E7. Exp. calidad registro',pctCumpl:25,version:'V3',deltaV1:42,etapaActual:'E6. Oficio CMN',categoria:'En CMN'},
+  {proy:'Betametasona / Etoricoxib',fechaReg:'30-Oct-27',estado:'15-30D',maxDesv:24,etapaAtrasada:'E7. Exp. calidad registro',pctCumpl:60,version:'V2',deltaV1:6,etapaActual:'E6. Oficio CMN',categoria:'En CMN'},
+  {proy:'Tizanidina / Etoricoxib 2CMN',fechaReg:'1-Dec-27',estado:'En tiempo',maxDesv:1,etapaAtrasada:'E10. Aprobación de registro',pctCumpl:98,version:'V3',deltaV1:3,etapaActual:'E8. Revisión de expediente',categoria:'Preparación registro'},
+  {proy:'Ticagrelor / ASA',fechaReg:'29-May-27',estado:'>30D',maxDesv:69,etapaAtrasada:'E10. Aprobación de registro',pctCumpl:0,version:'V2-R',deltaV1:9,etapaActual:'E9. En evaluación de registro',categoria:'Solicitud registro'},
+  {proy:'Dexketoprofeno / Butilhioscina',fechaReg:'30-Jan-28',estado:'En tiempo',maxDesv:-12,etapaAtrasada:'E4. Entrega exp. CMN',pctCumpl:100,version:'V3',deltaV1:2,etapaActual:'E3. Fase III',categoria:'Fase 3 / Pre-Reg'},
+  {proy:'Etoricoxib / Glucosamina',fechaReg:'28-Feb-28',estado:'>30D',maxDesv:51,etapaAtrasada:'E8. Exp. médico registro',pctCumpl:15,version:'V3',deltaV1:3,etapaActual:'E7. Entrega exp calidad y médico',categoria:'Preparación registro'},
+  {proy:'Fenazopiridina',fechaReg:'31-Aug-27',estado:'>30D',maxDesv:104,etapaAtrasada:'E9. Solicitud de registro',pctCumpl:0,version:'V2',deltaV1:-11,etapaActual:'E8. Entrega exp. médico registro',categoria:'Preparación registro'},
+  {proy:'Vilazodona',fechaReg:'30-Oct-27',estado:'>30D',maxDesv:43,etapaAtrasada:'E9. Solicitud de registro',pctCumpl:28,version:'V3',deltaV1:30,etapaActual:'E8. Entrega exp. médico registro',categoria:'Preparación registro'},
+  {proy:'Sildapa M',fechaReg:'30-Mar-27',estado:'15-30D',maxDesv:16,etapaAtrasada:'E8. Exp. médico registro',pctCumpl:73,version:'V1',deltaV1:0,etapaActual:'E8. Revisión de expediente',categoria:'Preparación registro'},
+  {proy:'Amosartan XQ',fechaReg:'30-May-26',estado:'>30D',maxDesv:-1,etapaAtrasada:'E10. Aprobación de registro',pctCumpl:100,version:'V2',deltaV1:-10,etapaActual:'E9. En evaluación de registro',categoria:'Solicitud registro'},
+  {proy:'Trezete 5mg',fechaReg:'15-Dec-26',estado:'En tiempo',maxDesv:0,etapaAtrasada:'E10. Aprobación de registro',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'E9. En evaluación de registro',categoria:'Solicitud registro'},
+  {proy:'Loratadina / Ibuprofeno',fechaReg:'30-May-26',estado:'>30D',maxDesv:0,etapaAtrasada:'E10. Aprobación de registro',pctCumpl:100,version:'V2-R',deltaV1:46,etapaActual:'E9. En evaluación de registro',categoria:'Solicitud registro'},
+  {proy:'Cele / Pregaba / Comp B',fechaReg:'30-Aug-26',estado:'En tiempo',maxDesv:6,etapaAtrasada:'E10. Aprobación de registro',pctCumpl:90,version:'V2',deltaV1:36,etapaActual:'E9. En evaluación de registro',categoria:'Solicitud registro'},
+  {proy:'Metformina / ASA',fechaReg:'31-Jul-26',estado:'>30D',maxDesv:1,etapaAtrasada:'E10. Aprobación de registro',pctCumpl:98,version:'V2',deltaV1:18,etapaActual:'E9. En evaluación de registro',categoria:'Solicitud registro'},
+  {proy:'Empagliflozina / Sitagliptina',fechaReg:'30-Aug-28',estado:'En tiempo',maxDesv:-80,etapaAtrasada:'E1. Entrega exp. Fase 3',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Fase 1',categoria:'En Fase 1'},
+  {proy:'Desloratatina / Betametasona Sol. Infantil',fechaReg:'15-Dec-28',estado:'>30D',maxDesv:111,etapaAtrasada:'E4. Entrega exp. CMN',pctCumpl:0,version:'V3-R',deltaV1:84,etapaActual:'E3. Fase III',categoria:'Fase 3 / Pre-Reg'},
+  {proy:'Acciogen tab Nueva dosis',fechaReg:'30-Nov-27',estado:'En tiempo',maxDesv:11,etapaAtrasada:'E9. Solicitud de registro',pctCumpl:82,version:'V3',deltaV1:8,etapaActual:'Fase 1',categoria:'En Fase 1'},
+  {proy:'Dexketoprofeno / Cafeina',fechaReg:'15-Dec-28',estado:'En tiempo',maxDesv:1,etapaAtrasada:'E4. Entrega exp. CMN',pctCumpl:98,version:'V3',deltaV1:50,etapaActual:'E3. Fase III',categoria:'Fase 3 / Pre-Reg'},
+  {proy:'Lurasidona',fechaReg:'30-Apr-28',estado:'En tiempo',maxDesv:-49,etapaAtrasada:'E1. Entrega exp. Fase 3',pctCumpl:100,version:'V1-R',deltaV1:-8,etapaActual:'Fase 1',categoria:'En Fase 1'},
+  {proy:'Escitalopram / Pregabalina',fechaReg:'30-Oct-29',estado:'En tiempo',maxDesv:12,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:80,version:'V1-R',deltaV1:12,etapaActual:'Fase 1',categoria:'En Fase 1'},
+  {proy:'Rifapentina / Isoniazida',fechaReg:'30-Aug-28',estado:'En tiempo',maxDesv:12,etapaAtrasada:'E1. Entrega exp. Fase 3',pctCumpl:80,version:'V1-R',deltaV1:7,etapaActual:'Fase 1',categoria:'En Fase 1'},
+  {proy:'Ácido Bempedoico',fechaReg:'30-Aug-28',estado:'En tiempo',maxDesv:-206,etapaAtrasada:'E1. Entrega exp. Fase 3',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Fase 1',categoria:'En Fase 1'},
+  {proy:'Sertralina / Acetilcisteina',fechaReg:'30-Nov-28',estado:'>30D',maxDesv:332,etapaAtrasada:'E4. Entrega exp. CMN',pctCumpl:0,version:'V2',deltaV1:22,etapaActual:'E3. Fase III',categoria:'Fase 3 / Pre-Reg'},
+  {proy:'Topiramato / Fentermina',fechaReg:'28-Feb-30',estado:'En tiempo',maxDesv:-201,etapaAtrasada:'E3. Aprobación Fase 3',pctCumpl:100,version:'V1-R',deltaV1:13,etapaActual:'Cancelado',categoria:'Cancelado'},
+  {proy:'Pidotimod/Vitamina D/Vitamina C/Zinc',fechaReg:'30-Apr-29',estado:'>30D',maxDesv:73,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:0,version:'V2',deltaV1:4,etapaActual:'Fase 1',categoria:'En Fase 1'},
+  {proy:'Dapagilifozina / Sacubitril / Olmesartan',fechaReg:'31-Mar-29',estado:'>30D',maxDesv:105,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:0,version:'V2',deltaV1:7,etapaActual:'E1. Entrega exp. Fase 3',categoria:'Fase 3 / Pre-Reg'},
+  {proy:'Rosuvastatina / Omega 3',fechaReg:'15-Dec-28',estado:'>30D',maxDesv:149,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:0,version:'V2',deltaV1:23,etapaActual:'Cancelado',categoria:'Cancelado'},
+  {proy:'Meloxicam / Orfenadrina',fechaReg:'30-May-29',estado:'>30D',maxDesv:104,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:0,version:'V2-R',deltaV1:30,etapaActual:'E1. Entrega exp. Fase 3',categoria:'Fase 3 / Pre-Reg'},
+  {proy:'Ibuprofeno / Paracetamol IV',fechaReg:'30-Jun-29',estado:'En tiempo',maxDesv:-292,etapaAtrasada:'E1. Entrega exp. Fase 3',pctCumpl:100,version:'V1-R',deltaV1:4,etapaActual:'Cancelado',categoria:'Cancelado'},
+  {proy:'Dapaglifozina / Finerenona',fechaReg:'31-Jul-29',estado:'En tiempo',maxDesv:11,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:82,version:'V1',deltaV1:0,etapaActual:'Fase 1',categoria:'En Fase 1'},
+  {proy:'Dexketoprofeno / Eletriptan',fechaReg:'31-Aug-29',estado:'En tiempo',maxDesv:-19,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Fase 1',categoria:'En Fase 1'},
+  {proy:'Piracetam / Citicolina',fechaReg:'30-Oct-29',estado:'En tiempo',maxDesv:-80,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Fase 1',categoria:'En Fase 1'},
+  {proy:'Opicapona',fechaReg:'30-Oct-28',estado:'En tiempo',maxDesv:-658,etapaAtrasada:'E8. Exp. médico registro',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Cancelado',categoria:'Cancelado'},
+  {proy:'Acetilcistenia / Citicolina',fechaReg:'15-Dec-29',estado:'En tiempo',maxDesv:-141,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:100,version:'V3',deltaV1:63,etapaActual:'Desarrollo',categoria:'Desarrollo'},
+  {proy:'Eszopiclona',fechaReg:'30-Jun-30',estado:'En tiempo',maxDesv:-658,etapaAtrasada:'E5. Sometimiento CMN',pctCumpl:100,version:'V1-R',deltaV1:20,etapaActual:'Desarrollo',categoria:'Desarrollo'},
+  {proy:'Etoricoxib / Citidina / Uridina',fechaReg:'30-Jul-30',estado:'En tiempo',maxDesv:-353,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:100,version:'V1-R',deltaV1:48,etapaActual:'Desarrollo',categoria:'Desarrollo'},
+  {proy:'Celecoxib / Diacereina',fechaReg:'31-Oct-30',estado:'En tiempo',maxDesv:-445,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Desarrollo',categoria:'Desarrollo'},
+  {proy:'Betahistina / Difenidol',fechaReg:'31-Oct-30',estado:'En tiempo',maxDesv:-445,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Desarrollo',categoria:'Desarrollo'},
+  {proy:'Dextrometorfano / Bupropion',fechaReg:'30-Jan-31',estado:'En tiempo',maxDesv:-535,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Desarrollo',categoria:'Desarrollo'},
+  {proy:'Desvenlafaxina / Mirtazapina',fechaReg:'30-Jan-31',estado:'En tiempo',maxDesv:-535,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Desarrollo',categoria:'Desarrollo'},
+  {proy:'Ácido Bempedoico / Rosuvastatina',fechaReg:'30-Mar-31',estado:'En tiempo',maxDesv:-597,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Desarrollo',categoria:'Desarrollo'},
+  {proy:'Ácido Bempedoico / Rosuvastatina / Ezetimiba',fechaReg:'30-Mar-31',estado:'En tiempo',maxDesv:-597,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Desarrollo',categoria:'Desarrollo'},
+  {proy:'Empagliflozina / Sitagliptina / Metformina',fechaReg:'30-Sep-31',estado:'En tiempo',maxDesv:-781,etapaAtrasada:'E2. Ingreso Fase 3',pctCumpl:100,version:'V1',deltaV1:0,etapaActual:'Desarrollo',categoria:'Desarrollo'}
+];
+
+var PORTF = PORT_RAW.slice();
+
+var PORT_CAT_COLORS = {
+  'Desarrollo':'#6B7280','En Fase 1':'#0891B2','Fase 3 / Pre-Reg':'#7C3AED',
+  'Preparación CMN':'#D97706','En CMN':'#BE185D','Preparación registro':'#065A62',
+  'Solicitud registro':'#059669','Aprobado':'#15803D','Cancelado':'#374151'
+};
+function portCatColor(c){ return PORT_CAT_COLORS[c]||'#94A3B8'; }
+function portSemColor(s){ return s==='En tiempo'?'#059669':s==='15-30D'?'#D97706':s==='>30D'?'#DC2626':'#94A3B8'; }
+function portSemLabel(s){ return s==='En tiempo'?'En tiempo (Verde)':s==='15-30D'?'15-30 días (Ámbar)':s==='>30D'?'Más de 30 días (Rojo)':s; }
+
+function showPORTTab(id,btn){
+  ['ov','det'].forEach(function(x){var el=document.getElementById('port-pg-'+x);if(el)el.classList.add('hidden');});
+  document.querySelectorAll('#uni-port .sec-tab').forEach(function(b){b.classList.remove('on');});
+  var pg=document.getElementById('port-pg-'+id);if(pg)pg.classList.remove('hidden');
+  if(btn)btn.classList.add('on');
+  if(id==='det')renderPORTDet();
+}
+
+function initFiltrosPORT(){
+  var cats={};PORT_RAW.forEach(function(d){if(d.categoria)cats[d.categoria]=1;});
+  msBuild('port-fc','Categoría',Object.keys(cats).sort().map(function(c){return{v:c,t:c};}),applyPORT);
+  var ests={};PORT_RAW.forEach(function(d){if(d.estado)ests[d.estado]=1;});
+  msBuild('port-fs','Semáforo',Object.keys(ests).sort().map(function(e){return{v:e,t:portSemLabel(e)};}),applyPORT);
+}
+
+function applyPORT(){
+  var fc=msGet('port-fc'), fs=msGet('port-fs');
+  PORTF=PORT_RAW.filter(function(d){
+    if(fc.length&&fc.indexOf(d.categoria)<0)return false;
+    if(fs.length&&fs.indexOf(d.estado)<0)return false;
+    return true;
+  });
+  setTC('port-info',PORTF.length+' proyectos');
+  setTC('port-updated',PORT_META.updatedAt);
+  renderPORT();
+}
+
+function renderPORT(){
+  renderPORTKpis();
+  renderPORTSemaforo();
+  renderPORTCategoria();
+  renderPORTDesviacion();
+  var dt=document.getElementById('port-pg-det'); if(dt&&!dt.classList.contains('hidden'))renderPORTDet();
+}
+
+function renderPORTKpis(){
+  var t=PORTF.length;
+  var verde=PORTF.filter(function(d){return d.estado==='En tiempo';}).length;
+  var amarillo=PORTF.filter(function(d){return d.estado==='15-30D';}).length;
+  var rojo=PORTF.filter(function(d){return d.estado==='>30D';}).length;
+  setHTML('port-kpis',[
+    {l:'Proyectos (filtro)',v:t,s:'de '+PORT_META.proyectosTotales+' totales',c:'#065A62'},
+    {l:'En Verde',v:verde,s:pct(verde,t)+'% en tiempo',c:'#059669'},
+    {l:'En Ámbar',v:amarillo,s:pct(amarillo,t)+'% 15-30 días',c:'#D97706'},
+    {l:'En Rojo',v:rojo,s:pct(rojo,t)+'% +30 días',c:'#DC2626'},
+    {l:'Replanificados',v:PORT_META.replanificados,s:'del portafolio total',c:'#7C3AED'},
+    {l:'Con No-aprobación',v:PORT_META.noAprobacion,s:'al menos 1 oficio negativo',c:'#BE185D'},
+    {l:'Δ histórico prom.',v:PORT_META.deltaHistoricoProm+'m',s:'máx. '+PORT_META.maxDeltaHistorico+' meses',c:'#0891B2'},
+    {l:'% portafolio en riesgo',v:PORT_META.pctPortafolioRiesgo+'%',s:'cumplimiento de fechas',c:'#B91C1C'}
+  ].map(function(k){return'<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+';font-size:'+(String(k.v).length>5?'20px':'26px')+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join(''));
+}
+
+function renderPORTSemaforo(){
+  var cc={};PORTF.forEach(function(d){cc[d.estado]=(cc[d.estado]||0)+1;});
+  var orden=['>30D','15-30D','En tiempo'];
+  var labels=orden.filter(function(s){return cc[s];}).map(portSemLabel);
+  var vals=orden.filter(function(s){return cc[s];}).map(function(s){return cc[s];});
+  var colors=orden.filter(function(s){return cc[s];}).map(portSemColor);
+  renderDonutConLeyenda({
+    canvasId:'port-semaforo',legendId:'port-semaforo-leg',
+    labels:labels,values:vals,colors:colors,centerSub:'proyectos'
+  });
+}
+
+function renderPORTCategoria(){
+  var cc={};PORTF.forEach(function(d){cc[d.categoria]=(cc[d.categoria]||0)+1;});
+  var orden=['Desarrollo','En Fase 1','Fase 3 / Pre-Reg','Preparación CMN','En CMN','Preparación registro','Solicitud registro','Aprobado','Cancelado'];
+  var labels=orden.filter(function(c){return cc[c];});
+  var vals=labels.map(function(l){return cc[l];});
+  var colors=labels.map(portCatColor);
+  dc('port-categoria');
+  var ctx=document.getElementById('port-categoria').getContext('2d');
+  CH['port-categoria']=new Chart(ctx,{type:'bar',
+    data:{labels:labels,datasets:[{label:'Proyectos',data:vals,backgroundColor:colors,borderRadius:5}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return c.parsed.x+' proyectos ('+pct(c.parsed.x,PORTF.length)+'%)';}}}},
+      scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}},
+              y:{grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}}}}});
+}
+
+function renderPORTDesviacion(){
+  var atrasados=PORTF.filter(function(d){return d.maxDesv>0;}).sort(function(a,b){return b.maxDesv-a.maxDesv;}).slice(0,12);
+  dc('port-desviacion');
+  var ctx=document.getElementById('port-desviacion').getContext('2d');
+  if(!atrasados.length){return;}
+  CH['port-desviacion']=new Chart(ctx,{type:'bar',
+    data:{labels:atrasados.map(function(d){return d.proy.length>30?d.proy.slice(0,30)+'…':d.proy;}),
+      datasets:[{label:'Meses de atraso',data:atrasados.map(function(d){return d.maxDesv;}),backgroundColor:atrasados.map(function(d){return portSemColor(d.estado);}),borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return '+'+c.parsed.x+' meses de atraso';}}}},
+      scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}},
+              y:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}}}}});
+}
+
+function renderPORTDet(){
+  var q=(getEl('port-srch')?document.getElementById('port-srch').value:'').toLowerCase();
+  var lista=PORTF.filter(function(d){return !q||d.proy.toLowerCase().indexOf(q)>=0;})
+    .sort(function(a,b){return b.maxDesv-a.maxDesv;});
+  setTC('port-det-cnt',lista.length+' de '+PORTF.length);
+  setHTML('port-det-body',lista.map(function(d){
+    var semCol=portSemColor(d.estado);
+    var desvCol=d.maxDesv>0?'#DC2626':(d.maxDesv<0?'#059669':'#64748B');
+    return '<tr>'+
+      '<td style="font-weight:700">'+d.proy+'</td>'+
+      '<td><span class="badge" style="background:'+semCol+'22;color:'+semCol+'">'+d.estado+'</span></td>'+
+      '<td style="font-size:11px">'+d.etapaActual+'</td>'+
+      '<td><span class="badge" style="background:'+portCatColor(d.categoria)+'22;color:'+portCatColor(d.categoria)+'">'+d.categoria+'</span></td>'+
+      '<td style="text-align:center;font-weight:700">'+d.version+'</td>'+
+      '<td style="text-align:center">'+(d.deltaV1>0?'+':'')+d.deltaV1+'</td>'+
+      '<td style="text-align:center;font-weight:800;color:'+desvCol+'">'+(d.maxDesv>0?'+':'')+d.maxDesv+'</td>'+
+      '<td>'+d.pctCumpl+'%<div class="pb" style="margin-top:3px;width:60px"><div class="pbf" style="width:'+d.pctCumpl+'%;background:'+(d.pctCumpl>=70?'#059669':d.pctCumpl>=30?'#D97706':'#DC2626')+'"></div></div></td>'+
+      '<td style="font-size:11px">'+d.etapaAtrasada+'</td>'+
+      '<td style="font-size:11px">'+d.fechaReg+'</td>'+
+    '</tr>';
+  }).join(''));
+}
 
 function cargarDatosEnVivo(){
   mostrarCargando(true);
@@ -5531,6 +5781,10 @@ function cargarDatosEnVivo(){
 
 /* ── Bloquear universo RN al inicio ── */
 if(typeof rnLockShow==='function') rnLockShow(true);
+
+/* ── Portafolio Regulatorio: datos estáticos (no vienen del Worker), se inicializan directo ── */
+initFiltrosPORT();
+applyPORT();
 
 /* ── Arranque: cargar datos en vivo al abrir ── */
 if(document.readyState==='loading'){
