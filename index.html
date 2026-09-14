@@ -1039,7 +1039,7 @@ tr:hover td{background:#F1F8F9}
       </div>
     </div>
     <div class="card">
-      <div class="ct" style="color:#B91C1C">⚠ Proyectos con mayor desviación (meses de atraso vs. línea base)<span class="help-ico">i</span><span class="help-tip">Proyectos cuya etapa más atrasada supera la fecha planeada. Solo se muestran los que están atrasados (desviación positiva); los adelantados no se consideran un riesgo.</span></div>
+      <div class="ct" style="color:#B91C1C">⚠ Proyectos con mayor desviación (días de atraso vs. línea base)<span class="help-ico">i</span><span class="help-tip">Proyectos cuya etapa más atrasada supera la fecha planeada. Solo se muestran los que están atrasados (desviación positiva); los adelantados no se consideran un riesgo.</span></div>
       <div style="height:clamp(240px,32vh,360px)"><canvas id="port-desviacion">Desviación</canvas></div>
     </div>
   </div>
@@ -1065,7 +1065,7 @@ tr:hover td{background:#F1F8F9}
       </div>
       <div class="tw"><table><thead><tr>
         <th>Proyecto</th><th>Estado</th><th>Etapa actual</th><th>Categoría operativa</th>
-        <th>Versión</th><th style="text-align:center">Δ vs V1 (meses)</th><th style="text-align:center">Máx. desviación (meses)</th>
+        <th>Versión</th><th style="text-align:center">Δ vs V1 (meses)</th><th style="text-align:center">Máx. desviación (días)</th>
         <th>% cumplimiento</th><th>Etapa más atrasada</th><th>Fecha registro (línea base)</th>
       </tr></thead><tbody id="port-det-body"></tbody></table></div>
     </div>
@@ -5549,7 +5549,8 @@ var PORT_META = {
   pctPortafolioRiesgo: 37.2
 };
 
-/* proy, prio, fechaReg (línea base E10), estado (semáforo tiempos), maxDesv (meses, +atraso/-adelanto),
+/* proy, prio, fechaReg (línea base E10), estado (semáforo tiempos), maxDesv (días —pese a que la columna
+   del Excel dice "(meses)", los valores calzan con Δ días de la Matriz Consolidada, no con meses reales—,
    etapaAtrasada, pctCumpl, version, deltaV1 (meses), etapaActual, categoria */
 var PORT_RAW = [
   {proy:'Cianocobalamina / Etoricoxib 3CMN',fechaReg:'30-Oct-27',estado:'>30D',maxDesv:45,etapaAtrasada:'E7. Exp. calidad registro',pctCumpl:25,version:'V3',deltaV1:42,etapaActual:'E6. Oficio CMN',categoria:'En CMN'},
@@ -5753,9 +5754,9 @@ function renderPORTDesviacion(){
   if(!atrasados.length){return;}
   CH['port-desviacion']=new Chart(ctx,{type:'bar',
     data:{labels:atrasados.map(function(d){return d.proy.length>30?d.proy.slice(0,30)+'…':d.proy;}),
-      datasets:[{label:'Meses de atraso',data:atrasados.map(function(d){return d.maxDesv;}),backgroundColor:atrasados.map(function(d){return portSemColor(d.estado);}),borderRadius:4}]},
+      datasets:[{label:'Días de atraso',data:atrasados.map(function(d){return d.maxDesv;}),backgroundColor:atrasados.map(function(d){return portSemColor(d.estado);}),borderRadius:4}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return '+'+c.parsed.x+' meses de atraso';}}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return '+'+c.parsed.x+' días de atraso';}}}},
       scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}},
               y:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}}}}});
 }
@@ -5833,7 +5834,7 @@ function renderPORTTLPanel(){
     '</div>'+
     '<div class="g4" style="margin-top:14px">'+
       '<div class="kpi" style="border-top-color:'+semCol+'"><div class="kl">% Cumplimiento</div><div class="kv" style="color:'+semCol+'">'+p.pctCumpl+'%</div><div class="ks">estimado</div></div>'+
-      '<div class="kpi" style="border-top-color:#B91C1C"><div class="kl">Máx. desviación</div><div class="kv" style="color:'+(p.maxDesv>0?'#DC2626':'#059669')+'">'+(p.maxDesv>0?'+':'')+p.maxDesv+'m</div><div class="ks">'+p.etapaAtrasada+'</div></div>'+
+      '<div class="kpi" style="border-top-color:#B91C1C"><div class="kl">Máx. desviación</div><div class="kv" style="color:'+(p.maxDesv>0?'#DC2626':'#059669')+'">'+(p.maxDesv>0?'+':'')+p.maxDesv+'d</div><div class="ks">'+p.etapaAtrasada+'</div></div>'+
       '<div class="kpi" style="border-top-color:#7C3AED"><div class="kl">Δ vs. V1 (histórico)</div><div class="kv" style="color:#7C3AED">'+(p.deltaV1>0?'+':'')+p.deltaV1+'m</div><div class="ks">desde línea base original</div></div>'+
       '<div class="kpi" style="border-top-color:#0891B2"><div class="kl">Fecha registro (línea base)</div><div class="kv" style="color:#0891B2;font-size:17px">'+p.fechaReg+'</div><div class="ks">objetivo E10</div></div>'+
     '</div>'+
