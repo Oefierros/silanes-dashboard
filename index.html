@@ -2804,14 +2804,16 @@ function renderARNKPIs(){
   var rp=AFILTERED.filter(function(d){return d.c==='Reprogramado';}).length;
   var ca=AFILTERED.filter(function(d){return d.c==='Cancelado';}).length;
   var pe=AFILTERED.filter(function(d){return d.c==='Pendiente';}).length;
-  var tarde=AFILTERED.filter(function(d){return d.c==='Ingresado tarde';}).length;
+  var tardeRecs=AFILTERED.filter(function(d){return d.c==='Ingresado tarde';});
+  var tarde=tardeRecs.length;
+  var tardeCritico=tardeRecs.filter(function(d){var dif=d.fp&&d.fi?dd(d.fp,d.fi):null;return dif!==null&&dif>ARN_DIAS_CRITICO;}).length;
   var pr=AFILTERED.filter(function(d){return d.presupuestado==='Si'||d.presupuestado==='SI';}).length;
   var mn=AFILTERED.reduce(function(s,d){return s+(d.monto||0);},0);
   var items=[
     {l:'Total Trámites',v:t,s:'Plan 2025–2030',c:'#065A62',p:100},
     {l:'Aprobados',v:ap,s:pct(ap,t)+'% del total',c:'#059669',p:pct(ap,t)},
     {l:'A Tiempo',v:at,s:'ingresados antes de fecha',c:'#059669',p:pct(at,t)},
-    {l:'Ingresados Tarde',v:tarde,s:pct(tarde,t)+'% perdió días',c:'#DC2626',p:pct(tarde,t)},
+    {l:'Ingresados Tarde',v:tarde,s:(tardeCritico>0?('⚠ '+tardeCritico+' crítico'+(tardeCritico===1?'':'s')+' (+180d)'):'0 críticos (+180d)')+' · '+pct(tarde,t)+'% del total',c:tardeCritico>0?'#DC2626':'#D97706',p:pct(tarde,t)},
     {l:'Atrasados',v:atr,s:'vencidos sin ingresar',c:'#D97706',p:pct(atr,t)},
     {l:'Reprogramados',v:rp,s:pct(rp,t)+'% del total',c:'#7C3AED',p:pct(rp,t)},
     {l:'Pendientes',v:pe,s:'por resolver',c:'#D97706',p:pct(pe,t)},
