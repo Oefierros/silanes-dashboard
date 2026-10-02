@@ -5988,20 +5988,13 @@ function renderPORTTLPanel(){
     '<div style="height:350px"><canvas id="port-tl-timeline">Línea de tiempo</canvas></div>'+
   '</div>'+
   '<div class="card" style="margin-top:14px">'+
-    '<div class="ct">Desviación del Plan vigente vs. Baseline V1 (días)<span class="help-ico">i</span><span class="help-tip">Para cada etapa que tiene fecha en el Baseline 5YR Plan, se muestra cuántos días se movió la fecha del Plan vigente respecto a la fecha original. Rojo = etapa se atrasó vs. lo acordado originalmente; verde = se adelantó.</span></div>'+
-    '<div style="height:280px"><canvas id="port-tl-bldrift">Baseline drift</canvas></div>'+
-    '<div id="port-tl-bl-pendientes" style="margin-top:10px"></div>'+
-  '</div>'+
-  '<div class="card" style="margin-top:14px">'+
-    '<div class="ct">Detalle por etapa: días de adelanto (verde) / atraso (rojo) vs. Plan vigente<span class="help-ico">i</span><span class="help-tip">Para cada etapa que ya ocurrió (tiene fecha Real/Est.) se compara contra su fecha del Plan vigente. Barra hacia la derecha en rojo = atraso; barra hacia la izquierda en verde = se adelantó respecto al plan actual.</span></div>'+
-    '<div style="height:300px"><canvas id="port-tl-chart">Timeline</canvas></div>'+
-    '<div id="port-tl-pendientes" style="margin-top:12px"></div>'+
+    '<div class="ct">Cuánto se movió cada etapa: original → plan vigente → real<span class="help-ico">i</span><span class="help-tip">Cada fila es una etapa sobre un mismo eje de fechas. Punto morado = fecha original acordada (Baseline 5YR); punto gris = fecha del plan vigente; círculo teal = fecha real o estimada. La barra roja/verde une original con plan vigente (cuánto se replaneó); la línea punteada teal une plan vigente con real (si se está cumpliendo el plan actual). A la derecha, los días de diferencia.</span></div>'+
+    '<div id="port-tl-dumbbell" style="overflow-x:auto"></div>'+
   '</div>';
 
   setHTML('port-tl-panel',h);
   renderPORTTLTimeline(p);
-  renderPORTTLBaselineChart(p);
-  renderPORTTLChart(p);
+  renderPORTTLDumbbell(p);
 }
 
 /* Convierte fechas "1-Aug-23" o "9/17/2026" (M/D/YYYY) a timestamp; null si no se puede leer */
@@ -6095,107 +6088,85 @@ function renderPORTTLTimeline(p){
       }}});
 }
 
-function renderPORTTLBaselineChart(p){
+function renderPORTTLDumbbell(p){
+  var el=document.getElementById('port-tl-dumbbell');
+  if(!el)return;
   var rows=[];
   (p.etapas||[]).forEach(function(e){
     var bl=(p.baselineEtapas&&p.baselineEtapas[e.n-1])||null;
-    if(!bl||!e.planeada)return;
-    var tb=portParseFecha(bl), tp=portParseFecha(e.planeada);
-    if(tb===null||tp===null)return;
-    var dias=Math.round((tp-tb)/86400000);
-    rows.push({nombre:e.n+'. '+e.nombre,dias:dias,bl:bl,plan:e.planeada});
+    var tb=portParseFecha(bl), tp=portParseFecha(e.planeada), tr=portParseFecha(e.real);
+    if(tb===null&&tp===null&&tr===null)return;
+    rows.push({label:e.n+'. '+e.nombre,tb:tb,tp:tp,tr:tr});
   });
-
-  dc('port-tl-bldrift');
-  var canvas=document.getElementById('port-tl-bldrift');
-  var blPendDiv=document.getElementById('port-tl-bl-pendientes');
-  if(!canvas)return;
-
   if(!rows.length){
-    canvas.parentNode.style.height='60px';
-    canvas.parentNode.innerHTML='<div style="padding:20px;color:#94A3B8;font-size:12px;text-align:center">Sin fechas de baseline para este proyecto.</div>';
-    if(blPendDiv)blPendDiv.innerHTML='';
+    el.innerHTML='<div style="padding:20px;color:#94A3B8;font-size:12px;text-align:center">Este proyecto todavía no tiene fechas capturadas.</div>';
     return;
   }
-
-  canvas.parentNode.style.height=Math.max(120,rows.length*34+50)+'px';
-  var ctx=canvas.getContext('2d');
-  CH['port-tl-bldrift']=new Chart(ctx,{type:'bar',
-    data:{labels:rows.map(function(r){return r.nombre;}),
-      datasets:[{label:'Δ días (Plan vigente − Baseline V1)',
-        data:rows.map(function(r){return r.dias;}),
-        backgroundColor:rows.map(function(r){return r.dias>0?'rgba(220,38,38,0.75)':(r.dias<0?'rgba(5,150,105,0.75)':'rgba(148,163,184,0.6)');}),
-        borderRadius:4}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},
-        tooltip:{callbacks:{
-          label:function(c){
-            var r=rows[c.dataIndex];
-            var v=c.raw;
-            var tag=v===0?'Sin cambio':(v>0?'+'+v+' días de atraso':Math.abs(v)+' días de adelanto');
-            return tag+' | Baseline: '+r.bl+' → Plan: '+r.plan;
-          }
-        }},
-        datalabels:{display:true,anchor:'end',align:function(c){return c.dataset.data[c.dataIndex]>=0?'right':'left';},
-          formatter:function(v){return v===0?'±0':(v>0?'+'+v+'d':v+'d');},
-          color:function(c){var v=c.dataset.data[c.dataIndex];return v>0?'#B91C1C':(v<0?'#047857':'#6B7280');},
-          font:{size:10,weight:'bold'}}
-      },
-      scales:{
-        x:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8'},title:{display:true,text:'Días (+ = atrasado vs. V1)',font:{size:10},color:'#94A3B8'}},
-        y:{grid:{display:false},ticks:{font:{size:10},color:'#374151'}}
-      }}});
-}
-
-function renderPORTTLChart(p){
-  var rows=[];
-  if(p.fase1&&(p.fase1.planeado||p.fase1.real)){
-    rows.push({nombre:'Fase 1 (informativo)',planeada:p.fase1.planeado,real:p.fase1.real,delta:p.fase1.delta});
+  var all=[];
+  rows.forEach(function(r){[r.tb,r.tp,r.tr].forEach(function(v){if(v!==null)all.push(v);});});
+  var mn=Math.min.apply(null,all), mx=Math.max.apply(null,all);
+  var pad=Math.max((mx-mn)*0.04,15*86400000);
+  mn-=pad; mx+=pad;
+  function pos(ts){return (ts-mn)/(mx-mn)*100;}
+  function dias(a,b){return Math.round((a-b)/86400000);}
+  function chip(txt,d){
+    var col=d>0?'#B91C1C':(d<0?'#047857':'#64748B');
+    var bg=d>0?'#FEE2E2':(d<0?'#D1FAE5':'#F1F5F9');
+    var v=d===0?'sin cambio':(d>0?'+'+d+' d':d+' d');
+    return '<span style="display:inline-flex;gap:5px;align-items:center;font-size:10px;font-weight:700;background:'+bg+';color:'+col+';padding:3px 8px;border-radius:12px;white-space:nowrap"><span style="font-weight:600;opacity:.8">'+txt+'</span>'+v+'</span>';
   }
-  (p.etapas||[]).forEach(function(e){
-    rows.push({nombre:e.n+'. '+e.nombre,planeada:e.planeada,real:e.real,delta:e.delta});
-  });
-  var ocurridas=rows.filter(function(r){return r.delta!==null&&r.delta!==undefined;});
-  var pendientes=rows.filter(function(r){return (r.delta===null||r.delta===undefined)&&r.planeada;});
+  var y0=new Date(mn).getFullYear()+1, y1=new Date(mx).getFullYear();
+  var years=[];
+  for(var y=y0;y<=y1;y++){var t=new Date(y,0,1).getTime();if(t>mn&&t<mx)years.push({y:y,x:pos(t).toFixed(2)});}
+  var grid=years.map(function(a){return '<div style="position:absolute;left:'+a.x+'%;top:0;bottom:0;border-left:1px dashed #E2E8F0"></div>';}).join('');
+  var axis=years.map(function(a){return '<div style="position:absolute;left:'+a.x+'%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#94A3B8">'+a.y+'</div>';}).join('');
 
-  dc('port-tl-chart');
-  var canvas=document.getElementById('port-tl-chart');
-  if(canvas)canvas.parentNode.style.height=Math.max(180,ocurridas.length*32+50)+'px';
-  if(ocurridas.length){
-    var ctx=canvas.getContext('2d');
-    CH['port-tl-chart']=new Chart(ctx,{type:'bar',
-      data:{labels:ocurridas.map(function(r){return r.nombre;}),
-        datasets:[{label:'Δ días',data:ocurridas.map(function(r){return r.delta;}),
-          backgroundColor:ocurridas.map(function(r){return r.delta>0?'#DC2626':(r.delta<0?'#059669':'#94A3B8');}),
-          borderRadius:4}]},
-      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},
-          tooltip:{callbacks:{
-            title:function(c){return ocurridas[c[0].dataIndex].nombre;},
-            label:function(c){
-              var r=ocurridas[c.dataIndex];
-              var txt=r.delta===0?'A tiempo':(r.delta>0?'+'+r.delta+' días de atraso':r.delta+' días de adelanto');
-              return [txt,'Planeada: '+(r.planeada||'--'),'Real/Est.: '+(r.real||'--')];
-            }
-          }}},
-        scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8'},title:{display:true,text:'días (Δ vs. planeada)',color:'#94A3B8',font:{size:9}}},
-                y:{grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}}}}});
+  var deltas=[];
+  rows.forEach(function(r){if(r.tb!==null&&r.tp!==null)deltas.push(dias(r.tp,r.tb));});
+  var hdr;
+  if(deltas.length){
+    var prom=Math.round(deltas.reduce(function(a,c){return a+c;},0)/deltas.length);
+    hdr='El plan vigente se movió en promedio <b style="color:'+(prom>0?'#B91C1C':(prom<0?'#047857':'#64748B'))+'">'+(prom>0?'+':'')+prom+' días</b> respecto a lo acordado originalmente ('+deltas.length+' etapas comparables).';
+  } else {
+    hdr='Este proyecto no tiene fechas de baseline comparables con el plan vigente.';
   }
-
-  var pendEl=document.getElementById('port-tl-pendientes');
-  if(pendEl){
-    if(pendientes.length){
-      pendEl.innerHTML='<div style="padding-top:12px;border-top:1px dashed #E2E8F0">'+
-        '<div style="font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase;margin-bottom:8px">Etapas futuras (aún sin fecha real)</div>'+
-        '<div style="display:flex;flex-wrap:wrap;gap:8px">'+
-        pendientes.map(function(r){return '<span style="font-size:11px;background:#F1F5F9;color:#475569;padding:5px 10px;border-radius:20px;font-weight:600">'+r.nombre+' · planeada '+r.planeada+'</span>';}).join('')+
-        '</div></div>';
-    } else if(!ocurridas.length){
-      pendEl.innerHTML='<div style="padding:14px;color:#94A3B8;font-size:12px;text-align:center">Este proyecto todavía no tiene fechas capturadas en la Matriz Consolidada.</div>';
-    } else {
-      pendEl.innerHTML='';
+  function dot(ts,col,size,title,z,ring){
+    return '<div title="'+title+'" style="position:absolute;left:'+pos(ts).toFixed(2)+'%;top:50%;width:'+size+'px;height:'+size+'px;margin:-'+(size/2)+'px 0 0 -'+(size/2)+'px;border-radius:50%;box-sizing:border-box;background:'+(ring?'#fff':col)+';border:'+(ring?'3px solid '+col:'2px solid #fff')+';box-shadow:0 0 0 1px '+col+'66;z-index:'+z+'"></div>';
+  }
+  var h='<div style="font-size:12px;color:#475569;margin-bottom:10px">'+hdr+'</div>'+
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;font-weight:700;color:#475569;margin-bottom:8px">'+
+      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7C3AED;margin-right:5px"></span>Baseline (original)</span>'+
+      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#64748B;margin-right:5px"></span>Plan vigente</span>'+
+      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;border:3px solid #065A62;margin-right:5px;box-sizing:border-box"></span>Real / estimada</span>'+
+      '<span style="color:#B91C1C">▬ se atrasó vs. original</span><span style="color:#047857">▬ se adelantó</span>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:200px minmax(300px,1fr) 230px;align-items:center;gap:0 12px">'+
+      '<div></div><div style="position:relative;height:16px">'+axis+'</div><div></div>';
+  rows.forEach(function(r){
+    var tip=function(n,t){return n+': '+portFmtFecha(t);};
+    var conn='';
+    if(r.tb!==null&&r.tp!==null&&r.tb!==r.tp){
+      var lo=Math.min(r.tb,r.tp), hi=Math.max(r.tb,r.tp);
+      conn+='<div style="position:absolute;left:'+pos(lo).toFixed(2)+'%;width:'+(pos(hi)-pos(lo)).toFixed(2)+'%;top:50%;height:5px;margin-top:-2.5px;border-radius:3px;background:'+(r.tp>r.tb?'#F87171':'#34D399')+';z-index:1"></div>';
     }
-  }
+    if(r.tp!==null&&r.tr!==null&&r.tp!==r.tr){
+      var lo2=Math.min(r.tp,r.tr), hi2=Math.max(r.tp,r.tr);
+      conn+='<div style="position:absolute;left:'+pos(lo2).toFixed(2)+'%;width:'+(pos(hi2)-pos(lo2)).toFixed(2)+'%;top:50%;height:0;border-top:2px dashed #065A62;z-index:1"></div>';
+    }
+    var dots='';
+    if(r.tb!==null)dots+=dot(r.tb,'#7C3AED',11,tip('Baseline',r.tb),2,false);
+    if(r.tp!==null)dots+=dot(r.tp,'#64748B',11,tip('Plan vigente',r.tp),3,false);
+    if(r.tr!==null)dots+=dot(r.tr,'#065A62',15,tip('Real/Est.',r.tr),4,true);
+    var chips=[];
+    if(r.tb!==null&&r.tp!==null)chips.push(chip('Plan vs original',dias(r.tp,r.tb)));
+    else if(r.tp!==null)chips.push('<span style="font-size:10px;color:#94A3B8">sin fecha original</span>');
+    if(r.tp!==null&&r.tr!==null)chips.push(chip('Real vs plan',dias(r.tr,r.tp)));
+    h+='<div style="font-size:11px;font-weight:700;color:#334155;padding:9px 0;border-top:1px solid #F1F5F9">'+r.label+'</div>'+
+       '<div style="position:relative;height:36px;border-top:1px solid #F1F5F9">'+grid+conn+dots+'</div>'+
+       '<div style="display:flex;gap:6px;flex-wrap:wrap;padding:6px 0;border-top:1px solid #F1F5F9">'+chips.join('')+'</div>';
+  });
+  h+='</div>';
+  el.innerHTML=h;
 }
 
 function cargarDatosEnVivo(){
