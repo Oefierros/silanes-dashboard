@@ -22,6 +22,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 /* ── UNIVERSO ── */
 .universe{display:none}
 .universe.on{display:block}
+#uni-cmn.universe.on{display:flex;flex-direction:column}
 /* ── SUB-HEADER (filtros de cada universo) ── */
 .sub-hdr{background:#065A62;padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #0A9AA6}
 .sub-hdr select{font-size:11px;padding:5px 10px;border-radius:7px;border:1px solid #0A9AA6;background:#065A62;color:#fff;cursor:pointer;font-weight:600}
@@ -652,7 +653,7 @@ tr:hover td{background:#F1F8F9}
 <!-- ══════════════════════════════════════
      UNIVERSO CMN: Análisis de Registros Nuevos + Portafolio Regulatorio
 ══════════════════════════════════════ -->
-<div id="uni-cmn" class="universe" style="padding:0;display:flex;flex-direction:column">
+<div id="uni-cmn" class="universe" style="padding:0">
   <!-- Sub-tab bar interno -->
   <div class="cmn-itab-bar">
     <button class="cmn-itab on" onclick="showCMNTab('rn',this)">🧪 Análisis de Registros Nuevos</button>
