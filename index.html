@@ -47,6 +47,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .ks{font-size:10.5px;color:#64748B;margin-top:4px}
 .kb{height:4px;background:#EEF2F6;border-radius:3px;margin-top:8px}
 .kbf{height:4px;border-radius:3px}
+/* ── CMN INNER TABS ── */
+.cmn-itab-bar{display:flex;gap:0;background:#F8FAFC;border-bottom:2px solid #E2E8F0;padding:0 14px;flex-shrink:0}
+.cmn-itab{padding:11px 22px;font-size:12px;font-weight:700;border:none;background:transparent;color:#64748B;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s,background .15s}
+.cmn-itab:hover{color:#065A62;background:#F0FDFE}
+.cmn-itab.on{color:#065A62;border-bottom-color:#065A62;background:#F0FDFE}
+.cmn-panel{display:block;flex:1;overflow:auto;min-height:0}
 /* ── PROGRESS BARS ── */
 .pr{margin-bottom:10px}
 .pt{display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px}
@@ -155,10 +161,9 @@ tr:hover td{background:#F1F8F9}
     <button class="main-tab on" onclick="showUniverse('arn',this)">📋 Plan de Trabajo ARN</button>
     <button class="main-tab" onclick="showUniverse('pag',this)">💳 Registro de Pagos</button>
     <button class="main-tab" onclick="showUniverse('ari',this)">🌎 Plan de Trabajo ARI</button>
-    <button class="main-tab" onclick="showUniverse('rn',this)">🧪 Análisis de Registros Nuevos</button>
+    <button class="main-tab" onclick="showUniverse('cmn',this)">🧪 CMN</button>
     <button class="main-tab" onclick="showUniverse('bio',this)">🧬 Biológicos</button>
     <button class="main-tab" onclick="showUniverse('nrr',this)">📑 Seguimiento NRR</button>
-    <button class="main-tab" onclick="showUniverse('port',this)">🗂️ Portafolio Regulatorio</button>
   </div>
 </div>
 
@@ -645,9 +650,16 @@ tr:hover td{background:#F1F8F9}
 </div>
 
 <!-- ══════════════════════════════════════
-     UNIVERSO 4: ANÁLISIS DE REGISTROS NUEVOS
+     UNIVERSO CMN: Análisis de Registros Nuevos + Portafolio Regulatorio
 ══════════════════════════════════════ -->
-<div id="uni-rn" class="universe">
+<div id="uni-cmn" class="universe" style="padding:0;display:flex;flex-direction:column">
+  <!-- Sub-tab bar interno -->
+  <div class="cmn-itab-bar">
+    <button class="cmn-itab on" onclick="showCMNTab('rn',this)">🧪 Análisis de Registros Nuevos</button>
+    <button class="cmn-itab" onclick="showCMNTab('port',this)">🗂️ Portafolio Regulatorio</button>
+  </div>
+  <!-- Panel: Análisis de Registros Nuevos -->
+  <div id="cmn-panel-rn" class="cmn-panel">
   <!-- Capa de bloqueo por contraseña -->
   <div id="rn-lock" style="display:none;position:relative;padding:60px 20px;text-align:center">
     <div style="max-width:420px;margin:0 auto;background:#fff;border-radius:16px;padding:36px 30px;box-shadow:0 4px 24px rgba(0,0,0,.10);border-top:5px solid #7C3AED">
@@ -812,7 +824,75 @@ tr:hover td{background:#F1F8F9}
     </div>
   </div>
   </div><!-- /rn-content -->
-</div>
+  </div><!-- /cmn-panel-rn -->
+
+  <!-- Panel: Portafolio Regulatorio -->
+  <div id="cmn-panel-port" class="cmn-panel" style="display:none">
+  <div class="sub-hdr">
+    <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
+    <div id="port-fc"></div>
+    <div id="port-fs"></div>
+    <span class="info" id="port-info">43 proyectos</span>
+  </div>
+  <div class="sec-tabs">
+    <button class="sec-tab on" onclick="showPORTTab('ov',this)">📊 Resumen</button>
+    <button class="sec-tab" onclick="showPORTTab('tl',this)">🕒 Línea de tiempo</button>
+    <button class="sec-tab" onclick="showPORTTab('det',this)">📋 Detalle</button>
+  </div>
+
+  <!-- RESUMEN -->
+  <div id="port-pg-ov" class="pg">
+    <div class="card" style="padding:9px 16px;background:#FFFBEB;border-color:#FDE68A">
+      <span style="font-size:11px;color:#92400E;font-weight:700">📁 Fuente: Excel "Portafolio_Regulatorio_Matriz.xlsx" en Box · actualización manual (no en vivo) · <span id="port-updated"></span></span>
+    </div>
+    <div class="g4" id="port-kpis"></div>
+    <div class="g2">
+      <div class="card" style="display:flex;flex-direction:column">
+        <div class="ct">Semáforo de cumplimiento<span class="help-ico">i</span><span class="help-tip">Compara el avance real de cada proyecto contra su fecha de registro autorizado (línea base). Verde = en tiempo, Ámbar = 15 a 30 días de desviación, Rojo = más de 30 días de desviación.</span></div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-box"><canvas id="port-semaforo">Semáforo</canvas></div>
+          <div id="port-semaforo-leg" class="donut-leg"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Distribución por categoría operativa<span class="help-ico">i</span><span class="help-tip">En qué etapa del proceso regulatorio está cada proyecto, desde Desarrollo (sin etapa regulatoria) hasta Aprobado (E10). Incluye Cancelados.</span></div>
+        <div style="height:clamp(220px,30vh,320px)"><canvas id="port-categoria">Categoría</canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct" style="color:#B91C1C">⚠ Proyectos con mayor desviación (días de atraso vs. línea base)<span class="help-ico">i</span><span class="help-tip">Proyectos cuya etapa más atrasada supera la fecha planeada. Solo se muestran los que están atrasados (desviación positiva); los adelantados no se consideran un riesgo.</span></div>
+      <div style="height:clamp(240px,32vh,360px)"><canvas id="port-desviacion">Desviación</canvas></div>
+    </div>
+  </div>
+
+  <!-- LÍNEA DE TIEMPO POR PROYECTO -->
+  <div id="port-pg-tl" class="pg hidden">
+    <div style="display:grid;grid-template-columns:300px 1fr;gap:14px;align-items:start">
+      <div class="card" style="position:sticky;top:10px">
+        <div class="ct" style="margin-bottom:8px">Proyectos</div>
+        <input type="text" id="port-tl-buscar" class="sf" placeholder="Buscar proyecto..." oninput="renderPORTTLLista()" style="width:100%;margin-bottom:8px">
+        <div id="port-tl-lista" style="max-height:600px;overflow-y:auto;display:flex;flex-direction:column;gap:2px"></div>
+      </div>
+      <div id="port-tl-panel" style="min-width:0"></div>
+    </div>
+  </div>
+
+  <!-- DETALLE -->
+  <div id="port-pg-det" class="pg hidden">
+    <div class="card">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <input class="sf" id="port-srch" placeholder="Buscar proyecto..." oninput="renderPORTDet()">
+        <span id="port-det-cnt" style="font-size:11px;font-weight:700;color:#0A9AA6"></span>
+      </div>
+      <div class="tw"><table><thead><tr>
+        <th>Proyecto</th><th>Estado</th><th>Etapa actual</th><th>Categoría operativa</th>
+        <th>Versión</th><th style="text-align:center">Δ vs V1 (meses)</th><th style="text-align:center">Máx. desviación (días)</th>
+        <th>% cumplimiento</th><th>Etapa más atrasada</th><th>Fecha registro (línea base)</th>
+      </tr></thead><tbody id="port-det-body"></tbody></table></div>
+    </div>
+  </div>
+  </div><!-- /cmn-panel-port -->
+</div><!-- /uni-cmn -->
 
 
 <!-- ══════════════════════════════════════════════════════════
@@ -1003,74 +1083,6 @@ tr:hover td{background:#F1F8F9}
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     UNIVERSO PORTAFOLIO REGULATORIO — Excel de Box (actualización manual)
-══════════════════════════════════════════════════════════ -->
-<div id="uni-port" class="universe">
-  <div class="sub-hdr">
-    <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
-    <div id="port-fc"></div>
-    <div id="port-fs"></div>
-    <span class="info" id="port-info">43 proyectos</span>
-  </div>
-  <div class="sec-tabs">
-    <button class="sec-tab on" onclick="showPORTTab('ov',this)">📊 Resumen</button>
-    <button class="sec-tab" onclick="showPORTTab('tl',this)">🕒 Línea de tiempo</button>
-    <button class="sec-tab" onclick="showPORTTab('det',this)">📋 Detalle</button>
-  </div>
-
-  <!-- RESUMEN -->
-  <div id="port-pg-ov" class="pg">
-    <div class="card" style="padding:9px 16px;background:#FFFBEB;border-color:#FDE68A">
-      <span style="font-size:11px;color:#92400E;font-weight:700">📁 Fuente: Excel "Portafolio_Regulatorio_Matriz.xlsx" en Box · actualización manual (no en vivo) · <span id="port-updated"></span></span>
-    </div>
-    <div class="g4" id="port-kpis"></div>
-    <div class="g2">
-      <div class="card" style="display:flex;flex-direction:column">
-        <div class="ct">Semáforo de cumplimiento<span class="help-ico">i</span><span class="help-tip">Compara el avance real de cada proyecto contra su fecha de registro autorizado (línea base). Verde = en tiempo, Ámbar = 15 a 30 días de desviación, Rojo = más de 30 días de desviación.</span></div>
-        <div class="donut-wrap">
-          <div class="donut-canvas-box"><canvas id="port-semaforo">Semáforo</canvas></div>
-          <div id="port-semaforo-leg" class="donut-leg"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ct">Distribución por categoría operativa<span class="help-ico">i</span><span class="help-tip">En qué etapa del proceso regulatorio está cada proyecto, desde Desarrollo (sin etapa regulatoria) hasta Aprobado (E10). Incluye Cancelados.</span></div>
-        <div style="height:clamp(220px,30vh,320px)"><canvas id="port-categoria">Categoría</canvas></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="ct" style="color:#B91C1C">⚠ Proyectos con mayor desviación (días de atraso vs. línea base)<span class="help-ico">i</span><span class="help-tip">Proyectos cuya etapa más atrasada supera la fecha planeada. Solo se muestran los que están atrasados (desviación positiva); los adelantados no se consideran un riesgo.</span></div>
-      <div style="height:clamp(240px,32vh,360px)"><canvas id="port-desviacion">Desviación</canvas></div>
-    </div>
-  </div>
-
-  <!-- LÍNEA DE TIEMPO POR PROYECTO -->
-  <div id="port-pg-tl" class="pg hidden">
-    <div style="display:grid;grid-template-columns:300px 1fr;gap:14px;align-items:start">
-      <div class="card" style="position:sticky;top:10px">
-        <div class="ct" style="margin-bottom:8px">Proyectos</div>
-        <input type="text" id="port-tl-buscar" class="sf" placeholder="Buscar proyecto..." oninput="renderPORTTLLista()" style="width:100%;margin-bottom:8px">
-        <div id="port-tl-lista" style="max-height:600px;overflow-y:auto;display:flex;flex-direction:column;gap:2px"></div>
-      </div>
-      <div id="port-tl-panel" style="min-width:0"></div>
-    </div>
-  </div>
-
-  <!-- DETALLE -->
-  <div id="port-pg-det" class="pg hidden">
-    <div class="card">
-      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-        <input class="sf" id="port-srch" placeholder="Buscar proyecto..." oninput="renderPORTDet()">
-        <span id="port-det-cnt" style="font-size:11px;font-weight:700;color:#0A9AA6"></span>
-      </div>
-      <div class="tw"><table><thead><tr>
-        <th>Proyecto</th><th>Estado</th><th>Etapa actual</th><th>Categoría operativa</th>
-        <th>Versión</th><th style="text-align:center">Δ vs V1 (meses)</th><th style="text-align:center">Máx. desviación (días)</th>
-        <th>% cumplimiento</th><th>Etapa más atrasada</th><th>Fecha registro (línea base)</th>
-      </tr></thead><tbody id="port-det-body"></tbody></table></div>
-    </div>
-  </div>
-</div>
 
 
 
@@ -2546,13 +2558,23 @@ function renderNRRDet(){
   }).join(''));
 }
 
-function showUniverse(id,btn){
-  document.querySelectorAll('.universe').forEach(function(u){u.classList.remove('on');});
-  document.querySelectorAll('.main-tab').forEach(function(b){b.classList.remove('on');});
-  document.getElementById('uni-'+id).classList.add('on');
-  btn.classList.add('on');
-  if(id==='rn'){
-    /* Universo protegido: exigir contraseña */
+var _cmnActiveTab = 'rn';
+function showCMNTab(which, btn){
+  _cmnActiveTab = which;
+  document.querySelectorAll('.cmn-itab').forEach(function(b){b.classList.remove('on');});
+  if(btn){
+    btn.classList.add('on');
+  } else {
+    document.querySelectorAll('.cmn-itab').forEach(function(b){
+      if(b.getAttribute('onclick').indexOf("'"+which+"'")>-1) b.classList.add('on');
+    });
+  }
+  var rnPanel = document.getElementById('cmn-panel-rn');
+  var portPanel = document.getElementById('cmn-panel-port');
+  if(rnPanel) rnPanel.style.display = which==='rn' ? '' : 'none';
+  if(portPanel) portPanel.style.display = which==='port' ? '' : 'none';
+
+  if(which==='rn'){
     if(!RN_UNLOCKED){
       rnLockShow(true);
       var pi=document.getElementById('rn-pass'); if(pi)setTimeout(function(){pi.focus();},100);
@@ -2561,16 +2583,29 @@ function showUniverse(id,btn){
       rnLockShow(false);
       rnResetInactividad();
     }
+    if(!_rendered['rn']){ _rendered['rn']=true; renderRN(); }
+  }
+  if(which==='port'){
+    if(!_rendered['port']){ _rendered['port']=true; renderPORT(); }
+  }
+}
+
+function showUniverse(id,btn){
+  document.querySelectorAll('.universe').forEach(function(u){u.classList.remove('on');});
+  document.querySelectorAll('.main-tab').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('uni-'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='cmn'){
+    showCMNTab(_cmnActiveTab||'rn');
+    return;
   }
   if(!_rendered[id]){
     _rendered[id]=true;
     if(id==='arn') renderARN();
     else if(id==='pag') renderPAG();
     else if(id==='ari') renderARI();
-    else if(id==='rn') renderRN();
     else if(id==='bio') renderBIO();
     else if(id==='nrr') renderNRR();
-    else if(id==='port') renderPORT();
   }
 }
 
@@ -4077,7 +4112,7 @@ function rnbadge(e){var cf=RNCFG[e]||RNCFG['Sin dato'];return '<span class="badg
 function showRNTab(id,btn){
   ['ov','tiempos','cmn','reing','det'].forEach(function(x){
     var el=document.getElementById('rn-pg-'+x); if(el)el.classList.add('hidden');});
-  document.querySelectorAll('#uni-rn .sec-tab').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('#cmn-panel-rn .sec-tab').forEach(function(b){b.classList.remove('on');});
   var pg=document.getElementById('rn-pg-'+id); if(pg)pg.classList.remove('hidden');
   btn.classList.add('on');
 }
@@ -5683,7 +5718,7 @@ function portSemLabel(s){ return s==='En tiempo'?'En tiempo (Verde)':s==='15-30D
 
 function showPORTTab(id,btn){
   ['ov','tl','det'].forEach(function(x){var el=document.getElementById('port-pg-'+x);if(el)el.classList.add('hidden');});
-  document.querySelectorAll('#uni-port .sec-tab').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('#cmn-panel-port .sec-tab').forEach(function(b){b.classList.remove('on');});
   var pg=document.getElementById('port-pg-'+id);if(pg)pg.classList.remove('hidden');
   if(btn)btn.classList.add('on');
   if(id==='det')renderPORTDet();
