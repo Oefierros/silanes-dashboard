@@ -5910,6 +5910,49 @@ function portTLElegir(i){
   renderPORTTLLista();
 }
 
+function portInicioCardHTML(p){
+  var filas=[];
+  if(p.fase1&&(p.fase1.planeado||p.fase1.real)){
+    filas.push({label:'Fase 1',bl:null,plan:p.fase1.planeado,real:p.fase1.real});
+  }
+  (p.etapas||[]).forEach(function(e){
+    var bl=(p.baselineEtapas&&p.baselineEtapas[e.n-1])||null;
+    filas.push({label:'E'+e.n,bl:bl,plan:e.planeada,real:e.real});
+  });
+  function primero(k){
+    for(var i=0;i<filas.length;i++){
+      if(portParseFecha(filas[i][k])!==null)return {label:filas[i].label,f:filas[i][k],ts:portParseFecha(filas[i][k])};
+    }
+    return null;
+  }
+  var b=primero('bl'), pl=primero('plan'), r=primero('real');
+  function celda(titulo,color,x,vacio,extra){
+    return '<div style="flex:1;min-width:180px;border-left:4px solid '+color+';padding:4px 0 4px 12px">'+
+      '<div style="font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.4px">'+titulo+'</div>'+
+      (x?'<div style="font-size:19px;font-weight:800;color:'+color+';margin-top:3px">'+portFmtFecha(x.ts)+'</div>'+
+         '<div style="font-size:10px;color:#64748B">Primera etapa con fecha: '+x.label+(extra||'')+'</div>'
+        :'<div style="font-size:15px;font-weight:700;color:#94A3B8;margin-top:5px">'+vacio+'</div>')+
+    '</div>';
+  }
+  function dif(a,c){
+    if(!a||!c||a.label!==c.label)return '';
+    var d=Math.round((c.ts-a.ts)/86400000);
+    return ' · '+(d===0?'sin cambio':(d>0?'+'+d+' d vs baseline':Math.abs(d)+' d antes del baseline'));
+  }
+  function difReal(a,c){
+    if(!a||!c||a.label!==c.label)return '';
+    var d=Math.round((c.ts-a.ts)/86400000);
+    return ' · '+(d===0?'a tiempo':(d>0?'+'+d+' d vs plan vigente':Math.abs(d)+' d antes del plan vigente'));
+  }
+  return '<div class="card" style="margin-top:14px">'+
+    '<div class="ct">Inicio del proyecto: planeado · plan vigente · real<span class="help-ico">i</span><span class="help-tip">Fecha de la primera etapa con fecha en cada trayectoria: Baseline = lo acordado originalmente (5YR Plan); Plan vigente = fecha replaneada actual; Real = cuándo realmente arrancó (o su estimación). Si la etapa coincide entre dos columnas, se muestra la diferencia en días.</span></div>'+
+    '<div style="display:flex;gap:18px;flex-wrap:wrap">'+
+      celda('Planeado originalmente (Baseline V1)','#7C3AED',b,'Sin fecha en baseline')+
+      celda('Plan vigente ('+p.version+')','#64748B',pl,'Sin fecha en plan',dif(b,pl))+
+      celda('Inicio real / estimado','#065A62',r,'Aún no inicia',difReal(pl,r))+
+    '</div></div>';
+}
+
 function renderPORTTLPanel(){
   var el=document.getElementById('port-tl-panel');
   if(!el)return;
@@ -5938,6 +5981,7 @@ function renderPORTTLPanel(){
       '<div class="kpi" style="border-top-color:#0891B2"><div class="kl">Fecha registro (línea base)</div><div class="kv" style="color:#0891B2;font-size:17px">'+p.fechaReg+'</div><div class="ks">objetivo E10</div></div>'+
     '</div>'+
   '</div>'+
+  portInicioCardHTML(p)+
   '<div class="card" style="margin-top:14px">'+
     '<div class="ct">Línea de tiempo: Baseline V1 · Plan vigente · Real<span class="help-ico">i</span><span class="help-tip">Tres trayectorias a lo largo de las etapas: 🟣 Baseline (5YR Plan) = fechas originales acordadas y congeladas; ⬜ Plan vigente = fechas replaneadas actuales; 🔵 Real/Est. = lo que en verdad ocurrió. La distancia entre Baseline y Plan vigente muestra cuánto se replaneó el proyecto; la distancia entre Plan vigente y Real muestra si se está cumpliendo el plan actual.</span></div>'+
     '<div style="height:350px"><canvas id="port-tl-timeline">Línea de tiempo</canvas></div>'+
