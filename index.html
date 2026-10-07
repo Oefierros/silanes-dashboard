@@ -530,6 +530,7 @@ tr:hover td{background:#F1F8F9}
     <button class="sec-tab" onclick="showARITab('pais',this)">🌍 Por País</button>
     <button class="sec-tab" onclick="showARITab('tiempos',this)">⏱ Tiempos</button>
     <button class="sec-tab" onclick="showARITab('alertas',this)">🚨 Alertas</button>
+    <button class="sec-tab" onclick="showARITab('paisc',this)">🧭 Estado por País</button>
     <button class="sec-tab" onclick="showARITab('det',this)">📋 Detalle</button>
   </div>
 
@@ -632,6 +633,11 @@ tr:hover td{background:#F1F8F9}
         <th>País</th><th>Reprogramados</th><th>% del país</th><th>Barra</th>
       </tr></thead><tbody id="ri-al-reprog"></tbody></table></div>
     </div>
+  </div>
+
+  <!-- ARI: ESTADO POR PAÍS (tarjetas + drill-down) -->
+  <div id="ri-pg-paisc" class="pg hidden">
+    <div id="ri-paisc-root"></div>
   </div>
 
   <!-- ARI: DETALLE -->
@@ -3528,7 +3534,7 @@ function dclr(c){return (DCFG[c]||DCFG['Otro']).bar;}
 function dbadge(c){var cf=DCFG[c]||DCFG['Otro'];return '<span class="badge" style="background:'+cf.bg+';color:'+cf.c+'">'+c+'</span>';}
 
 function showARITab(id,btn){
-  ['ov','pais','tiempos','alertas','det'].forEach(function(x){
+  ['ov','pais','tiempos','alertas','paisc','det'].forEach(function(x){
     document.getElementById('ri-pg-'+x).classList.add('hidden');});
   document.querySelectorAll('#uni-ari .sec-tab').forEach(function(b){b.classList.remove('on');});
   document.getElementById('ri-pg-'+id).classList.remove('hidden');
@@ -3553,7 +3559,7 @@ function applyARI(){
 
 function renderARI(){
   renderARIKPIs();renderARIDonut();renderARIPais();renderARIMes();renderARITipo();renderARINC();
-  renderARIPaisTabs();renderARITiempos();renderARIAlertas();renderARIDet();
+  renderARIPaisTabs();renderARITiempos();renderARIAlertas();renderARIPaisCards();renderARIDet();
 }
 
 function renderARIKPIs(){
@@ -4071,6 +4077,191 @@ function renderARIDet(){
 }
 
 
+
+/* ══════════════════════════════════════
+   ARI · ESTADO POR PAÍS (tarjetas + detalle)
+══════════════════════════════════════ */
+var ARI_PAIS_SEL=null, ARI_PAIS_GRP=null, ARI_PAIS_SORT='total';
+var ARI_GRP={
+  aprobados:{l:'Aprobados',c:'#059669',bg:'#DCFCE7'},
+  atrasados:{l:'Atrasados',c:'#DC2626',bg:'#FEE2E2'},
+  proximos:{l:'Siguientes',c:'#0A9AA6',bg:'#E0F2F3'},
+  encurso:{l:'En evaluación',c:'#2563EB',bg:'#DBEAFE'},
+  reprog:{l:'Reprogramados',c:'#7C3AED',bg:'#EDE9FE'},
+  cerrados:{l:'Cancelados / rechazados',c:'#94A3B8',bg:'#F1F5F9'}
+};
+var ARI_GRP_ORDER=['aprobados','atrasados','proximos','encurso','reprog','cerrados'];
+
+function ariGrupo(d){
+  var cu=d.cu;
+  if(cu==='Aprobado')return 'aprobados';
+  if(cu==='Atrasado'||(cu==='Programado'&&d.fp&&d.fp<TODAY_ARI))return 'atrasados';
+  if(cu==='Programado')return 'proximos';
+  if(cu==='En evaluacion'||cu==='Prevenido'||cu==='Pagado')return 'encurso';
+  if(cu==='Reprogramado')return 'reprog';
+  return 'cerrados';
+}
+function ariFmtF(iso){
+  var m=String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!m)return '--';
+  var M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return parseInt(m[3],10)+'-'+M[parseInt(m[2],10)-1]+'-'+m[1].slice(2);
+}
+function ariDiasA(iso){return Math.round((new Date(iso)-new Date(TODAY_ARI))/86400000);}
+
+function ariPaisStats(){
+  var by={};
+  ARIF.forEach(function(d){
+    var p=d.pa||'Sin dato';
+    var s=by[p];
+    if(!s){s=by[p]={pa:p,total:0,g:{}};ARI_GRP_ORDER.forEach(function(k){s.g[k]=[];});}
+    s.g[ariGrupo(d)].push(d);
+    s.total++;
+  });
+  return Object.keys(by).map(function(k){
+    var s=by[k];
+    s.pctAp=s.total?s.g.aprobados.length/s.total:0;
+    s.prox=s.g.proximos.slice().sort(function(a,b){return a.fp>b.fp?1:-1;})[0]||null;
+    return s;
+  });
+}
+
+function ariPaisAbrir(i){ARI_PAIS_SEL=(window._ariPaisList||[])[i]||null;ARI_PAIS_GRP=null;renderARIPaisCards();}
+function ariPaisVolver(){ARI_PAIS_SEL=null;ARI_PAIS_GRP=null;renderARIPaisCards();}
+function ariPaisGrp(g){ARI_PAIS_GRP=g;renderARIPaisCards();}
+function ariPaisSort(v){ARI_PAIS_SORT=v;renderARIPaisCards();}
+
+function ariAvatar(pa,size){
+  var ini=pa.split(/\s+/).map(function(w){return w.charAt(0);}).join('').slice(0,2).toUpperCase();
+  return '<span style="display:inline-flex;align-items:center;justify-content:center;width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+pclr(pa)+';color:#fff;font-weight:800;font-size:'+Math.round(size*0.38)+'px;flex-shrink:0">'+ini+'</span>';
+}
+function ariStackBar(s,h){
+  return '<div style="display:flex;height:'+h+'px;border-radius:'+(h/2)+'px;overflow:hidden;background:#F1F5F9">'+
+    ARI_GRP_ORDER.map(function(k){
+      var n=s.g[k].length; if(!n)return '';
+      return '<div title="'+ARI_GRP[k].l+': '+n+'" style="width:'+(n/s.total*100).toFixed(2)+'%;background:'+ARI_GRP[k].c+'"></div>';
+    }).join('')+'</div>';
+}
+
+function renderARIPaisCards(){
+  var root=document.getElementById('ri-paisc-root');
+  if(!root)return;
+  var stats=ariPaisStats();
+  if(!stats.length){root.innerHTML='<div class="card" style="text-align:center;color:#94A3B8;padding:30px">Sin trámites con los filtros actuales.</div>';return;}
+  if(ARI_PAIS_SEL){
+    var sel=stats.filter(function(s){return s.pa===ARI_PAIS_SEL;})[0];
+    if(sel){renderARIPaisDetalle(root,sel);return;}
+    ARI_PAIS_SEL=null;
+  }
+
+  var tot=ARIF.length, ap=0, at=0, px=0;
+  stats.forEach(function(s){ap+=s.g.aprobados.length;at+=s.g.atrasados.length;
+    px+=s.g.proximos.filter(function(d){return ariDiasA(d.fp)<=90;}).length;});
+  var kp=[
+    {l:'Países',v:stats.length,s:'con trámites en el filtro',c:'#BE185D'},
+    {l:'Aprobados',v:ap,s:(tot?Math.round(ap/tot*100):0)+'% del total',c:'#059669'},
+    {l:'Atrasados',v:at,s:'fecha vencida sin someter',c:'#DC2626'},
+    {l:'Siguientes 90 días',v:px,s:'sometimientos programados',c:'#0A9AA6'}
+  ].map(function(k){return '<div class="kpi" style="border-top-color:'+k.c+'"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.c+'">'+k.v+'</div><div class="ks">'+k.s+'</div></div>';}).join('');
+
+  var sorters={
+    total:function(a,b){return b.total-a.total;},
+    atrasados:function(a,b){return b.g.atrasados.length-a.g.atrasados.length||b.total-a.total;},
+    pctmax:function(a,b){return b.pctAp-a.pctAp;},
+    pctmin:function(a,b){return a.pctAp-b.pctAp;}
+  };
+  stats.sort(sorters[ARI_PAIS_SORT]||sorters.total);
+  window._ariPaisList=stats.map(function(s){return s.pa;});
+
+  var cards=stats.map(function(s,i){
+    var pc=Math.round(s.pctAp*100);
+    var nAt=s.g.atrasados.length;
+    var mini=[['aprobados','✅'],['atrasados','🔴'],['proximos','📅'],['reprog','🔄']].map(function(x){
+      var k=x[0],n=s.g[k].length;
+      return '<div style="flex:1;text-align:center;background:'+(n?ARI_GRP[k].bg:'#F8FAFC')+';border-radius:8px;padding:6px 2px">'+
+        '<div style="font-size:15px;font-weight:800;color:'+(n?ARI_GRP[k].c:'#CBD5E1')+'">'+n+'</div>'+
+        '<div style="font-size:9px;font-weight:700;color:#64748B">'+ARI_GRP[k].l+'</div></div>';
+    }).join('');
+    var prox=s.prox?'<div style="font-size:10px;color:#64748B;margin-top:10px;border-top:1px dashed #E2E8F0;padding-top:8px">📅 Siguiente: <b style="color:#0F172A">'+s.prox.pr+'</b> · '+ariFmtF(s.prox.fp)+' <span style="color:#0A9AA6;font-weight:700">(en '+ariDiasA(s.prox.fp)+' d)</span></div>'
+      :'<div style="font-size:10px;color:#94A3B8;margin-top:10px;border-top:1px dashed #E2E8F0;padding-top:8px">Sin sometimientos programados pendientes</div>';
+    return '<div onclick="ariPaisAbrir('+i+')" class="card" style="cursor:pointer;margin:0;border-top:4px solid '+pclr(s.pa)+';transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform=\'translateY(-2px)\'" onmouseout="this.style.transform=\'\'">'+
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'+ariAvatar(s.pa,38)+
+        '<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:800;line-height:1.2">'+s.pa+'</div><div style="font-size:10px;color:#94A3B8;font-weight:600">'+s.total+' trámites</div></div>'+
+        (nAt?'<span class="badge" style="background:#FEE2E2;color:#991B1B">'+nAt+' atrasado'+(nAt>1?'s':'')+'</span>':'')+
+      '</div>'+
+      '<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px"><span style="font-size:26px;font-weight:900;color:'+(pc>=50?'#059669':pc>=25?'#D97706':'#DC2626')+'">'+pc+'%</span><span style="font-size:10px;color:#94A3B8;font-weight:700">aprobado</span></div>'+
+      ariStackBar(s,8)+
+      '<div style="display:flex;gap:6px;margin-top:12px">'+mini+'</div>'+prox+
+      '<div style="font-size:10px;font-weight:700;color:'+pclr(s.pa)+';margin-top:8px;text-align:right">Ver trámites →</div>'+
+    '</div>';
+  }).join('');
+
+  var leg=ARI_GRP_ORDER.map(function(k){return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:#475569"><span style="width:10px;height:10px;border-radius:3px;background:'+ARI_GRP[k].c+'"></span>'+ARI_GRP[k].l+'</span>';}).join('');
+  var opts=[['total','Más trámites'],['atrasados','Más atrasados'],['pctmin','Menor % aprobado'],['pctmax','Mayor % aprobado']].map(function(o){
+    return '<option value="'+o[0]+'"'+(ARI_PAIS_SORT===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('');
+
+  root.innerHTML='<div class="g4">'+kp+'</div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 12px">'+
+      '<div style="display:flex;gap:12px;flex-wrap:wrap">'+leg+'</div>'+
+      '<label style="font-size:11px;font-weight:700;color:#64748B">Ordenar: <select class="sf" onchange="ariPaisSort(this.value)">'+opts+'</select></label>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px">'+cards+'</div>';
+}
+
+function renderARIPaisDetalle(root,s){
+  var pa=s.pa;
+  if(!ARI_PAIS_GRP||!s.g[ARI_PAIS_GRP]){
+    ARI_PAIS_GRP=s.g.atrasados.length?'atrasados':(s.g.proximos.length?'proximos':'aprobados');
+  }
+  var gk=ARI_PAIS_GRP;
+  var tiles=ARI_GRP_ORDER.map(function(k){
+    var n=s.g[k].length, on=k===gk;
+    return '<div onclick="ariPaisGrp(\''+k+'\')" style="cursor:pointer;flex:1;min-width:120px;text-align:center;padding:10px 6px;border-radius:12px;border:2px solid '+(on?ARI_GRP[k].c:'#E2E8F0')+';background:'+(on?ARI_GRP[k].bg:'#fff')+';opacity:'+(n||on?1:.55)+'">'+
+      '<div style="font-size:22px;font-weight:900;color:'+ARI_GRP[k].c+'">'+n+'</div>'+
+      '<div style="font-size:10px;font-weight:800;color:#475569">'+ARI_GRP[k].l+'</div></div>';
+  }).join('');
+
+  var rows=s.g[gk].slice();
+  var cmp={
+    proximos:function(a,b){return a.fp>b.fp?1:-1;},
+    atrasados:function(a,b){return (a.fp||'9')>(b.fp||'9')?1:-1;},
+    aprobados:function(a,b){return (b.fres||'')>(a.fres||'')?1:-1;},
+    encurso:function(a,b){return (b.fr||'')>(a.fr||'')?1:-1;},
+    reprog:function(a,b){return (b.fp||'')>(a.fp||'')?1:-1;},
+    cerrados:function(){return 0;}
+  };
+  rows.sort(cmp[gk]);
+  function com(d){return '<td style="font-size:10px;color:#64748B;max-width:220px" title="'+(d.co||'').replace(/"/g,"'")+'">'+(d.co?d.co.slice(0,90)+(d.co.length>90?'...':''):'--')+'</td>';}
+  function prod(d){return '<td style="font-weight:700">'+d.pr+'</td>';}
+  function tipo(d){return '<td style="font-size:10px;color:#64748B;max-width:160px">'+(d.ti||'--')+'</td>';}
+  function nc(d){return '<td><span class="badge" style="background:#E0F2F3;color:#087A84">'+(d.nc||'--')+'</span></td>';}
+  function mono(v,c){return '<td style="font-family:monospace;font-size:10px;white-space:nowrap;color:'+(c||'#64748B')+'">'+v+'</td>';}
+  var spec={
+    proximos:{h:['Producto','Tipo','Nuevo/Cont.','F. programada','Faltan','Comentario'],r:function(d){var df=ariDiasA(d.fp),c=df<=14?'#DC2626':df<=30?'#D97706':'#059669';return prod(d)+tipo(d)+nc(d)+mono(ariFmtF(d.fp))+'<td style="font-weight:800;color:'+c+'">'+df+' d</td>'+com(d);}},
+    atrasados:{h:['Producto','Tipo','Nuevo/Cont.','F. programada','Días vencido','Comentario'],r:function(d){var df=d.fp?-ariDiasA(d.fp):null;return prod(d)+tipo(d)+nc(d)+mono(ariFmtF(d.fp),'#DC2626')+'<td style="font-weight:900;color:#DC2626">'+(df!==null?'+'+df+' d':'--')+'</td>'+com(d);}},
+    aprobados:{h:['Producto','Tipo','Nuevo/Cont.','F. sometimiento','F. resolución','Días nat.','No. ingreso'],r:function(d){return prod(d)+tipo(d)+nc(d)+mono(ariFmtF(d.fr))+mono(ariFmtF(d.fres),'#059669')+'<td style="font-weight:700;color:#065A62">'+(d.td?d.td+' d':'--')+'</td>'+mono(d.ni||'--');}},
+    encurso:{h:['Producto','Tipo','Dictamen','F. sometimiento','Días nat.','Comentario'],r:function(d){return prod(d)+tipo(d)+'<td>'+dbadge(d.cu)+'</td>'+mono(ariFmtF(d.fr))+'<td style="font-weight:700;color:#065A62">'+(d.td?d.td+' d':'--')+'</td>'+com(d);}},
+    reprog:{h:['Producto','Tipo','Nuevo/Cont.','F. programada','Comentario'],r:function(d){return prod(d)+tipo(d)+nc(d)+mono(ariFmtF(d.fp),'#7C3AED')+com(d);}},
+    cerrados:{h:['Producto','Tipo','Estatus','F. programada','Comentario'],r:function(d){return prod(d)+tipo(d)+'<td>'+dbadge(d.cu)+'</td>'+mono(ariFmtF(d.fp))+com(d);}}
+  }[gk];
+  var tabla=rows.length?
+    '<div class="tw"><table><thead><tr><th>#</th>'+spec.h.map(function(h){return '<th>'+h+'</th>';}).join('')+'</tr></thead><tbody>'+
+      rows.map(function(d,i){return '<tr><td style="font-weight:800;color:#94A3B8;font-size:10px">'+(i+1)+'</td>'+spec.r(d)+'</tr>';}).join('')+'</tbody></table></div>'
+    :'<div style="text-align:center;color:#94A3B8;padding:26px;font-size:12px">Sin trámites en esta categoría.</div>';
+
+  root.innerHTML=
+    '<button onclick="ariPaisVolver()" style="border:none;background:#F1F5F9;color:#334155;font-weight:700;font-size:12px;padding:8px 14px;border-radius:8px;cursor:pointer;margin-bottom:12px;font-family:inherit">← Todos los países</button>'+
+    '<div class="card" style="border-top:4px solid '+pclr(pa)+'">'+
+      '<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap">'+ariAvatar(pa,48)+
+        '<div style="flex:1"><div style="font-size:20px;font-weight:800">'+pa+'</div><div style="font-size:11px;color:#94A3B8;font-weight:600">'+s.total+' trámites · '+Math.round(s.pctAp*100)+'% aprobados'+(s.prox?' · siguiente sometimiento '+ariFmtF(s.prox.fp):'')+'</div></div>'+
+      '</div>'+
+      ariStackBar(s,10)+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">'+tiles+'</div>'+
+    '</div>'+
+    '<div class="card">'+
+      '<div class="ct" style="color:'+ARI_GRP[gk].c+'">'+ARI_GRP[gk].l+' · '+rows.length+'</div>'+tabla+
+    '</div>';
+}
 
 /* ══════════════════════════════════════
    LÓGICA ANÁLISIS DE REGISTROS NUEVOS
