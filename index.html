@@ -6166,6 +6166,13 @@ function renderPORTTLPanel(){
   '<div class="card" style="margin-top:14px">'+
     '<div class="ct">Línea de tiempo: Baseline V1 · Plan vigente · Real<span class="help-ico">i</span><span class="help-tip">Tres trayectorias a lo largo de las etapas: 🟣 Baseline (5YR Plan) = fechas originales acordadas y congeladas; ⬜ Plan vigente = fechas replaneadas actuales; 🔵 Real/Est. = lo que en verdad ocurrió. La distancia entre Baseline y Plan vigente muestra cuánto se replaneó el proyecto; la distancia entre Plan vigente y Real muestra si se está cumpliendo el plan actual.</span></div>'+
     '<div style="height:350px"><canvas id="port-tl-timeline">Línea de tiempo</canvas></div>'+
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:10px;padding-top:10px;border-top:1px dashed #E2E8F0;font-size:11px;font-weight:700;color:#475569">'+
+      '<span style="font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase">Color del punto Real / Estimada vs. Plan vigente:</span>'+
+      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#DC2626;margin-right:5px"></span>Rojo = se atrasó</span>'+
+      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#059669;margin-right:5px"></span>Verde = se adelantó</span>'+
+      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#065A62;margin-right:5px"></span>Teal = a tiempo</span>'+
+      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#94A3B8;margin-right:5px"></span>Gris = sin fecha de plan para comparar</span>'+
+    '</div>'+
   '</div>'+
   '<div class="card" style="margin-top:14px">'+
     '<div class="ct">Cuánto se movió cada etapa: original → plan vigente → real<span class="help-ico">i</span><span class="help-tip">Cada fila es una etapa sobre un mismo eje de fechas. Punto morado = fecha original acordada (Baseline 5YR); punto gris = fecha del plan vigente; círculo teal = fecha real o estimada. La barra roja/verde une original con plan vigente (cuánto se replaneó); la línea punteada teal une plan vigente con real (si se está cumpliendo el plan actual). A la derecha, los días de diferencia.</span></div>'+
