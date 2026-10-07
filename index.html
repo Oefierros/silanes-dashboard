@@ -659,20 +659,19 @@ tr:hover td{background:#F1F8F9}
     <button class="cmn-itab on" onclick="showCMNTab('rn',this)">🧪 Análisis de Registros Nuevos</button>
     <button class="cmn-itab" onclick="showCMNTab('port',this)">🗂️ Portafolio Regulatorio</button>
   </div>
-  <!-- Panel: Análisis de Registros Nuevos -->
-  <div id="cmn-panel-rn" class="cmn-panel">
-  <!-- Capa de bloqueo por contraseña -->
+  <!-- Capa de bloqueo por contraseña (cubre Registros Nuevos y Portafolio) -->
   <div id="rn-lock" style="display:none;position:relative;padding:60px 20px;text-align:center">
     <div style="max-width:420px;margin:0 auto;background:#fff;border-radius:16px;padding:36px 30px;box-shadow:0 4px 24px rgba(0,0,0,.10);border-top:5px solid #7C3AED">
       <div style="font-size:40px;margin-bottom:10px">&#128274;</div>
       <div style="font-size:19px;font-weight:800;color:#1E293B;margin-bottom:6px">Contenido protegido</div>
-      <div style="font-size:13px;color:#64748B;margin-bottom:22px;line-height:1.5">El universo <b>An&aacute;lisis de Registros Nuevos</b> contiene informaci&oacute;n confidencial. Ingresa la contrase&ntilde;a para continuar.</div>
+      <div style="font-size:13px;color:#64748B;margin-bottom:22px;line-height:1.5">El universo <b>CMN</b> (An&aacute;lisis de Registros Nuevos y Portafolio Regulatorio) contiene informaci&oacute;n confidencial. Ingresa la contrase&ntilde;a para continuar.</div>
       <input type="password" id="rn-pass" placeholder="Contrase&ntilde;a" onkeydown="if(event.key==='Enter')validarRN()" style="width:100%;padding:12px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:14px;margin-bottom:10px;box-sizing:border-box;outline:none" />
       <div id="rn-pass-err" style="display:none;color:#DC2626;font-size:12px;font-weight:600;margin-bottom:10px">Contrase&ntilde;a incorrecta</div>
       <button onclick="validarRN()" style="width:100%;background:#7C3AED;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">Desbloquear</button>
     </div>
   </div>
-  <!-- Contenido real (se oculta hasta desbloquear) -->
+  <!-- Panel: Análisis de Registros Nuevos -->
+  <div id="cmn-panel-rn" class="cmn-panel" style="display:none">
   <div id="rn-content">
   <div class="sub-hdr">
     <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
@@ -2567,20 +2566,15 @@ function showCMNTab(which, btn){
       if(b.getAttribute('onclick').indexOf("'"+which+"'")>-1) b.classList.add('on');
     });
   }
-  var rnPanel = document.getElementById('cmn-panel-rn');
-  var portPanel = document.getElementById('cmn-panel-port');
-  if(rnPanel) rnPanel.style.display = which==='rn' ? '' : 'none';
-  if(portPanel) portPanel.style.display = which==='port' ? '' : 'none';
+  if(!RN_UNLOCKED){
+    rnLockShow(true);
+    var pi=document.getElementById('rn-pass'); if(pi)setTimeout(function(){pi.focus();},100);
+    return;
+  }
+  rnLockShow(false);
+  rnResetInactividad();
 
   if(which==='rn'){
-    if(!RN_UNLOCKED){
-      rnLockShow(true);
-      var pi=document.getElementById('rn-pass'); if(pi)setTimeout(function(){pi.focus();},100);
-      return;
-    } else {
-      rnLockShow(false);
-      rnResetInactividad();
-    }
     if(!_rendered['rn']){ _rendered['rn']=true; renderRN(); }
   }
   if(which==='port'){
@@ -2618,15 +2612,12 @@ var RN_INACT_MS = 30*60*1000; /* 30 minutos */
 
 function rnLockShow(locked){
   var lock=document.getElementById('rn-lock');
-  var content=document.getElementById('rn-content');
-  if(!lock||!content)return;
-  if(locked){
-    lock.style.display='block';
-    content.style.display='none';
-  } else {
-    lock.style.display='none';
-    content.style.display='block';
-  }
+  var rnPanel=document.getElementById('cmn-panel-rn');
+  var portPanel=document.getElementById('cmn-panel-port');
+  if(!lock)return;
+  lock.style.display=locked?'block':'none';
+  if(rnPanel) rnPanel.style.display=(!locked&&_cmnActiveTab==='rn')?'':'none';
+  if(portPanel) portPanel.style.display=(!locked&&_cmnActiveTab==='port')?'':'none';
 }
 
 function validarRN(){
@@ -2637,11 +2628,9 @@ function validarRN(){
     RN_UNLOCKED=true;
     if(err)err.style.display='none';
     inp.value='';
-    rnLockShow(false);
-    /* Renderizar ahora que está desbloqueado */
-    if(!_rendered.rn){_rendered.rn=true;}
-    if(typeof renderRN==='function'&&typeof RN!=='undefined'&&RN)renderRN();
     rnResetInactividad();
+    /* Desbloquea todo el universo CMN y renderiza la sub-pestaña activa */
+    showCMNTab(_cmnActiveTab||'rn');
   } else {
     if(err)err.style.display='block';
     inp.value='';
