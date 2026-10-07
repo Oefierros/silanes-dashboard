@@ -5877,6 +5877,53 @@ var PORT_BASELINE_RAW = [
   {proy:'Empagliflozina / Sitagliptina / Metformina',b:['12-Jan-29','31-Jan-29','30-Mar-29','30-Nov-29','31-Jan-30','30-Jun-30','30-Aug-30','31-Jul-30','30-Sep-30','30-Sep-31']}
 ];
 
+/* Bitácora Estrategia - Riesgos (pestaña "Estrategia - Riesgos" del Excel en Box) */
+var PORT_ESTRAT_RAW = [
+  {"proy": "Tizanidina / Etoricoxib", "etapa": "E10. Registro", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "Brecha clínica crítica: sin estudio que respalde dosis y combinación.\nCMN: ya solicita evidencia clínica para sustento.\nInconsistencia terapéutica: esquema de tizanidina no compatible.\nBE no cumple: ABC fuera de rango.\nImpacto: alto riesgo de prevención."},
+  {"proy": "Ticagrelor / ASA", "etapa": "E9. Registro", "est": "Ingresar como MN, terapia de sustitución\nEstudio fase I que cumpla con parametros.\nPerfil bioexentar dosis menor por TA", "riesgo": "Dosis no alineada: AAS 50 mg no corresponde a referencia y sin capa entérica.\nRiesgos de calidad:\nTamaño de lote piloto inconsistente (100,000 vs 10,000).\nAmpliación de especificaciones de impurezas.\nBrecha clínica: se busca terapia inicial sin estudio que lo respalde (CMN lo solicita).\nPerfiles para justificar el perfil farmacocinetico no fue realiado 100% por tercero\nImpacto: riesgo alto de prevención en registro y requerimientos adicionales."},
+  {"proy": "Dexketoprofeno / Butilhioscina", "etapa": "E3. Fase III", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "BE no cumple: incumplimiento que puede derivar en rechazo por la autoridad.\nAntecedentes regulatorios: riesgo de múltiples reingresos hasta cumplir expectativas del dictaminador.\nImpacto: alta probabilidad de dictamen no favorable o retrasos prolongados."},
+  {"proy": "Betametasona / Etoricoxib", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "Probabilidad de que COFEPRIS cuestione como es que llegamos a las dosis seleccionadas. (antecedente: etori / tiza)\nConsiderar que esta combinación no existe en ningun país."},
+  {"proy": "Cianocobalamina / Etoricoxib", "etapa": "E4. CMN", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "Nos han rechazado el producto por la indicación, aun cuando lleva el estudio fase III.\n28ago26: CMN favorable"},
+  {"proy": "Cele / Pregaba / Comp B", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio preclinico, fase I y fase III", "riesgo": "BE no cumple: incumplimiento que puede derivar en rechazo por la autoridad."},
+  {"proy": "Loratadina / Ibuprofeno", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "BE no cumple: incumplimiento que puede derivar en rechazo por la autoridad.\nNo se presenta estudio fase 3"},
+  {"proy": "Metformina / ASA", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "Solicitud de estudio fase 3, solo se incluye un estudio de BE y evidencia bibliografica"},
+  {"proy": "Desloratatina / Betametasona Sol. Infantil", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio fase I y fase III en población pediatrica", "riesgo": "No hay evidencia de la CDF, de las indicaciones solicitadas y tampoco para la población infantil\nDosis de betametasona Baja, uno de los motivos del desecho del fase III"},
+  {"proy": "Acciogen tab Nueva dosis", "etapa": "E1. Estudio fase 1", "est": "Ingresar MCR mayor con un estudio de bioequivalencia cumpliendo con parametros", "riesgo": "BE no cumple: incumplimiento que puede derivar en rechazo por la autoridad.\nNo se cuenta con evidencia propia de la CDF punto que COFEPRIS ha esta solicitando"},
+  {"proy": "Dexketoprofeno / Cafeina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "El protocolo se encuentra aprobado, pero la dosis de cafeina no tiene una justificación por lo que puede que soliciten mayor evidencia para la aprobación de registro"},
+  {"proy": "Rifapentina / Isoniazida", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "No se esta planeando realizar un estudio fase III, sin embargo es importante considerar que esta combinación es nueva y además no existe la Rifapentina en Mexico, por lo que es una nueva entidad molecular"},
+  {"proy": "Ácido Bempedoico", "etapa": "E9. Registro", "est": "La estrategia regulatoria esta considerando ingresarse como generico pero dependemos de que aprueben el registro de la MN en evaluación y que nuestro fase I cumpla parametros.", "riesgo": "En caso de que no se apruebe el registro, nosotros seríamos la MN y no tenemos planeado hacer estudio Fase III"},
+  {"proy": "Lurasidona", "etapa": "E9. Registro", "est": "Ingresar como alternativa farmaceutica o generico dependiendo la f.f. que se desarrolle y sustentar con un estudio de BE que cumpla con parametros", "riesgo": "La estrategia regulatoria esta considerando ingresarse como generico pero dependemos de que aprueben el registro de la MN en evaluación.\nEn caso de que no sea así, nosotros seríamos la MN y no tenemos planeado hacer estudio Fase III"},
+  {"proy": "Sertralina / Acetilcisteina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "No se cuenta con evidencia de que la acetilcisteina tenga un efecto terapeutico para Depresión"},
+  {"proy": "Rosuvastatina / Omega 3", "etapa": "E9. Registro", "est": "Ingresar como MN\ny gererar evidencia clinica para desmostrar el efecto terapeutico del omega 3", "riesgo": "No hay evidencia de que Omega 3 a esas dosis tenga un efecto terapeutico, y para solicitar el registro como medicamento se debe demostrar que sus fármacos tienen ese efecto terapeutico."},
+  {"proy": "Meloxicam / Orfenadrina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Ibuprofeno / Paracetamol IV", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "No se esta consideran realizar un estudio de eficacia de la CDF, y nos va a pasar lo mismo que con el Combo de Velian B inyectable\nEn la revisión del PDC se planeo un estudio fase 3, 14jun2024 correo, sin embargo en el documento adjunto PDC y cronograma no fue considerado"},
+  {"proy": "Etoricoxib / Glucosamina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio fase I y fase III", "riesgo": "10ago26. La indicación propuesta es para osteortritis sin embargo las dosis aprobadas para esa indicacion es 60mg (Arcoxia) por lo que  nos van a cuestionar las dosis de 90mg (antecedente etori / tiza)"},
+  {"proy": "Fenazopiridina", "etapa": "E9. Registro", "est": "Ingresar como alternativa farmaceutica y sustentar con un estudio de BE que cumpla con parametros", "riesgo": "La BE no cumple con criterios 80-125 acorde a la NOM 177, por lo que ya no podemos ir por la ruta de alternativa farmaceutica"},
+  {"proy": "Vilazodona", "etapa": "E9. Registro", "est": "Ingresar como alternativa farmaceutica y sustentar con un estudio de BE que cumpla con parametros", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Dapagilifozina / Sacubitril / Olmesartan", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio preclinico, fase I y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Pidotimod/Vitamina D/Vitamina C/Zinc", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico fase I y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Topiramato / Fentermina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico fase I y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Escitalopram / Pregabalina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico fase I y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Amosartan XQ", "etapa": "E9. Registro", "est": "Vía abreviada, y que acepten el dossier de corea sin solicitar estudios adicionales", "riesgo": "No se presentan estudios clinicos en población latina y fue un punto que se solicitó en el primer CMN"},
+  {"proy": "Trezete 5mg", "etapa": "E9. Registro", "est": "Ingresar como MCR sustentada con perfiles de disolución", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Empagliflozina / Sitagliptina", "etapa": "E9. Registro", "est": "Ingresar como MN y como terapia de sustitución.\nsustentar con un estudio de BE que cumpla con parametros", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Sildapa M", "etapa": "E9. Registro", "est": "Vía abreviada, y que acepten el dossier de corea sin solicitar estudios adicionales", "riesgo": "No se presentan estudios clinicos en población latina\nSe ha confirmado que invadimos patente la de diciembre 2026 y jun 2027"},
+  {"proy": "Dapaglifozina / Finerenona", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico fase I, perfiles por tercero para la concentraccion menor y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Dexketoprofeno / Eletriptan", "etapa": "E9. Registro", "est": "Ingresar como MN terapia inicial.\nEstudio clinico Fase I y Fase III\nY se tendrá que demostrar la no interacción.", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Piracetam / Citicolina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico Fase I, perfiles por tercero para la concentraccion menor y Fase III", "riesgo": "Proyecto no evaluado previamente (proceso previo), vamos a revisar la información disponible en box para hacer la evaluación y definir estudios y ruta regulatoria.\nEvaluada 25ago26.\nEvaluar las dosis de piracetam y la indicación ya que no coincide con los medicamentos de referencia."},
+  {"proy": "Opicapona", "etapa": "E9. Registro", "est": "La estrategia regulatoria esta considerando ingresarse como generico pero dependemos de que aprueben el registro de la MN en evaluación y que nuestro fase I cumpla parametros.", "riesgo": "En caso de que no se apruebe el registro, nosotros seríamos la MN y no tenemos planeado hacer estudio Fase III"},
+  {"proy": "Acetilcistenia / Citicolina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico fase I y fase III", "riesgo": "Falta de evidencia de que la acetilcisteina funcione para SNC"},
+  {"proy": "Eszopiclona", "etapa": "E9. Registro", "est": "La estrategia regulatoria esta considerando ingresarse como Molécula nueva,", "riesgo": "31ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Etoricoxib / Citidina / Uridina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico fase I y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Celecoxib / Diacereina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico fase I y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Betahistina / Difenidol", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico fase I y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Dextrometorfano / Bupropion", "etapa": "E9. Registro", "est": "27ago26: Aun se esta evaluando la estrategia regulatoria", "riesgo": "Proyecto no evaluado previamente (proceso anterior), vamos a revisar la información disponible en box para hacer la evaluación y definir estudios y ruta regulatoria"},
+  {"proy": "Desvenlafaxina / Mirtazapina", "etapa": "E9. Registro", "est": "27ago26: Aun se esta evaluando la estrategia regulatoria", "riesgo": "Proyecto no evaluado previamente (proceso anterior), vamos a revisar la información disponible en box para hacer la evaluación y definir estudios y ruta regulatoria"},
+  {"proy": "Ácido Bempedoico / Rosuvastatina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico fase I y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Ácido Bempedoico / Rosuvastatina / Ezetimiba", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico fase I (en ayuno y con alimentos), perfiles de bioexencion por TA o BE y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"},
+  {"proy": "Empagliflozina / Sitagliptina / Metformina", "etapa": "E9. Registro", "est": "Ingresar como MN\nEstudio clinico fase I (en ayuno y con alimentos), perfiles de bioexencion por TA o BE y fase III", "riesgo": "28ago26 No se identifica un riesgo por el momento"}
+];
+
 var PORT_MATRIX_RAW = [
 {proyecto:"Cianocobalamina / Etoricoxib 3CMN",fase1:{planeado:null,real:null,delta:null,resultado:null},etapas:[{n:1,nombre:"Entrega exp. Fase 3",planeada:"1-Aug-23",real:"1-Aug-23",delta:0},{n:2,nombre:"Ingreso Fase 3",planeada:"10-Aug-23",real:"10-Aug-23",delta:0},{n:3,nombre:"Aprobación Fase 3",planeada:"1-Jul-24",real:"1-Jul-24",delta:0},{n:4,nombre:"Entrega exp. CMN",planeada:"9-Jan-26",real:"11-Feb-26",delta:33},{n:5,nombre:"Sometimiento CMN",planeada:"28-Feb-26",real:"20-Feb-26",delta:-8},{n:6,nombre:"Oficio CMN",planeada:"28-Jul-26",real:"17-Sep-26",delta:51},{n:7,nombre:"Exp. calidad registro",planeada:"24-Apr-26",real:"1-Apr-26",delta:-23},{n:8,nombre:"Exp. médico registro",planeada:"27-Aug-26",real:null,delta:null},{n:9,nombre:"Solicitud de registro",planeada:"30-Oct-26",real:null,delta:null},{n:10,nombre:"Aprobación de registro",planeada:"30-Oct-27",real:null,delta:null}]},
 {proyecto:"Betametasona / Etoricoxib",fase1:{planeado:null,real:null,delta:null,resultado:null},etapas:[{n:1,nombre:"Entrega exp. Fase 3",planeada:"1-Aug-23",real:"1-Aug-23",delta:0},{n:2,nombre:"Ingreso Fase 3",planeada:"10-Aug-23",real:"10-Aug-23",delta:0},{n:3,nombre:"Aprobación Fase 3",planeada:"1-Jul-24",real:"1-Jul-24",delta:0},{n:4,nombre:"Entrega exp. CMN",planeada:"27-Feb-26",real:"23-Mar-26",delta:24},{n:5,nombre:"Sometimiento CMN",planeada:"31-Mar-26",real:"30-Mar-26",delta:-1},{n:6,nombre:"Oficio CMN",planeada:"28-Aug-26",real:"17-Sep-26",delta:20},{n:7,nombre:"Exp. calidad registro",planeada:"30-Aug-26",real:"17-Sep-26",delta:18},{n:8,nombre:"Exp. médico registro",planeada:"27-Sep-26",real:null,delta:null},{n:9,nombre:"Solicitud de registro",planeada:"30-Oct-26",real:null,delta:null},{n:10,nombre:"Aprobación de registro",planeada:"30-Oct-27",real:null,delta:null}]},
@@ -5926,12 +5973,21 @@ var PORT_MATRIX_RAW = [
   var byMatrix={};
   PORT_MATRIX_RAW.forEach(function(m){byMatrix[m.proyecto.trim()]=m;});
   var byBaseline={};
+  var byEstrat={};
+  PORT_ESTRAT_RAW.forEach(function(x){byEstrat[x.proy.trim().toLowerCase()]=x;});
   PORT_BASELINE_RAW.forEach(function(b){byBaseline[b.proy.trim()]=b;});
   PORT_RAW.forEach(function(d){
     var m=byMatrix[d.proy.trim()];
     if(m){d.fase1=m.fase1;d.etapas=m.etapas;}
     var b=byBaseline[d.proy.trim()];
     if(b){d.baselineEtapas=b.b;}
+    var k=d.proy.trim().toLowerCase();
+    var e=byEstrat[k];
+    if(!e){
+      var cand=Object.keys(byEstrat).filter(function(x){return k.indexOf(x)===0;});
+      if(cand.length===1)e=byEstrat[cand[0]];
+    }
+    if(e){d.estrategia=e.est;d.riesgo=e.riesgo;d.etapaEstrat=e.etapa;}
   });
 })();
 
@@ -6091,6 +6147,34 @@ function portTLElegir(i){
   renderPORTTLLista();
 }
 
+function portEstratCardHTML(p){
+  var esc=function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+  var fmt=function(s){
+    return esc(s).replace(/^(\d{1,2}[a-z]{3}\d{2})([:.]?)\s*/,function(m,d){return '<b style="color:#334155">'+d+'</b> · ';});
+  };
+  var est=p.estrategia, rie=p.riesgo;
+  if(!est&&!rie){
+    return '<div class="card" style="margin-top:14px"><div class="ct">Estrategia regulatoria y riesgo identificado</div>'+
+      '<div style="padding:14px;color:#94A3B8;font-size:12px;text-align:center">Este proyecto no aparece en la bitácora de Estrategia - Riesgos.</div></div>';
+  }
+  var sinRiesgo=/no se identifica un riesgo/i.test(rie||'');
+  var colR=sinRiesgo?'#059669':'#DC2626', bgR=sinRiesgo?'#F0FDF4':'#FEF2F2';
+  var box=function(titulo,col,bg,txt,badge){
+    return '<div style="flex:1;min-width:280px;border-radius:12px;border:1px solid '+col+'33;background:'+bg+';padding:14px 16px">'+
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'+
+        '<span style="width:4px;height:16px;border-radius:2px;background:'+col+'"></span>'+
+        '<span style="font-size:11px;font-weight:800;color:'+col+';text-transform:uppercase;letter-spacing:.4px">'+titulo+'</span>'+(badge||'')+'</div>'+
+      '<div style="font-size:12px;line-height:1.55;color:#1E293B;white-space:pre-line;max-height:240px;overflow-y:auto">'+(txt?fmt(txt):'<span style="color:#94A3B8">Sin información capturada.</span>')+'</div></div>';
+  };
+  return '<div class="card" style="margin-top:14px">'+
+    '<div class="ct">Estrategia regulatoria y riesgo identificado<span class="help-ico">i</span><span class="help-tip">Tomado de la pestaña "Estrategia - Riesgos" del Excel en Box (bitácora de estrategia y riesgos regulatorios). Izquierda: ruta regulatoria y estudios planeados. Derecha: riesgo identificado y su fecha de revisión.</span>'+
+      (p.etapaEstrat?'<span style="margin-left:10px;font-size:10px;font-weight:700;color:#475569;background:#F1F5F9;padding:3px 9px;border-radius:12px;text-transform:none;letter-spacing:0">Etapa afectada: '+esc(p.etapaEstrat)+'</span>':'')+'</div>'+
+    '<div style="display:flex;gap:14px;flex-wrap:wrap">'+
+      box('Estrategia regulatoria','#065A62','#F0F9FA',est)+
+      box('Riesgo identificado',colR,bgR,rie,sinRiesgo?'<span style="font-size:9px;font-weight:800;background:#D1FAE5;color:#047857;padding:2px 8px;border-radius:10px">SIN RIESGO</span>':'')+
+    '</div></div>';
+}
+
 function portInicioCardHTML(p){
   var filas=[];
   if(p.fase1&&(p.fase1.planeado||p.fase1.real)){
@@ -6163,6 +6247,7 @@ function renderPORTTLPanel(){
     '</div>'+
   '</div>'+
   portInicioCardHTML(p)+
+  portEstratCardHTML(p)+
   '<div class="card" style="margin-top:14px">'+
     '<div class="ct">Línea de tiempo: Baseline V1 · Plan vigente · Real<span class="help-ico">i</span><span class="help-tip">Tres trayectorias a lo largo de las etapas: 🟣 Baseline (5YR Plan) = fechas originales acordadas y congeladas; ⬜ Plan vigente = fechas replaneadas actuales; 🔵 Real/Est. = lo que en verdad ocurrió. La distancia entre Baseline y Plan vigente muestra cuánto se replaneó el proyecto; la distancia entre Plan vigente y Real muestra si se está cumpliendo el plan actual.</span></div>'+
     '<div style="height:350px"><canvas id="port-tl-timeline">Línea de tiempo</canvas></div>'+
