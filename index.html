@@ -6239,7 +6239,12 @@ function renderPORTTLTimeline(p){
     options:{responsive:true,maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
       plugins:{
-        legend:{position:'top',labels:{font:{size:11,weight:'bold'},boxWidth:14,usePointStyle:true}},
+        legend:{position:'top',labels:{font:{size:11,weight:'bold'},boxWidth:14,usePointStyle:true,
+          generateLabels:function(chart){
+            return chart.data.datasets.map(function(ds,i){
+              return {text:ds.label,fillStyle:ds.borderColor,strokeStyle:ds.borderColor,lineWidth:0,pointStyle:'circle',hidden:!chart.isDatasetVisible(i),datasetIndex:i};
+            });
+          }}},
         tooltip:{callbacks:{
           title:function(c){return etapas[c[0].dataIndex].nombre;},
           label:function(c){
@@ -6318,9 +6323,10 @@ function renderPORTTLDumbbell(p){
       '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7C3AED;margin-right:5px"></span>Baseline (original)</span>'+
       '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#64748B;margin-right:5px"></span>Plan vigente</span>'+
       '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;border:3px solid #065A62;margin-right:5px;box-sizing:border-box"></span>Real / estimada</span>'+
-      '<span style="color:#B91C1C">▬ se atrasó vs. original</span><span style="color:#047857">▬ se adelantó</span>'+
+      '<span style="color:#475569">▬ original → plan vigente</span><span style="color:#475569">┅ plan vigente → real</span>'+
+      '<span style="color:#B91C1C">■ rojo = atraso</span><span style="color:#047857">■ verde = adelanto</span><span style="color:#065A62">■ teal = a tiempo</span>'+
     '</div>'+
-    '<div style="display:grid;grid-template-columns:200px minmax(300px,1fr) 230px;align-items:center;gap:0 12px">'+
+    '<div style="display:grid;grid-template-columns:200px minmax(300px,1fr) 230px;align-items:stretch;gap:0 12px">'+
       '<div></div><div style="position:relative;height:16px">'+axis+'</div><div></div>';
   rows.forEach(function(r){
     var tip=function(n,t){return n+': '+portFmtFecha(t);};
@@ -6331,19 +6337,20 @@ function renderPORTTLDumbbell(p){
     }
     if(r.tp!==null&&r.tr!==null&&r.tp!==r.tr){
       var lo2=Math.min(r.tp,r.tr), hi2=Math.max(r.tp,r.tr);
-      conn+='<div style="position:absolute;left:'+pos(lo2).toFixed(2)+'%;width:'+(pos(hi2)-pos(lo2)).toFixed(2)+'%;top:50%;height:0;border-top:2px dashed #065A62;z-index:1"></div>';
+      conn+='<div style="position:absolute;left:'+pos(lo2).toFixed(2)+'%;width:'+(pos(hi2)-pos(lo2)).toFixed(2)+'%;top:50%;height:0;border-top:3px dotted '+(r.tr>r.tp?'#DC2626':'#059669')+';z-index:1"></div>';
     }
+    var colReal=(r.tp===null||r.tr===null||r.tr===r.tp)?'#065A62':(r.tr>r.tp?'#DC2626':'#059669');
     var dots='';
     if(r.tb!==null)dots+=dot(r.tb,'#7C3AED',11,tip('Baseline',r.tb),2,false);
     if(r.tp!==null)dots+=dot(r.tp,'#64748B',11,tip('Plan vigente',r.tp),3,false);
-    if(r.tr!==null)dots+=dot(r.tr,'#065A62',15,tip('Real/Est.',r.tr),4,true);
+    if(r.tr!==null)dots+=dot(r.tr,colReal,15,tip('Real/Est.',r.tr),4,true);
     var chips=[];
     if(r.tb!==null&&r.tp!==null)chips.push(chip('Plan vs original',dias(r.tp,r.tb)));
     else if(r.tp!==null)chips.push('<span style="font-size:10px;color:#94A3B8">sin fecha original</span>');
     if(r.tp!==null&&r.tr!==null)chips.push(chip('Real vs plan',dias(r.tr,r.tp)));
-    h+='<div style="font-size:11px;font-weight:700;color:#334155;padding:9px 0;border-top:1px solid #F1F5F9">'+r.label+'</div>'+
-       '<div style="position:relative;height:36px;border-top:1px solid #F1F5F9">'+grid+conn+dots+'</div>'+
-       '<div style="display:flex;gap:6px;flex-wrap:wrap;padding:6px 0;border-top:1px solid #F1F5F9">'+chips.join('')+'</div>';
+    h+='<div style="display:flex;align-items:center;font-size:11px;font-weight:700;color:#334155;padding:9px 0;border-top:1px solid #F1F5F9">'+r.label+'</div>'+
+       '<div style="position:relative;min-height:40px;border-top:1px solid #F1F5F9">'+grid+conn+dots+'</div>'+
+       '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 0;border-top:1px solid #F1F5F9">'+chips.join('')+'</div>';
   });
   h+='</div>';
   el.innerHTML=h;
