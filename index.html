@@ -6166,12 +6166,15 @@ function renderPORTTLPanel(){
   '<div class="card" style="margin-top:14px">'+
     '<div class="ct">Línea de tiempo: Baseline V1 · Plan vigente · Real<span class="help-ico">i</span><span class="help-tip">Tres trayectorias a lo largo de las etapas: 🟣 Baseline (5YR Plan) = fechas originales acordadas y congeladas; ⬜ Plan vigente = fechas replaneadas actuales; 🔵 Real/Est. = lo que en verdad ocurrió. La distancia entre Baseline y Plan vigente muestra cuánto se replaneó el proyecto; la distancia entre Plan vigente y Real muestra si se está cumpliendo el plan actual.</span></div>'+
     '<div style="height:350px"><canvas id="port-tl-timeline">Línea de tiempo</canvas></div>'+
-    '<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:10px;padding-top:10px;border-top:1px dashed #E2E8F0;font-size:11px;font-weight:700;color:#475569">'+
-      '<span style="font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase">Color del punto Real / Estimada vs. Plan vigente:</span>'+
-      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#DC2626;margin-right:5px"></span>Rojo = se atrasó</span>'+
-      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#059669;margin-right:5px"></span>Verde = se adelantó</span>'+
-      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#065A62;margin-right:5px"></span>Teal = a tiempo</span>'+
-      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#94A3B8;margin-right:5px"></span>Gris = sin fecha de plan para comparar</span>'+
+    '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:8px 14px;margin-top:10px;font-size:11px;font-weight:600;color:#475569">'+
+      '<div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:3px 0"><span style="width:62px;flex-shrink:0;font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase">Líneas</span>'+
+        '<span><span style="display:inline-block;width:22px;height:0;border-top:2px dashed #7C3AED;margin-right:6px;vertical-align:middle"></span>Baseline (5YR Plan)</span>'+
+        '<span><span style="display:inline-block;width:22px;height:0;border-top:2px dashed #94A3B8;margin-right:6px;vertical-align:middle"></span>Plan vigente</span>'+
+        '<span><span style="display:inline-block;width:22px;height:0;border-top:3px solid #065A62;margin-right:6px;vertical-align:middle"></span>Real / Estimada</span></div>'+
+      '<div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:3px 0"><span style="width:62px;flex-shrink:0;font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase">Puntos Real</span>'+
+        '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#DC2626;margin-right:5px"></span>Atraso vs. plan vigente</span>'+
+        '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#059669;margin-right:5px"></span>Adelanto</span>'+
+        '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#065A62;margin-right:5px"></span>A tiempo</span></div>'+
     '</div>'+
   '</div>'+
   '<div class="card" style="margin-top:14px">'+
@@ -6246,12 +6249,7 @@ function renderPORTTLTimeline(p){
     options:{responsive:true,maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
       plugins:{
-        legend:{position:'top',labels:{font:{size:11,weight:'bold'},boxWidth:14,usePointStyle:true,
-          generateLabels:function(chart){
-            return chart.data.datasets.map(function(ds,i){
-              return {text:ds.label,fillStyle:ds.borderColor,strokeStyle:ds.borderColor,lineWidth:0,pointStyle:'circle',hidden:!chart.isDatasetVisible(i),datasetIndex:i};
-            });
-          }}},
+        legend:{display:false},
         tooltip:{callbacks:{
           title:function(c){return etapas[c[0].dataIndex].nombre;},
           label:function(c){
@@ -6326,13 +6324,17 @@ function renderPORTTLDumbbell(p){
     return '<div title="'+title+'" style="position:absolute;left:'+pos(ts).toFixed(2)+'%;top:50%;width:'+size+'px;height:'+size+'px;margin:-'+(size/2)+'px 0 0 -'+(size/2)+'px;border-radius:50%;box-sizing:border-box;background:'+(ring?'#fff':col)+';border:'+(ring?'3px solid '+col:'2px solid #fff')+';box-shadow:0 0 0 1px '+col+'66;z-index:'+z+'"></div>';
   }
   var h='<div style="font-size:12px;color:#475569;margin-bottom:10px">'+hdr+'</div>'+
-    '<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;font-weight:700;color:#475569;margin-bottom:8px">'+
-      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#7C3AED;margin-right:5px"></span>Baseline (original)</span>'+
-      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#64748B;margin-right:5px"></span>Plan vigente</span>'+
-      '<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;border:3px solid #065A62;margin-right:5px;box-sizing:border-box"></span>Real / estimada</span>'+
-      '<span style="color:#475569">▬ original → plan vigente</span><span style="color:#475569">┅ plan vigente → real</span>'+
-      '<span style="color:#B91C1C">■ rojo = atraso</span><span style="color:#047857">■ verde = adelanto</span><span style="color:#065A62">■ teal = a tiempo</span>'+
-    '</div>'+
+    (function(){
+      var lbl='<span style="width:62px;flex-shrink:0;font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase">';
+      var dotS=function(bg,ring){return '<span style="display:inline-block;width:11px;height:11px;border-radius:50%;box-sizing:border-box;margin-right:6px;vertical-align:-1px;'+(ring?'border:3px solid '+bg+';background:#fff':'background:'+bg)+'"></span>';};
+      var lineS=function(col,dotted){return '<span style="display:inline-block;width:26px;height:0;margin-right:6px;vertical-align:middle;border-top:'+(dotted?'3px dotted ':'5px solid ')+col+'"></span>';};
+      var row=function(l,items){return '<div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:3px 0">'+lbl+l+'</span>'+items.map(function(x){return '<span>'+x+'</span>';}).join('')+'</div>';};
+      return '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:8px 14px;margin-bottom:12px;font-size:11px;font-weight:600;color:#475569">'+
+        row('Puntos',[dotS('#7C3AED')+'Original (Baseline)',dotS('#64748B')+'Plan vigente',dotS('#065A62',true)+'Real / estimada'])+
+        row('Líneas',[lineS('#F87171')+'Cuánto se movió el plan vs. el original',lineS('#DC2626',true)+'Diferencia entre real y plan vigente'])+
+        row('Color',[dotS('#DC2626')+'Rojo = atraso',dotS('#059669')+'Verde = adelanto',dotS('#065A62')+'Teal = a tiempo'])+
+      '</div>';
+    })()+
     '<div style="display:grid;grid-template-columns:200px minmax(300px,1fr) 230px;align-items:stretch;gap:0 12px">'+
       '<div></div><div style="position:relative;height:16px">'+axis+'</div><div></div>';
   rows.forEach(function(r){
