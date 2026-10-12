@@ -6147,6 +6147,49 @@ function portTLElegir(i){
   renderPORTTLLista();
 }
 
+function portKpiCardsHTML(p,semCol){
+  var sg=function(n){return (n>0?'+':(n<0?'−':''))+Math.abs(n);};
+  var fF=function(s){var t=portParseFecha(s);return t===null?'--':portFmtFecha(t);};
+
+  /* Etapas donde se dio la desviación máxima (misma regla del Excel: Fase 1 + E1–E9) */
+  var cand=[];
+  if(p.fase1&&p.fase1.delta!=null)cand.push({label:'Fase 1',d:p.fase1.delta});
+  (p.etapas||[]).forEach(function(e){if(e.n<=9&&e.delta!=null)cand.push({label:'E'+e.n+'. '+e.nombre,d:e.delta});});
+  var donde=cand.filter(function(c){return c.d===p.maxDesv;}).map(function(c){return c.label;});
+  var dondeTxt=donde.length?(p.maxDesv>0?'Se dio en: ':'Mayor adelanto en: ')+donde.join(' y '):'';
+
+  var cMax=p.maxDesv>30?'#DC2626':(p.maxDesv>15?'#D97706':'#059669');
+  var mxSub=p.maxDesv>0?'Días que la fecha real/estimada superó al plan vigente en la etapa más atrasada.':'Ninguna etapa va atrasada; es el mayor adelanto contra el plan vigente.';
+
+  /* Atraso acumulado: suma de los atrasos de cada etapa atrasada (E1–E9) */
+  var atr=(p.etapas||[]).filter(function(e){return e.n<=9&&e.delta!=null&&e.delta>0;});
+  var acum=atr.reduce(function(a,e){return a+e.delta;},0);
+  var acumDet=atr.length?atr.slice(0,4).map(function(e){return 'E'+e.n+' '+sg(e.delta)+' d';}).join(' · ')+(atr.length>4?' · +'+(atr.length-4)+' más':''):'Ninguna etapa E1–E9 va atrasada.';
+
+  /* Movimiento de la fecha de registro vs. la original */
+  var e10=(p.etapas||[])[9]||{};
+  var blE10=p.baselineEtapas&&p.baselineEtapas[9];
+  var tBl=portParseFecha(blE10), tVig=portParseFecha(p.fechaReg);
+  var dv=(tBl!==null&&tVig!==null)?Math.round((tVig-tBl)/86400000/30.44):p.deltaV1;
+  var cDv=dv>0?'#DC2626':(dv<0?'#059669':'#64748B');
+  var dvSub=(blE10?'Original '+fF(blE10)+' → vigente '+fF(p.fechaReg)+'. ':'')+(dv>0?'El registro se atrasó vs. lo acordado.':(dv<0?'El registro se adelantó vs. lo acordado.':'Sin cambio vs. lo acordado.'));
+
+  var kpi=function(c,titulo,val,sub,extra,valSize){
+    return '<div class="kpi" style="border-top-color:'+c+'"><div class="kl">'+titulo+'</div>'+
+      '<div class="kv" style="color:'+c+(valSize?';font-size:'+valSize+'px':'')+'">'+val+'</div>'+
+      (extra?'<div style="font-size:11px;font-weight:700;color:#334155;margin:2px 0 3px;line-height:1.3">'+extra+'</div>':'')+
+      '<div class="ks" style="white-space:normal;line-height:1.35">'+sub+'</div></div>';
+  };
+
+  return '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin-top:14px">'+
+    kpi(semCol,'% de cumplimiento',p.pctCumpl+'%','Qué tan cerca va del plan: 100% = sin atraso. Baja 10 puntos por cada 6 días de atraso máximo (0% desde 60 días).')+
+    kpi(cMax,'Mayor atraso en una etapa',sg(p.maxDesv)+' d',mxSub+' Semáforo: hasta 15 d verde, 15–30 d ámbar, más de 30 d rojo.',dondeTxt)+
+    kpi(acum>0?'#B91C1C':'#059669','Atraso acumulado',sg(acum)+' d','Suma de los días de atraso de todas las etapas atrasadas (E1–E9).',acumDet)+
+    kpi(cDv,'Fecha de registro vs. la original',sg(dv)+' meses',dvSub)+
+    kpi('#0891B2','Fecha objetivo de registro',fF(p.fechaReg),'Aprobación de registro (E10) según el plan vigente ('+p.version+').',null,19)+
+  '</div>';
+}
+
 function portEstratCardHTML(p){
   var esc=function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
   var fmt=function(s){
@@ -6239,12 +6282,7 @@ function renderPORTTLPanel(){
       '<div style="text-align:right"><div style="font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase">Etapa actual</div>'+
       '<div style="font-size:13px;font-weight:700;color:#334155;margin-top:2px">'+p.etapaActual+'</div></div>'+
     '</div>'+
-    '<div class="g4" style="margin-top:14px">'+
-      '<div class="kpi" style="border-top-color:'+semCol+'"><div class="kl">% Cumplimiento</div><div class="kv" style="color:'+semCol+'">'+p.pctCumpl+'%</div><div class="ks">estimado</div></div>'+
-      '<div class="kpi" style="border-top-color:#B91C1C"><div class="kl">Máx. desviación</div><div class="kv" style="color:'+(p.maxDesv>0?'#DC2626':'#059669')+'">'+(p.maxDesv>0?'+':'')+p.maxDesv+'d</div><div class="ks">'+p.etapaAtrasada+'</div></div>'+
-      '<div class="kpi" style="border-top-color:#7C3AED"><div class="kl">Δ vs. V1 (histórico)</div><div class="kv" style="color:#7C3AED">'+(p.deltaV1>0?'+':'')+p.deltaV1+'m</div><div class="ks">desde línea base original</div></div>'+
-      '<div class="kpi" style="border-top-color:#0891B2"><div class="kl">Fecha registro (línea base)</div><div class="kv" style="color:#0891B2;font-size:17px">'+p.fechaReg+'</div><div class="ks">objetivo E10</div></div>'+
-    '</div>'+
+    portKpiCardsHTML(p,semCol)+
   '</div>'+
   portInicioCardHTML(p)+
   portEstratCardHTML(p)+
