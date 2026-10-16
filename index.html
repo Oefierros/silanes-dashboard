@@ -1996,7 +1996,7 @@ function renderBIOTiempos(){
     var t2=bioDias(d.ingLab,d.resLab);           /* Análisis en CCAYAC/LEI */
     var t3=bioDias(d.resLab,d.ingCoA);           /* Resultados → ingreso CoA */
     var tNotif=bioDias(d.resLab,d.notifAR);      /* Resultados → notificación AR (paso paralelo) */
-    /* Los negativos (fechas fuera de orden) se tratan como 0 */
+    /* Los negativos (fechas fuera de orden) se tratan como 0 de lo contrario marca un error en la pagina asi como en las graficas y en el apartado de AR */
     t1=(t1!==null&&t1>0)?t1:0;
     t2=(t2!==null&&t2>0)?t2:0;
     t3=(t3!==null&&t3>0)?t3:0;
@@ -2007,7 +2007,7 @@ function renderBIOTiempos(){
     };
   }).filter(function(x){return x.total>0;});
 
-  /* Ordenar por duración total (mayor primero) */
+  /* Ordenar por duración total (mayor primero) esto se pidio a manera que los procesos mas criticos estuvieran a primera vista */
   pasos.sort(function(a,b){return b.total-a.total;});
 
   var canvas=document.getElementById('bio-duracion');
@@ -2175,7 +2175,7 @@ function nrrFichaDe(rs){
   return NRR.ficha.filter(function(f){return f.rs===rs;})[0]||null;
 }
 
-/* ── Alertas de un producto ── */
+/* ── Alertas de un producto  las alertas se definieron con el equipo de ── */
 function nrrAlertas(p){
   var out=[];
   if(p.semRenov==='Vencido'||(p.diasRenov!==null&&p.diasRenov<0))
