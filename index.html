@@ -21,7 +21,7 @@
                · Portafolio Regulatorio (PORT): avance de cada proyecto, línea de tiempo,
                  estrategia y riesgos
     Biológicos Seguimiento de lotes de productos biológicos (CCAYAC / LEI)
-    NRR        Seguimiento NRR: vigencia, renovación y caducidad de registros
+    CMC        Seguimiento CMC (id interno "nrr"): vigencia, renovación y caducidad de registros
 
   SIGLAS
     COFEPRIS  autoridad sanitaria de México · CMN  Comité de Moléculas Nuevas
@@ -29,7 +29,7 @@
     BE bioequivalencia · CDF combinación a dosis fija · RS registro sanitario
 
   DE DÓNDE VIENEN LOS DATOS
-    · ARN, Pagos, ARI, RN, Biológicos y NRR: en vivo desde Smartsheet a través de un
+    · ARN, Pagos, ARI, RN, Biológicos y CMC (id interno "nrr"): en vivo desde Smartsheet a través de un
       Cloudflare Worker (constante WORKER_URL). Se cargan con cargarDatosEnVivo() al abrir
       la página y con el botón "Actualizar".
     · Portafolio Regulatorio: datos estáticos copiados del Excel en Box (ver el bloque
@@ -206,7 +206,7 @@ tr:hover td{background:#F1F8F9}
     <button class="main-tab" onclick="showUniverse('ari',this)">🌎 Plan de Trabajo ARI</button>
     <button class="main-tab" onclick="showUniverse('cmn',this)">🧪 Productos Nuevos</button>
     <button class="main-tab" onclick="showUniverse('bio',this)">🧬 Biológicos</button>
-    <button class="main-tab" onclick="showUniverse('nrr',this)">📑 Seguimiento NRR</button>
+    <button class="main-tab" onclick="showUniverse('nrr',this)">📑 Seguimiento CMC</button>
   </div>
 </div>
 
@@ -1050,7 +1050,7 @@ tr:hover td{background:#F1F8F9}
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
-     UNIVERSO NRR — Seguimiento Regulatorio de productos
+     UNIVERSO SEGUIMIENTO CMC (id interno "nrr") — Seguimiento Regulatorio de productos
 ══════════════════════════════════════════════════════════ -->
 <div id="uni-nrr" class="universe">
   <div class="sub-hdr">
@@ -2141,7 +2141,7 @@ function renderBIODet(){
 }
 
 /* ══════════════════════════════════════════════════════════
-   LÓGICA UNIVERSO NRR
+   LÓGICA UNIVERSO SEGUIMIENTO CMC (en el código se llama "NRR")
 ══════════════════════════════════════════════════════════ */
 function showNRRTab(id,btn){
   subTab('nrr-pg-',['ov','prod','det'],'#uni-nrr',id,btn);
