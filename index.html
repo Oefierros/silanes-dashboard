@@ -214,6 +214,11 @@ body.vidrio{
 /* filtros y sub-pestañas */
 .vidrio .sub-hdr{background:var(--cristal);border:1px solid var(--cristal-borde);border-radius:18px;margin:12px 18px 0;padding:9px 16px;
   -webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%);box-shadow:0 8px 28px rgba(4,30,36,.22),inset 0 1px 0 rgba(255,255,255,.22)}
+/* el desenfoque crea capas de apilado: la barra de filtros debe quedar por encima de lo que le sigue
+   para que sus listas desplegables no se tapen, y la tarjeta con el cursor encima sube para que su globo de ayuda se vea */
+.vidrio .sub-hdr{position:relative;z-index:60}
+.vidrio .card:hover,.vidrio .kpi:hover{position:relative;z-index:40}
+.vidrio .ms-panel{z-index:300;background:#05222A;box-shadow:0 14px 40px rgba(2,16,20,.55)}
 .vidrio .sub-hdr select{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.30)}
 .vidrio .sub-hdr .info{color:#BFF3F6}
 .vidrio .sec-tabs{background:transparent;border:0;padding:12px 18px 2px;gap:8px}
@@ -258,88 +263,88 @@ body.vidrio{
 .vidrio .ms-head{border-bottom-color:rgba(255,255,255,.12)}
 .vidrio .ms-head button{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.20);color:var(--txt)}
 /* ── colores escritos en línea por el JavaScript dentro de los universos: se reasignan para fondo oscuro ── */
-.vidrio .universe [style*="color:#0F172A"],.vidrio .universe [style*="color:#1E293B"],.vidrio .universe [style*="color:#334155"],.vidrio .universe [style*="color:#374151"],.vidrio .universe [style*="color:#475569"],.vidrio .universe [style*="color:#64748B"],.vidrio .universe [style*="color:#1F2937"]{color:var(--txt)!important}
-.vidrio .universe [style*="color:#94A3B8"],.vidrio .universe [style*="color:#CBD5E1"],.vidrio .universe [style*="color:#9CA3AF"]{color:var(--txt-suave)!important}
-.vidrio .universe [style*="color:#6B7280"],.vidrio .universe [style*="color:#4B5563"],.vidrio .universe [style*="color:#52525B"]{color:#C5D3D9!important}
-.vidrio .universe [style*="color:#16A34A"]{color:#6EE7B7!important}
-.vidrio .universe [style*="color:#E11D48"]{color:#FDA4AF!important}
-.vidrio .universe [style*="color:#065A62"],.vidrio .universe [style*="color:#087A84"],.vidrio .universe [style*="color:#0A9AA6"]{color:#5ED6DE!important}
-.vidrio .universe [style*="color:#7C3AED"],.vidrio .universe [style*="color:#5B21B6"]{color:#C4B5FD!important}
-.vidrio .universe [style*="color:#B91C1C"],.vidrio .universe [style*="color:#991B1B"],.vidrio .universe [style*="color:#DC2626"],.vidrio .universe [style*="color:#7F1D1D"]{color:#FCA5A5!important}
-.vidrio .universe [style*="color:#047857"],.vidrio .universe [style*="color:#15803D"],.vidrio .universe [style*="color:#059669"],.vidrio .universe [style*="color:#14532D"]{color:#6EE7B7!important}
-.vidrio .universe [style*="color:#92400E"],.vidrio .universe [style*="color:#D97706"]{color:#FCD34D!important}
-.vidrio .universe [style*="color:#0891B2"],.vidrio .universe [style*="color:#155E75"],.vidrio .universe [style*="color:#1E3A8A"],.vidrio .universe [style*="color:#2563EB"]{color:#93C5FD!important}
-.vidrio .universe [style*="color:#BE185D"],.vidrio .universe [style*="color:#9F1239"]{color:#F9A8D4!important}
-.vidrio .universe [style*="background:#fff"],.vidrio .universe [style*="background:#F8FAFC"],.vidrio .universe [style*="background:#F1F5F9"],.vidrio .universe [style*="background:#FAFAFA"],.vidrio .universe [style*="background:#F3F4F6"]{background:linear-gradient(rgba(255,255,255,.08),rgba(255,255,255,.08)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F0F9FA"],.vidrio .universe [style*="background:#E0F2F3"],.vidrio .universe [style*="background:#CFFAFE"]{background:linear-gradient(rgba(34,211,238,.16),rgba(34,211,238,.16)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FEF2F2"],.vidrio .universe [style*="background:#FEE2E2"],.vidrio .universe [style*="background:#FFF1F2"],.vidrio .universe [style*="background:#FFF5F5"]{background:linear-gradient(rgba(248,113,113,.20),rgba(248,113,113,.20)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F0FDF4"],.vidrio .universe [style*="background:#D1FAE5"],.vidrio .universe [style*="background:#DCFCE7"]{background:linear-gradient(rgba(52,211,153,.20),rgba(52,211,153,.20)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FEF3C7"],.vidrio .universe [style*="background:#FFFBEB"]{background:linear-gradient(rgba(251,191,36,.20),rgba(251,191,36,.20)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EDE9FE"],.vidrio .universe [style*="background:#F5F3FF"]{background:linear-gradient(rgba(167,139,250,.24),rgba(167,139,250,.24)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EFF6FF"],.vidrio .universe [style*="background:#DBEAFE"]{background:linear-gradient(rgba(96,165,250,.22),rgba(96,165,250,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="color:#0F172A"],.vidrio .universe [style*="color:#1E293B"],.vidrio .universe [style*="color:#334155"],.vidrio .universe [style*="color:#374151"],.vidrio .universe [style*="color:#475569"],.vidrio .universe [style*="color:#64748B"],.vidrio .universe [style*="color:#1F2937"],.vidrio .universe [style*="color: rgb(15, 23, 42)"],.vidrio .universe [style*="color: rgb(30, 41, 59)"],.vidrio .universe [style*="color: rgb(51, 65, 85)"],.vidrio .universe [style*="color: rgb(55, 65, 81)"],.vidrio .universe [style*="color: rgb(71, 85, 105)"],.vidrio .universe [style*="color: rgb(100, 116, 139)"],.vidrio .universe [style*="color: rgb(31, 41, 55)"]{color:var(--txt)!important}
+.vidrio .universe [style*="color:#94A3B8"],.vidrio .universe [style*="color:#CBD5E1"],.vidrio .universe [style*="color:#9CA3AF"],.vidrio .universe [style*="color: rgb(148, 163, 184)"],.vidrio .universe [style*="color: rgb(203, 213, 225)"],.vidrio .universe [style*="color: rgb(156, 163, 175)"]{color:var(--txt-suave)!important}
+.vidrio .universe [style*="color:#6B7280"],.vidrio .universe [style*="color:#4B5563"],.vidrio .universe [style*="color:#52525B"],.vidrio .universe [style*="color: rgb(107, 114, 128)"],.vidrio .universe [style*="color: rgb(75, 85, 99)"],.vidrio .universe [style*="color: rgb(82, 82, 91)"]{color:#C5D3D9!important}
+.vidrio .universe [style*="color:#16A34A"],.vidrio .universe [style*="color: rgb(22, 163, 74)"]{color:#6EE7B7!important}
+.vidrio .universe [style*="color:#E11D48"],.vidrio .universe [style*="color: rgb(225, 29, 72)"]{color:#FDA4AF!important}
+.vidrio .universe [style*="color:#065A62"],.vidrio .universe [style*="color:#087A84"],.vidrio .universe [style*="color:#0A9AA6"],.vidrio .universe [style*="color: rgb(6, 90, 98)"],.vidrio .universe [style*="color: rgb(8, 122, 132)"],.vidrio .universe [style*="color: rgb(10, 154, 166)"]{color:#5ED6DE!important}
+.vidrio .universe [style*="color:#7C3AED"],.vidrio .universe [style*="color:#5B21B6"],.vidrio .universe [style*="color: rgb(124, 58, 237)"],.vidrio .universe [style*="color: rgb(91, 33, 182)"]{color:#C4B5FD!important}
+.vidrio .universe [style*="color:#B91C1C"],.vidrio .universe [style*="color:#991B1B"],.vidrio .universe [style*="color:#DC2626"],.vidrio .universe [style*="color:#7F1D1D"],.vidrio .universe [style*="color: rgb(185, 28, 28)"],.vidrio .universe [style*="color: rgb(153, 27, 27)"],.vidrio .universe [style*="color: rgb(220, 38, 38)"],.vidrio .universe [style*="color: rgb(127, 29, 29)"]{color:#FCA5A5!important}
+.vidrio .universe [style*="color:#047857"],.vidrio .universe [style*="color:#15803D"],.vidrio .universe [style*="color:#059669"],.vidrio .universe [style*="color:#14532D"],.vidrio .universe [style*="color: rgb(4, 120, 87)"],.vidrio .universe [style*="color: rgb(21, 128, 61)"],.vidrio .universe [style*="color: rgb(5, 150, 105)"],.vidrio .universe [style*="color: rgb(20, 83, 45)"]{color:#6EE7B7!important}
+.vidrio .universe [style*="color:#92400E"],.vidrio .universe [style*="color:#D97706"],.vidrio .universe [style*="color: rgb(146, 64, 14)"],.vidrio .universe [style*="color: rgb(217, 119, 6)"]{color:#FCD34D!important}
+.vidrio .universe [style*="color:#0891B2"],.vidrio .universe [style*="color:#155E75"],.vidrio .universe [style*="color:#1E3A8A"],.vidrio .universe [style*="color:#2563EB"],.vidrio .universe [style*="color: rgb(8, 145, 178)"],.vidrio .universe [style*="color: rgb(21, 94, 117)"],.vidrio .universe [style*="color: rgb(30, 58, 138)"],.vidrio .universe [style*="color: rgb(37, 99, 235)"]{color:#93C5FD!important}
+.vidrio .universe [style*="color:#BE185D"],.vidrio .universe [style*="color:#9F1239"],.vidrio .universe [style*="color: rgb(190, 24, 93)"],.vidrio .universe [style*="color: rgb(159, 18, 57)"]{color:#F9A8D4!important}
+.vidrio .universe [style*="background:#fff"],.vidrio .universe [style*="background:#F8FAFC"],.vidrio .universe [style*="background:#F1F5F9"],.vidrio .universe [style*="background:#FAFAFA"],.vidrio .universe [style*="background:#F3F4F6"],.vidrio .universe [style*="background: rgb(255, 255, 255)"],.vidrio .universe [style*="background: rgb(248, 250, 252)"],.vidrio .universe [style*="background: rgb(241, 245, 249)"],.vidrio .universe [style*="background: rgb(250, 250, 250)"],.vidrio .universe [style*="background: rgb(243, 244, 246)"]{background:linear-gradient(rgba(255,255,255,.08),rgba(255,255,255,.08)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#F0F9FA"],.vidrio .universe [style*="background:#E0F2F3"],.vidrio .universe [style*="background:#CFFAFE"],.vidrio .universe [style*="background: rgb(240, 249, 250)"],.vidrio .universe [style*="background: rgb(224, 242, 243)"],.vidrio .universe [style*="background: rgb(207, 250, 254)"]{background:linear-gradient(rgba(34,211,238,.16),rgba(34,211,238,.16)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#FEF2F2"],.vidrio .universe [style*="background:#FEE2E2"],.vidrio .universe [style*="background:#FFF1F2"],.vidrio .universe [style*="background:#FFF5F5"],.vidrio .universe [style*="background: rgb(254, 242, 242)"],.vidrio .universe [style*="background: rgb(254, 226, 226)"],.vidrio .universe [style*="background: rgb(255, 241, 242)"],.vidrio .universe [style*="background: rgb(255, 245, 245)"]{background:linear-gradient(rgba(248,113,113,.20),rgba(248,113,113,.20)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#F0FDF4"],.vidrio .universe [style*="background:#D1FAE5"],.vidrio .universe [style*="background:#DCFCE7"],.vidrio .universe [style*="background: rgb(240, 253, 244)"],.vidrio .universe [style*="background: rgb(209, 250, 229)"],.vidrio .universe [style*="background: rgb(220, 252, 231)"]{background:linear-gradient(rgba(52,211,153,.20),rgba(52,211,153,.20)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#FEF3C7"],.vidrio .universe [style*="background:#FFFBEB"],.vidrio .universe [style*="background: rgb(254, 243, 199)"],.vidrio .universe [style*="background: rgb(255, 251, 235)"]{background:linear-gradient(rgba(251,191,36,.20),rgba(251,191,36,.20)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#EDE9FE"],.vidrio .universe [style*="background:#F5F3FF"],.vidrio .universe [style*="background: rgb(237, 233, 254)"],.vidrio .universe [style*="background: rgb(245, 243, 255)"]{background:linear-gradient(rgba(167,139,250,.24),rgba(167,139,250,.24)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#EFF6FF"],.vidrio .universe [style*="background:#DBEAFE"],.vidrio .universe [style*="background: rgb(239, 246, 255)"],.vidrio .universe [style*="background: rgb(219, 234, 254)"]{background:linear-gradient(rgba(96,165,250,.22),rgba(96,165,250,.22)),rgba(3,24,30,.80)!important}
 .vidrio .universe [style*="#E2E8F0"],.vidrio .universe [style*="#EEF2F6"],.vidrio .universe [style*="solid #F1F5F9"]{border-color:rgba(255,255,255,.16)!important}
-.vidrio .universe [style*="background:#065A62"]{background:#0B8A95!important}
+.vidrio .universe [style*="background:#065A62"],.vidrio .universe [style*="background: rgb(6, 90, 98)"]{background:#0B8A95!important}
 /* puntos, anillos y líneas de la vista de mancuerna / leyendas de la línea de tiempo */
-.vidrio .universe [style*="background:#065A62"][style*="border-radius:50%"]{background:#5ED6DE!important}
-.vidrio .universe [style*="background:#7C3AED"][style*="border-radius:50%"]{background:#B39DFF!important}
-.vidrio .universe [style*="background:#64748B"][style*="border-radius:50%"]{background:#C5D3D9!important}
+.vidrio .universe [style*="background:#065A62"][style*="border-radius:50%"],.vidrio .universe [style*="background: rgb(6, 90, 98)"][style*="border-radius:50%"]{background:#5ED6DE!important}
+.vidrio .universe [style*="background:#7C3AED"][style*="border-radius:50%"],.vidrio .universe [style*="background: rgb(124, 58, 237)"][style*="border-radius:50%"]{background:#B39DFF!important}
+.vidrio .universe [style*="background:#64748B"][style*="border-radius:50%"],.vidrio .universe [style*="background: rgb(100, 116, 139)"][style*="border-radius:50%"]{background:#C5D3D9!important}
 .vidrio .universe [style*="solid #065A62"]{border-color:#5ED6DE!important}
 .vidrio .universe [style*="solid #7C3AED"]{border-color:#B39DFF!important}
 .vidrio .universe [style*="dashed #065A62"]{border-color:#5ED6DE!important}
 .vidrio .universe [style*="dashed #7C3AED"]{border-color:#B39DFF!important}
 .vidrio .universe [style*="dashed #94A3B8"]{border-color:#C5D3D9!important}
 /* reglas generadas a partir de los colores que usa el codigo (pasteles a cristal tintado con base oscura; textos oscuros con tono a claros) */
-.vidrio .universe [style*="background:#CFFAFE"]{background:linear-gradient(rgba(36,225,243,.22),rgba(36,225,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#D1FAE5"]{background:linear-gradient(rgba(48,232,138,.22),rgba(48,232,138,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#DBEAFE"]{background:linear-gradient(rgba(36,125,243,.22),rgba(36,125,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#DCFCE7"]{background:linear-gradient(rgba(43,236,110,.22),rgba(43,236,110,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#E0F2F3"]{background:linear-gradient(rgba(71,201,209,.22),rgba(71,201,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#E2E8F0"]{background:linear-gradient(rgba(71,130,209,.22),rgba(71,130,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#E8F4FD"]{background:linear-gradient(rgba(43,154,236,.22),rgba(43,154,236,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EDE9FE"]{background:linear-gradient(rgba(76,36,243,.22),rgba(76,36,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EEF2F6"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EFF6FF"]{background:linear-gradient(rgba(36,127,243,.22),rgba(36,127,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EFF8F9"]{background:linear-gradient(rgba(71,195,209,.22),rgba(71,195,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F0FDF4"]{background:linear-gradient(rgba(52,228,106,.22),rgba(52,228,106,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F0FDFE"]{background:linear-gradient(rgba(39,226,240,.22),rgba(39,226,240,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F1F5F9"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F1F8F9"]{background:linear-gradient(rgba(71,191,209,.22),rgba(71,191,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F3F4F6"]{background:linear-gradient(rgba(71,117,209,.22),rgba(71,117,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F5F3FF"]{background:linear-gradient(rgba(71,36,243,.22),rgba(71,36,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F8FAFC"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F8FAFF"]{background:linear-gradient(rgba(36,95,243,.22),rgba(36,95,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FAFBFC"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FDF2F8"]{background:linear-gradient(rgba(224,56,147,.22),rgba(224,56,147,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FEE2E2"]{background:linear-gradient(rgba(243,36,36,.22),rgba(243,36,36,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FEF2F2"]{background:linear-gradient(rgba(238,41,41,.22),rgba(238,41,41,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FEF3C7"]{background:linear-gradient(rgba(243,202,36,.22),rgba(243,202,36,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FFF1F2"]{background:linear-gradient(rgba(243,36,51,.22),rgba(243,36,51,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FFF5F5"]{background:linear-gradient(rgba(243,36,36,.22),rgba(243,36,36,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FFF7ED"]{background:linear-gradient(rgba(243,151,36,.22),rgba(243,151,36,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FFFBEB"]{background:linear-gradient(rgba(243,202,36,.22),rgba(243,202,36,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="color:#047857"]{color:#92FBDD!important}
-.vidrio .universe [style*="color:#059669"]{color:#92FBDA!important}
-.vidrio .universe [style*="color:#065A62"]{color:#95EFF8!important}
-.vidrio .universe [style*="color:#087A84"]{color:#95F0F8!important}
-.vidrio .universe [style*="color:#0891B2"]{color:#93E6FA!important}
-.vidrio .universe [style*="color:#0A9AA6"]{color:#95F0F8!important}
-.vidrio .universe [style*="color:#0F766E"]{color:#9BF2EB!important}
-.vidrio .universe [style*="color:#14532D"]{color:#9FEEBE!important}
-.vidrio .universe [style*="color:#155E75"]{color:#9FDBEE!important}
-.vidrio .universe [style*="color:#15803D"]{color:#9EEFBC!important}
-.vidrio .universe [style*="color:#16A34A"]{color:#9CF1BB!important}
-.vidrio .universe [style*="color:#1E3A8A"]{color:#9FB3EE!important}
-.vidrio .universe [style*="color:#5B21B6"]{color:#BE9FEE!important}
-.vidrio .universe [style*="color:#7F1D1D"]{color:#EE9F9F!important}
-.vidrio .universe [style*="color:#92400E"]{color:#F5BB98!important}
-.vidrio .universe [style*="color:#991B1B"]{color:#EE9F9F!important}
-.vidrio .universe [style*="color:#9F1239"]{color:#F39AB2!important}
-.vidrio .universe [style*="color:#B8000F"]{color:#FC919A!important}
-.vidrio .universe [style*="color:#B91C1C"]{color:#F09D9D!important}
-.vidrio .universe [style*="color:#BE185D"]{color:#F29BBF!important}
-.vidrio .universe [style*="color:#D97706"]{color:#FBCA91!important}
-.vidrio .universe [style*="color:#DC2626"]{color:#EF9E9E!important}
-.vidrio .universe [style*="color:#E2001A"]{color:#FC919D!important}
+.vidrio .universe [style*="background:#CFFAFE"],.vidrio .universe [style*="background: rgb(207, 250, 254)"]{background:linear-gradient(rgba(36,225,243,.22),rgba(36,225,243,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#D1FAE5"],.vidrio .universe [style*="background: rgb(209, 250, 229)"]{background:linear-gradient(rgba(48,232,138,.22),rgba(48,232,138,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#DBEAFE"],.vidrio .universe [style*="background: rgb(219, 234, 254)"]{background:linear-gradient(rgba(36,125,243,.22),rgba(36,125,243,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#DCFCE7"],.vidrio .universe [style*="background: rgb(220, 252, 231)"]{background:linear-gradient(rgba(43,236,110,.22),rgba(43,236,110,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#E0F2F3"],.vidrio .universe [style*="background: rgb(224, 242, 243)"]{background:linear-gradient(rgba(71,201,209,.22),rgba(71,201,209,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#E2E8F0"],.vidrio .universe [style*="background: rgb(226, 232, 240)"]{background:linear-gradient(rgba(71,130,209,.22),rgba(71,130,209,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#E8F4FD"],.vidrio .universe [style*="background: rgb(232, 244, 253)"]{background:linear-gradient(rgba(43,154,236,.22),rgba(43,154,236,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#EDE9FE"],.vidrio .universe [style*="background: rgb(237, 233, 254)"]{background:linear-gradient(rgba(76,36,243,.22),rgba(76,36,243,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#EEF2F6"],.vidrio .universe [style*="background: rgb(238, 242, 246)"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#EFF6FF"],.vidrio .universe [style*="background: rgb(239, 246, 255)"]{background:linear-gradient(rgba(36,127,243,.22),rgba(36,127,243,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#EFF8F9"],.vidrio .universe [style*="background: rgb(239, 248, 249)"]{background:linear-gradient(rgba(71,195,209,.22),rgba(71,195,209,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#F0FDF4"],.vidrio .universe [style*="background: rgb(240, 253, 244)"]{background:linear-gradient(rgba(52,228,106,.22),rgba(52,228,106,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#F0FDFE"],.vidrio .universe [style*="background: rgb(240, 253, 254)"]{background:linear-gradient(rgba(39,226,240,.22),rgba(39,226,240,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#F1F5F9"],.vidrio .universe [style*="background: rgb(241, 245, 249)"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#F1F8F9"],.vidrio .universe [style*="background: rgb(241, 248, 249)"]{background:linear-gradient(rgba(71,191,209,.22),rgba(71,191,209,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#F3F4F6"],.vidrio .universe [style*="background: rgb(243, 244, 246)"]{background:linear-gradient(rgba(71,117,209,.22),rgba(71,117,209,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#F5F3FF"],.vidrio .universe [style*="background: rgb(245, 243, 255)"]{background:linear-gradient(rgba(71,36,243,.22),rgba(71,36,243,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#F8FAFC"],.vidrio .universe [style*="background: rgb(248, 250, 252)"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#F8FAFF"],.vidrio .universe [style*="background: rgb(248, 250, 255)"]{background:linear-gradient(rgba(36,95,243,.22),rgba(36,95,243,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#FAFBFC"],.vidrio .universe [style*="background: rgb(250, 251, 252)"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#FDF2F8"],.vidrio .universe [style*="background: rgb(253, 242, 248)"]{background:linear-gradient(rgba(224,56,147,.22),rgba(224,56,147,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#FEE2E2"],.vidrio .universe [style*="background: rgb(254, 226, 226)"]{background:linear-gradient(rgba(243,36,36,.22),rgba(243,36,36,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#FEF2F2"],.vidrio .universe [style*="background: rgb(254, 242, 242)"]{background:linear-gradient(rgba(238,41,41,.22),rgba(238,41,41,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#FEF3C7"],.vidrio .universe [style*="background: rgb(254, 243, 199)"]{background:linear-gradient(rgba(243,202,36,.22),rgba(243,202,36,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#FFF1F2"],.vidrio .universe [style*="background: rgb(255, 241, 242)"]{background:linear-gradient(rgba(243,36,51,.22),rgba(243,36,51,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#FFF5F5"],.vidrio .universe [style*="background: rgb(255, 245, 245)"]{background:linear-gradient(rgba(243,36,36,.22),rgba(243,36,36,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#FFF7ED"],.vidrio .universe [style*="background: rgb(255, 247, 237)"]{background:linear-gradient(rgba(243,151,36,.22),rgba(243,151,36,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="background:#FFFBEB"],.vidrio .universe [style*="background: rgb(255, 251, 235)"]{background:linear-gradient(rgba(243,202,36,.22),rgba(243,202,36,.22)),rgba(3,24,30,.80)!important}
+.vidrio .universe [style*="color:#047857"],.vidrio .universe [style*="color: rgb(4, 120, 87)"]{color:#92FBDD!important}
+.vidrio .universe [style*="color:#059669"],.vidrio .universe [style*="color: rgb(5, 150, 105)"]{color:#92FBDA!important}
+.vidrio .universe [style*="color:#065A62"],.vidrio .universe [style*="color: rgb(6, 90, 98)"]{color:#95EFF8!important}
+.vidrio .universe [style*="color:#087A84"],.vidrio .universe [style*="color: rgb(8, 122, 132)"]{color:#95F0F8!important}
+.vidrio .universe [style*="color:#0891B2"],.vidrio .universe [style*="color: rgb(8, 145, 178)"]{color:#93E6FA!important}
+.vidrio .universe [style*="color:#0A9AA6"],.vidrio .universe [style*="color: rgb(10, 154, 166)"]{color:#95F0F8!important}
+.vidrio .universe [style*="color:#0F766E"],.vidrio .universe [style*="color: rgb(15, 118, 110)"]{color:#9BF2EB!important}
+.vidrio .universe [style*="color:#14532D"],.vidrio .universe [style*="color: rgb(20, 83, 45)"]{color:#9FEEBE!important}
+.vidrio .universe [style*="color:#155E75"],.vidrio .universe [style*="color: rgb(21, 94, 117)"]{color:#9FDBEE!important}
+.vidrio .universe [style*="color:#15803D"],.vidrio .universe [style*="color: rgb(21, 128, 61)"]{color:#9EEFBC!important}
+.vidrio .universe [style*="color:#16A34A"],.vidrio .universe [style*="color: rgb(22, 163, 74)"]{color:#9CF1BB!important}
+.vidrio .universe [style*="color:#1E3A8A"],.vidrio .universe [style*="color: rgb(30, 58, 138)"]{color:#9FB3EE!important}
+.vidrio .universe [style*="color:#5B21B6"],.vidrio .universe [style*="color: rgb(91, 33, 182)"]{color:#BE9FEE!important}
+.vidrio .universe [style*="color:#7F1D1D"],.vidrio .universe [style*="color: rgb(127, 29, 29)"]{color:#EE9F9F!important}
+.vidrio .universe [style*="color:#92400E"],.vidrio .universe [style*="color: rgb(146, 64, 14)"]{color:#F5BB98!important}
+.vidrio .universe [style*="color:#991B1B"],.vidrio .universe [style*="color: rgb(153, 27, 27)"]{color:#EE9F9F!important}
+.vidrio .universe [style*="color:#9F1239"],.vidrio .universe [style*="color: rgb(159, 18, 57)"]{color:#F39AB2!important}
+.vidrio .universe [style*="color:#B8000F"],.vidrio .universe [style*="color: rgb(184, 0, 15)"]{color:#FC919A!important}
+.vidrio .universe [style*="color:#B91C1C"],.vidrio .universe [style*="color: rgb(185, 28, 28)"]{color:#F09D9D!important}
+.vidrio .universe [style*="color:#BE185D"],.vidrio .universe [style*="color: rgb(190, 24, 93)"]{color:#F29BBF!important}
+.vidrio .universe [style*="color:#D97706"],.vidrio .universe [style*="color: rgb(217, 119, 6)"]{color:#FBCA91!important}
+.vidrio .universe [style*="color:#DC2626"],.vidrio .universe [style*="color: rgb(220, 38, 38)"]{color:#EF9E9E!important}
+.vidrio .universe [style*="color:#E2001A"],.vidrio .universe [style*="color: rgb(226, 0, 26)"]{color:#FC919D!important}
 /* filas sueltas sobre el fondo (fuera de tarjetas) */
 .vidrio #ri-paisc-root>div[style*="justify-content:space-between"]{background:var(--cristal);border:1px solid var(--cristal-borde);border-radius:16px;padding:8px 14px;
   -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
