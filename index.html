@@ -1401,7 +1401,33 @@ function alternarEstilo(){
       });
       if(redonda&&(ds.borderColor==='#fff'||ds.borderColor==='#ffffff'))ds.borderColor='rgba(7,38,44,.9)';
     });
+    /* Anillos y pasteles en estilo cristal: segmentos redondeados y separados, sin borde oscuro,
+       anillo más fino, brillo suave y un aro de luz interior */
+    if(redonda){
+      if(cfg.type==='pie')cfg.type='doughnut';
+      var esDona=cfg.type==='doughnut';
+      if(esDona){var corte=parseInt(o.cutout,10);if(isNaN(corte)||corte<70)o.cutout='72%';}
+      o.spacing=esDona?3:2;
+      ((cfg.data&&cfg.data.datasets)||[]).forEach(function(ds){
+        ds.borderWidth=esDona?0:2;
+        if(!esDona)ds.borderColor='rgba(255,255,255,.35)';
+        ds.borderRadius=esDona?9:6;
+        ds.hoverOffset=8;
+      });
+      cfg.plugins=(cfg.plugins||[]).concat([_brilloCristal]);
+    }
   }
+  var _brilloCristal={
+    id:'brilloCristal',
+    beforeDatasetsDraw:function(c){var x=c.ctx;x.save();x.shadowColor='rgba(94,214,222,.40)';x.shadowBlur=18;x.shadowOffsetY=3;},
+    afterDatasetsDraw:function(c){
+      var x=c.ctx;x.restore();
+      var m=c.getDatasetMeta(0),el=m&&m.data&&m.data[0];
+      if(!el||c.config.type!=='doughnut')return;
+      x.save();x.beginPath();x.arc(el.x,el.y,Math.max(el.innerRadius-9,4),0,Math.PI*2);
+      x.lineWidth=1;x.strokeStyle='rgba(255,255,255,.16)';x.stroke();x.restore();
+    }
+  };
 
   /* Interceptar la creación de charts para activar etiquetas solo en barras */
   var _OrigChart = Chart;
