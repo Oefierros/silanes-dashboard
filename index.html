@@ -1910,13 +1910,13 @@ function bioEnEvaluacion(d){
   return d.estado==='Evaluación'||bioEnCorreccion(d);
 }
 
-/* Estado con el que se agrupa en la dona: la corrección interna cuenta como "Evaluación" */
+/* Estado con el que se muestra en la dona y los badges: "Aprobado con error" se presenta como "Corrección interna" */
 function bioEstadoGrupo(d){
-  return bioEnCorreccion(d)?'Evaluación':d.estado;
+  return bioEnCorreccion(d)?'Corrección interna':d.estado;
 }
 
 function bioEstadoColor(e){
-  var m={'Aprobado':'#059669','Sometido':'#0891B2','Planeado':'#7C3AED','Cancelado':'#DC2626','Desistido':'#D97706','Sin estado':'#94A3B8','Evaluación':'#0A9AA6','Aprobado con error':'#D97706'};
+  var m={'Aprobado':'#059669','Sometido':'#0891B2','Planeado':'#7C3AED','Cancelado':'#DC2626','Desistido':'#D97706','Sin estado':'#94A3B8','Evaluación':'#0A9AA6','Aprobado con error':'#D97706','Corrección interna':'#D97706'};
   return m[e]||'#94A3B8';
 }
 
@@ -2016,9 +2016,6 @@ function renderBIODonut(){
   } else {
     var est=BIO_EST_DRILL;
     var delEst=BIOF.filter(function(d){return bioEstadoGrupo(d)===est;});
-    var nCorr=delEst.filter(bioEnCorreccion).length;
-    /* En "Evaluación" se aclara cuántos lotes son primera vez y cuántos corrección interna */
-    var detalleEval=(est==='Evaluación'&&nCorr)?' ('+(delEst.length-nCorr)+' primera vez + '+nCorr+' corrección interna)':'';
     var baseColor=bioEstadoColor(est);
     var pm={};delEst.forEach(function(d){pm[d.producto]=(pm[d.producto]||0)+1;});
     var prods=Object.keys(pm).sort(function(a,b){return pm[b]-pm[a];});
@@ -2028,7 +2025,7 @@ function renderBIODonut(){
       canvasId:'bio-donut',legendId:'bio-donut-leg',headerId:'bio-est-drill-hdr',
       labels:prods,values:vals,colors:colors,centerSub:'lotes',
       headerHtml:'<button onclick="BIO_EST_DRILL=null;renderBIODonut();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Volver</button>'+
-        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+est+' · '+delEst.length+' lotes'+detalleEval+'</span>',
+        '<span style="margin-left:10px;font-size:12px;font-weight:800;color:'+baseColor+'">'+est+' · '+delEst.length+' lotes</span>',
       tooltipSuffix:function(l,v){return l+': '+v+(v>1?' lotes':' lote');},
       onSegmentClick:function(){BIO_EST_DRILL=null;renderBIODonut();},
       legendClickable:false
@@ -2421,6 +2418,8 @@ function renderBIOCoA(){
 
 function bioBadgeEstado(e){
   var c=bioEstadoColor(e);
+  /* "Aprobado con error" se muestra como corrección interna (el trámite sigue abierto) */
+  if(e==='Aprobado con error')return'<span class="badge" style="background:'+c+'22;color:'+c+'" title="Estado en Smartsheet: Aprobado con error">Corrección interna</span>';
   return'<span class="badge" style="background:'+c+'22;color:'+c+'">'+e+'</span>';
 }
 
