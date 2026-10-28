@@ -176,177 +176,58 @@ tr:hover td{background:#F1F8F9}
 .ms-head button{flex:1;font-size:10px;padding:4px;border-radius:5px;border:1px solid #E2E8F0;background:#F8FAFC;color:#475569;cursor:pointer;font-weight:700}
 .ms-head button:hover{background:#E0F2F3;color:#065A62;border-color:#087A84}
 
-/* ══ TEMA CRISTAL (liquid glass) ══════════════════════════════════════════
+/* ══ TEMA CRISTAL (liquid glass claro) ════════════════════════════════════
    Se activa con la clase "vidrio" en <body> (botón "Cristal / Clásico" del encabezado; la
    preferencia se guarda en localStorage). Para quitarlo del todo: borrar este bloque y el
    script marcado "TEMA CRISTAL". Con el botón en "Clásico" la página se ve como antes.
-   Idea: cristal oscuro ahumado (teal) sobre un fondo claro y luminoso, esquinas muy redondeadas,
-   borde de luz y desenfoque. Las tablas usan un fondo casi sólido para leerse bien.
-   Los colores escritos en línea por el JavaScript se reasignan abajo con selectores [style*=...];
-   los de las gráficas se adaptan en el interceptor de Chart (función adaptaVidrio). */
+   Idea: misma paleta y textos oscuros del estilo clásico, pero con tarjetas de vidrio esmerilado
+   (blanco translúcido, desenfoque, borde de luz y sombra suave) sobre un fondo con degradados tenues.
+   Las tablas llevan un fondo casi sólido para leerse bien. */
 body.vidrio{
-  --cristal:rgba(3,24,30,.72);--cristal-borde:rgba(255,255,255,.26);--solido:rgba(4,26,32,.95);
-  --txt:#EAF4F5;--txt-suave:rgba(234,244,245,.68);--acento:#5ED6DE;
-  color:var(--txt);min-height:100vh;
+  --vidrio:rgba(255,255,255,.62);--vidrio-borde:rgba(255,255,255,.90);--vidrio-sombra:0 8px 28px rgba(6,90,98,.10),0 1px 3px rgba(15,23,42,.05);
+  min-height:100vh;
   background:
-    repeating-linear-gradient(90deg,transparent 0,transparent 24.6%,rgba(255,255,255,.30) 24.6%,rgba(255,255,255,.30) 25%),
-    radial-gradient(900px 540px at 10% -8%,rgba(10,154,166,.42),transparent 62%),
-    radial-gradient(760px 560px at 96% 6%,rgba(255,255,255,.95),transparent 55%),
-    radial-gradient(900px 700px at 72% 108%,rgba(8,122,132,.34),transparent 62%),
-    linear-gradient(135deg,#E9F5F6 0%,#D3E9EB 46%,#F3EEE4 100%);
+    radial-gradient(900px 520px at 6% -6%,rgba(10,154,166,.24),transparent 60%),
+    radial-gradient(800px 560px at 98% 2%,rgba(255,255,255,.95),transparent 55%),
+    radial-gradient(900px 700px at 72% 108%,rgba(226,0,26,.07),transparent 62%),
+    linear-gradient(135deg,#EAF4F5 0%,#DCEBED 50%,#F4F1EA 100%);
   background-attachment:fixed;
 }
-/* encabezado y pestañas principales */
-.vidrio .main-hdr{background:linear-gradient(135deg,rgba(6,90,98,.95),rgba(8,122,132,.88));border-radius:0 0 28px 28px;
-  box-shadow:0 12px 34px rgba(4,30,36,.32),inset 0 1px 0 rgba(255,255,255,.25)}
-.vidrio .main-tab-bar{background:transparent;border:0}
-.vidrio .main-tabs{background:transparent;padding:14px 22px 4px;gap:8px}
-.vidrio .main-tab{margin:0;padding:9px 20px;border-radius:999px;border:1px solid var(--cristal-borde);background:var(--cristal);color:var(--txt-suave);
-  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);transition:background .2s,color .2s,transform .15s}
-.vidrio .main-tab:hover{color:#fff;transform:translateY(-1px)}
-.vidrio .main-tab.on{background:linear-gradient(135deg,rgba(10,154,166,.95),rgba(6,90,98,.97));color:#fff;border-color:rgba(255,255,255,.45);
-  box-shadow:0 6px 20px rgba(6,90,98,.45),inset 0 -3px 0 #E2001A}
-.vidrio .cmn-itab-bar{background:transparent;border:0;padding:12px 18px 0;gap:8px}
-.vidrio .cmn-itab{margin:0;padding:9px 22px;border-radius:999px;border:1px solid var(--cristal-borde);background:var(--cristal);color:var(--txt-suave);
-  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
-.vidrio .cmn-itab:hover{color:#fff;background:var(--cristal)}
-.vidrio .cmn-itab.on{background:linear-gradient(135deg,rgba(10,154,166,.95),rgba(6,90,98,.97));color:#fff;border-color:rgba(255,255,255,.45);box-shadow:0 6px 20px rgba(6,90,98,.4)}
-/* filtros y sub-pestañas */
-.vidrio .sub-hdr{background:var(--cristal);border:1px solid var(--cristal-borde);border-radius:18px;margin:12px 18px 0;padding:9px 16px;
-  -webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%);box-shadow:0 8px 28px rgba(4,30,36,.22),inset 0 1px 0 rgba(255,255,255,.22)}
+/* encabezado: igual que el clásico, con borde de luz */
+.vidrio .main-hdr{box-shadow:0 8px 26px rgba(4,30,36,.22),inset 0 1px 0 rgba(255,255,255,.22)}
+/* barras de pestañas y filtros */
+.vidrio .sec-tabs,.vidrio .cmn-itab-bar{background:var(--vidrio);border-bottom:1px solid var(--vidrio-borde);
+  -webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
+.vidrio .cmn-itab:hover,.vidrio .cmn-itab.on{background:rgba(240,253,254,.7)}
 /* el desenfoque crea capas de apilado: la barra de filtros debe quedar por encima de lo que le sigue
    para que sus listas desplegables no se tapen, y la tarjeta con el cursor encima sube para que su globo de ayuda se vea */
-.vidrio .sub-hdr{position:relative;z-index:60}
+.vidrio .sub-hdr{position:relative;z-index:60;box-shadow:0 6px 18px rgba(4,30,36,.18),inset 0 1px 0 rgba(255,255,255,.18)}
 .vidrio .card:hover,.vidrio .kpi:hover{position:relative;z-index:40}
-.vidrio .ms-panel{z-index:300;background:#05222A;box-shadow:0 14px 40px rgba(2,16,20,.55)}
-.vidrio .sub-hdr select{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.30)}
-.vidrio .sub-hdr .info{color:#BFF3F6}
-.vidrio .sec-tabs{background:transparent;border:0;padding:12px 18px 2px;gap:8px}
-.vidrio .sec-tab{margin:0;padding:8px 18px;border-radius:999px;border:1px solid var(--cristal-borde);background:var(--cristal);color:var(--txt-suave);
-  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);transition:background .2s,color .2s,transform .15s}
-.vidrio .sec-tab:hover{color:#fff;transform:translateY(-1px)}
-.vidrio .sec-tab.on{background:linear-gradient(135deg,rgba(10,154,166,.92),rgba(6,90,98,.95));color:#fff;border-color:rgba(255,255,255,.4);box-shadow:0 6px 18px rgba(6,90,98,.42)}
-/* tarjetas de cristal */
+.vidrio .ms-panel{z-index:300}
+/* tarjetas de vidrio esmerilado */
 .vidrio .card,.vidrio .kpi,.vidrio .cmp-card,.vidrio .sm-card,.vidrio .tgl-bar,.vidrio .uc-item{
-  background:linear-gradient(150deg,rgba(255,255,255,.16),rgba(255,255,255,.03) 42%),var(--cristal);
-  -webkit-backdrop-filter:blur(20px) saturate(160%);backdrop-filter:blur(20px) saturate(160%);
-  border:1px solid var(--cristal-borde);color:var(--txt);
-  box-shadow:0 12px 36px rgba(4,30,36,.30),inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(255,255,255,.05)}
-.vidrio .card,.vidrio .sm-card{border-radius:24px}
-.vidrio .kpi,.vidrio .cmp-card,.vidrio .tgl-bar{border-radius:20px}
-.vidrio .uc-item{border-radius:16px}
-.vidrio .kpi{border-top-width:3px}
-.vidrio .cmp-card.clk:hover{background:linear-gradient(150deg,rgba(255,255,255,.22),rgba(255,255,255,.06) 42%),var(--cristal)}
-.vidrio .kpi:hover,.vidrio .card:hover{box-shadow:0 16px 44px rgba(4,30,36,.38),inset 0 1px 0 rgba(255,255,255,.32)}
-.vidrio .ct,.vidrio .kl,.vidrio .ks,.vidrio .cmp-card .cl,.vidrio .cmp-card .cs{color:var(--txt-suave)}
-.vidrio .kv{filter:brightness(1.25)}
-.vidrio .pb,.vidrio .donut-leg-bar,.vidrio .kb,.vidrio .cmp-card .cbar{background:rgba(255,255,255,.16)}
-.vidrio .donut-leg-item{background:rgba(255,255,255,.07)}
-.vidrio .donut-leg-item.clk:hover{background:rgba(255,255,255,.14)}
-.vidrio .donut-leg-name{color:var(--txt)}.vidrio .donut-leg-p{color:var(--txt-suave)}
-.vidrio .help-ico{background:rgba(255,255,255,.28)}
+  background:linear-gradient(150deg,rgba(255,255,255,.80),rgba(255,255,255,.42)),var(--vidrio);
+  -webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);
+  border:1px solid var(--vidrio-borde);
+  box-shadow:var(--vidrio-sombra),inset 0 1px 0 rgba(255,255,255,.95)}
+.vidrio .card,.vidrio .sm-card{border-radius:20px}
+.vidrio .kpi,.vidrio .cmp-card,.vidrio .tgl-bar{border-radius:16px}
+.vidrio .uc-item{border-radius:14px}
+.vidrio .kpi{border-top-width:4px}
+.vidrio .kpi:hover,.vidrio .card:hover{box-shadow:0 12px 34px rgba(6,90,98,.16),inset 0 1px 0 rgba(255,255,255,.95)}
+.vidrio .donut-leg-item{background:rgba(255,255,255,.55)}
+.vidrio .donut-leg-item.clk:hover{background:rgba(239,246,255,.85)}
 /* tablas: casi sólidas para que se lean bien */
-.vidrio .tw{background:var(--solido);border:1px solid var(--cristal-borde);border-radius:18px}
-.vidrio th{background:#0B3A42;color:#A7E3E8;border-bottom:1px solid rgba(255,255,255,.14)}
-.vidrio th:hover{background:#10505A;color:#fff}
-.vidrio td{color:#E6F2F3;border-bottom:1px solid rgba(255,255,255,.07)}
-.vidrio tbody tr:nth-child(even) td{background:rgba(255,255,255,.035)}
-.vidrio tr:hover td{background:rgba(10,154,166,.20)}
+.vidrio .tw{background:rgba(255,255,255,.90);border:1px solid var(--vidrio-borde);border-radius:14px}
+.vidrio th{background:rgba(241,245,249,.96)}
+/* paneles internos de color claro que escribe el JavaScript en línea: se vuelven translúcidos */
+.vidrio .universe [style*="background:#F8FAFC"],.vidrio .universe [style*="background: rgb(248, 250, 252)"]{background:rgba(255,255,255,.55)!important}
 /* controles */
-.vidrio .sf{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.26);color:#fff;border-radius:12px}
-.vidrio .sf::placeholder{color:rgba(255,255,255,.55)}
-.vidrio .sf:focus{border-color:var(--acento)}
-.vidrio .ms-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.30);border-radius:10px}
-.vidrio .ms-btn.act{background:#E2001A;border-color:#FF6B7C}
-.vidrio .ms-panel{background:var(--solido);border:1px solid var(--cristal-borde);border-radius:14px}
-.vidrio .ms-opt{color:var(--txt)}.vidrio .ms-opt:hover{background:rgba(255,255,255,.10)}
-.vidrio .ms-head{border-bottom-color:rgba(255,255,255,.12)}
-.vidrio .ms-head button{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.20);color:var(--txt)}
-/* ── colores escritos en línea por el JavaScript dentro de los universos: se reasignan para fondo oscuro ── */
-.vidrio .universe [style*="color:#0F172A"],.vidrio .universe [style*="color:#1E293B"],.vidrio .universe [style*="color:#334155"],.vidrio .universe [style*="color:#374151"],.vidrio .universe [style*="color:#475569"],.vidrio .universe [style*="color:#64748B"],.vidrio .universe [style*="color:#1F2937"],.vidrio .universe [style*="color: rgb(15, 23, 42)"],.vidrio .universe [style*="color: rgb(30, 41, 59)"],.vidrio .universe [style*="color: rgb(51, 65, 85)"],.vidrio .universe [style*="color: rgb(55, 65, 81)"],.vidrio .universe [style*="color: rgb(71, 85, 105)"],.vidrio .universe [style*="color: rgb(100, 116, 139)"],.vidrio .universe [style*="color: rgb(31, 41, 55)"]{color:var(--txt)!important}
-.vidrio .universe [style*="color:#94A3B8"],.vidrio .universe [style*="color:#CBD5E1"],.vidrio .universe [style*="color:#9CA3AF"],.vidrio .universe [style*="color: rgb(148, 163, 184)"],.vidrio .universe [style*="color: rgb(203, 213, 225)"],.vidrio .universe [style*="color: rgb(156, 163, 175)"]{color:var(--txt-suave)!important}
-.vidrio .universe [style*="color:#6B7280"],.vidrio .universe [style*="color:#4B5563"],.vidrio .universe [style*="color:#52525B"],.vidrio .universe [style*="color: rgb(107, 114, 128)"],.vidrio .universe [style*="color: rgb(75, 85, 99)"],.vidrio .universe [style*="color: rgb(82, 82, 91)"]{color:#C5D3D9!important}
-.vidrio .universe [style*="color:#16A34A"],.vidrio .universe [style*="color: rgb(22, 163, 74)"]{color:#6EE7B7!important}
-.vidrio .universe [style*="color:#E11D48"],.vidrio .universe [style*="color: rgb(225, 29, 72)"]{color:#FDA4AF!important}
-.vidrio .universe [style*="color:#065A62"],.vidrio .universe [style*="color:#087A84"],.vidrio .universe [style*="color:#0A9AA6"],.vidrio .universe [style*="color: rgb(6, 90, 98)"],.vidrio .universe [style*="color: rgb(8, 122, 132)"],.vidrio .universe [style*="color: rgb(10, 154, 166)"]{color:#5ED6DE!important}
-.vidrio .universe [style*="color:#7C3AED"],.vidrio .universe [style*="color:#5B21B6"],.vidrio .universe [style*="color: rgb(124, 58, 237)"],.vidrio .universe [style*="color: rgb(91, 33, 182)"]{color:#C4B5FD!important}
-.vidrio .universe [style*="color:#B91C1C"],.vidrio .universe [style*="color:#991B1B"],.vidrio .universe [style*="color:#DC2626"],.vidrio .universe [style*="color:#7F1D1D"],.vidrio .universe [style*="color: rgb(185, 28, 28)"],.vidrio .universe [style*="color: rgb(153, 27, 27)"],.vidrio .universe [style*="color: rgb(220, 38, 38)"],.vidrio .universe [style*="color: rgb(127, 29, 29)"]{color:#FCA5A5!important}
-.vidrio .universe [style*="color:#047857"],.vidrio .universe [style*="color:#15803D"],.vidrio .universe [style*="color:#059669"],.vidrio .universe [style*="color:#14532D"],.vidrio .universe [style*="color: rgb(4, 120, 87)"],.vidrio .universe [style*="color: rgb(21, 128, 61)"],.vidrio .universe [style*="color: rgb(5, 150, 105)"],.vidrio .universe [style*="color: rgb(20, 83, 45)"]{color:#6EE7B7!important}
-.vidrio .universe [style*="color:#92400E"],.vidrio .universe [style*="color:#D97706"],.vidrio .universe [style*="color: rgb(146, 64, 14)"],.vidrio .universe [style*="color: rgb(217, 119, 6)"]{color:#FCD34D!important}
-.vidrio .universe [style*="color:#0891B2"],.vidrio .universe [style*="color:#155E75"],.vidrio .universe [style*="color:#1E3A8A"],.vidrio .universe [style*="color:#2563EB"],.vidrio .universe [style*="color: rgb(8, 145, 178)"],.vidrio .universe [style*="color: rgb(21, 94, 117)"],.vidrio .universe [style*="color: rgb(30, 58, 138)"],.vidrio .universe [style*="color: rgb(37, 99, 235)"]{color:#93C5FD!important}
-.vidrio .universe [style*="color:#BE185D"],.vidrio .universe [style*="color:#9F1239"],.vidrio .universe [style*="color: rgb(190, 24, 93)"],.vidrio .universe [style*="color: rgb(159, 18, 57)"]{color:#F9A8D4!important}
-.vidrio .universe [style*="background:#fff"],.vidrio .universe [style*="background:#F8FAFC"],.vidrio .universe [style*="background:#F1F5F9"],.vidrio .universe [style*="background:#FAFAFA"],.vidrio .universe [style*="background:#F3F4F6"],.vidrio .universe [style*="background: rgb(255, 255, 255)"],.vidrio .universe [style*="background: rgb(248, 250, 252)"],.vidrio .universe [style*="background: rgb(241, 245, 249)"],.vidrio .universe [style*="background: rgb(250, 250, 250)"],.vidrio .universe [style*="background: rgb(243, 244, 246)"]{background:linear-gradient(rgba(255,255,255,.08),rgba(255,255,255,.08)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F0F9FA"],.vidrio .universe [style*="background:#E0F2F3"],.vidrio .universe [style*="background:#CFFAFE"],.vidrio .universe [style*="background: rgb(240, 249, 250)"],.vidrio .universe [style*="background: rgb(224, 242, 243)"],.vidrio .universe [style*="background: rgb(207, 250, 254)"]{background:linear-gradient(rgba(34,211,238,.16),rgba(34,211,238,.16)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FEF2F2"],.vidrio .universe [style*="background:#FEE2E2"],.vidrio .universe [style*="background:#FFF1F2"],.vidrio .universe [style*="background:#FFF5F5"],.vidrio .universe [style*="background: rgb(254, 242, 242)"],.vidrio .universe [style*="background: rgb(254, 226, 226)"],.vidrio .universe [style*="background: rgb(255, 241, 242)"],.vidrio .universe [style*="background: rgb(255, 245, 245)"]{background:linear-gradient(rgba(248,113,113,.20),rgba(248,113,113,.20)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F0FDF4"],.vidrio .universe [style*="background:#D1FAE5"],.vidrio .universe [style*="background:#DCFCE7"],.vidrio .universe [style*="background: rgb(240, 253, 244)"],.vidrio .universe [style*="background: rgb(209, 250, 229)"],.vidrio .universe [style*="background: rgb(220, 252, 231)"]{background:linear-gradient(rgba(52,211,153,.20),rgba(52,211,153,.20)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FEF3C7"],.vidrio .universe [style*="background:#FFFBEB"],.vidrio .universe [style*="background: rgb(254, 243, 199)"],.vidrio .universe [style*="background: rgb(255, 251, 235)"]{background:linear-gradient(rgba(251,191,36,.20),rgba(251,191,36,.20)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EDE9FE"],.vidrio .universe [style*="background:#F5F3FF"],.vidrio .universe [style*="background: rgb(237, 233, 254)"],.vidrio .universe [style*="background: rgb(245, 243, 255)"]{background:linear-gradient(rgba(167,139,250,.24),rgba(167,139,250,.24)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EFF6FF"],.vidrio .universe [style*="background:#DBEAFE"],.vidrio .universe [style*="background: rgb(239, 246, 255)"],.vidrio .universe [style*="background: rgb(219, 234, 254)"]{background:linear-gradient(rgba(96,165,250,.22),rgba(96,165,250,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="#E2E8F0"],.vidrio .universe [style*="#EEF2F6"],.vidrio .universe [style*="solid #F1F5F9"]{border-color:rgba(255,255,255,.16)!important}
-.vidrio .universe [style*="background:#065A62"],.vidrio .universe [style*="background: rgb(6, 90, 98)"]{background:#0B8A95!important}
-/* puntos, anillos y líneas de la vista de mancuerna / leyendas de la línea de tiempo */
-.vidrio .universe [style*="background:#065A62"][style*="border-radius:50%"],.vidrio .universe [style*="background: rgb(6, 90, 98)"][style*="border-radius:50%"]{background:#5ED6DE!important}
-.vidrio .universe [style*="background:#7C3AED"][style*="border-radius:50%"],.vidrio .universe [style*="background: rgb(124, 58, 237)"][style*="border-radius:50%"]{background:#B39DFF!important}
-.vidrio .universe [style*="background:#64748B"][style*="border-radius:50%"],.vidrio .universe [style*="background: rgb(100, 116, 139)"][style*="border-radius:50%"]{background:#C5D3D9!important}
-.vidrio .universe [style*="solid #065A62"]{border-color:#5ED6DE!important}
-.vidrio .universe [style*="solid #7C3AED"]{border-color:#B39DFF!important}
-.vidrio .universe [style*="dashed #065A62"]{border-color:#5ED6DE!important}
-.vidrio .universe [style*="dashed #7C3AED"]{border-color:#B39DFF!important}
-.vidrio .universe [style*="dashed #94A3B8"]{border-color:#C5D3D9!important}
-/* reglas generadas a partir de los colores que usa el codigo (pasteles a cristal tintado con base oscura; textos oscuros con tono a claros) */
-.vidrio .universe [style*="background:#CFFAFE"],.vidrio .universe [style*="background: rgb(207, 250, 254)"]{background:linear-gradient(rgba(36,225,243,.22),rgba(36,225,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#D1FAE5"],.vidrio .universe [style*="background: rgb(209, 250, 229)"]{background:linear-gradient(rgba(48,232,138,.22),rgba(48,232,138,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#DBEAFE"],.vidrio .universe [style*="background: rgb(219, 234, 254)"]{background:linear-gradient(rgba(36,125,243,.22),rgba(36,125,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#DCFCE7"],.vidrio .universe [style*="background: rgb(220, 252, 231)"]{background:linear-gradient(rgba(43,236,110,.22),rgba(43,236,110,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#E0F2F3"],.vidrio .universe [style*="background: rgb(224, 242, 243)"]{background:linear-gradient(rgba(71,201,209,.22),rgba(71,201,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#E2E8F0"],.vidrio .universe [style*="background: rgb(226, 232, 240)"]{background:linear-gradient(rgba(71,130,209,.22),rgba(71,130,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#E8F4FD"],.vidrio .universe [style*="background: rgb(232, 244, 253)"]{background:linear-gradient(rgba(43,154,236,.22),rgba(43,154,236,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EDE9FE"],.vidrio .universe [style*="background: rgb(237, 233, 254)"]{background:linear-gradient(rgba(76,36,243,.22),rgba(76,36,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EEF2F6"],.vidrio .universe [style*="background: rgb(238, 242, 246)"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EFF6FF"],.vidrio .universe [style*="background: rgb(239, 246, 255)"]{background:linear-gradient(rgba(36,127,243,.22),rgba(36,127,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#EFF8F9"],.vidrio .universe [style*="background: rgb(239, 248, 249)"]{background:linear-gradient(rgba(71,195,209,.22),rgba(71,195,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F0FDF4"],.vidrio .universe [style*="background: rgb(240, 253, 244)"]{background:linear-gradient(rgba(52,228,106,.22),rgba(52,228,106,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F0FDFE"],.vidrio .universe [style*="background: rgb(240, 253, 254)"]{background:linear-gradient(rgba(39,226,240,.22),rgba(39,226,240,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F1F5F9"],.vidrio .universe [style*="background: rgb(241, 245, 249)"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F1F8F9"],.vidrio .universe [style*="background: rgb(241, 248, 249)"]{background:linear-gradient(rgba(71,191,209,.22),rgba(71,191,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F3F4F6"],.vidrio .universe [style*="background: rgb(243, 244, 246)"]{background:linear-gradient(rgba(71,117,209,.22),rgba(71,117,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F5F3FF"],.vidrio .universe [style*="background: rgb(245, 243, 255)"]{background:linear-gradient(rgba(71,36,243,.22),rgba(71,36,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F8FAFC"],.vidrio .universe [style*="background: rgb(248, 250, 252)"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#F8FAFF"],.vidrio .universe [style*="background: rgb(248, 250, 255)"]{background:linear-gradient(rgba(36,95,243,.22),rgba(36,95,243,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FAFBFC"],.vidrio .universe [style*="background: rgb(250, 251, 252)"]{background:linear-gradient(rgba(71,140,209,.22),rgba(71,140,209,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FDF2F8"],.vidrio .universe [style*="background: rgb(253, 242, 248)"]{background:linear-gradient(rgba(224,56,147,.22),rgba(224,56,147,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FEE2E2"],.vidrio .universe [style*="background: rgb(254, 226, 226)"]{background:linear-gradient(rgba(243,36,36,.22),rgba(243,36,36,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FEF2F2"],.vidrio .universe [style*="background: rgb(254, 242, 242)"]{background:linear-gradient(rgba(238,41,41,.22),rgba(238,41,41,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FEF3C7"],.vidrio .universe [style*="background: rgb(254, 243, 199)"]{background:linear-gradient(rgba(243,202,36,.22),rgba(243,202,36,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FFF1F2"],.vidrio .universe [style*="background: rgb(255, 241, 242)"]{background:linear-gradient(rgba(243,36,51,.22),rgba(243,36,51,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FFF5F5"],.vidrio .universe [style*="background: rgb(255, 245, 245)"]{background:linear-gradient(rgba(243,36,36,.22),rgba(243,36,36,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FFF7ED"],.vidrio .universe [style*="background: rgb(255, 247, 237)"]{background:linear-gradient(rgba(243,151,36,.22),rgba(243,151,36,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="background:#FFFBEB"],.vidrio .universe [style*="background: rgb(255, 251, 235)"]{background:linear-gradient(rgba(243,202,36,.22),rgba(243,202,36,.22)),rgba(3,24,30,.80)!important}
-.vidrio .universe [style*="color:#047857"],.vidrio .universe [style*="color: rgb(4, 120, 87)"]{color:#92FBDD!important}
-.vidrio .universe [style*="color:#059669"],.vidrio .universe [style*="color: rgb(5, 150, 105)"]{color:#92FBDA!important}
-.vidrio .universe [style*="color:#065A62"],.vidrio .universe [style*="color: rgb(6, 90, 98)"]{color:#95EFF8!important}
-.vidrio .universe [style*="color:#087A84"],.vidrio .universe [style*="color: rgb(8, 122, 132)"]{color:#95F0F8!important}
-.vidrio .universe [style*="color:#0891B2"],.vidrio .universe [style*="color: rgb(8, 145, 178)"]{color:#93E6FA!important}
-.vidrio .universe [style*="color:#0A9AA6"],.vidrio .universe [style*="color: rgb(10, 154, 166)"]{color:#95F0F8!important}
-.vidrio .universe [style*="color:#0F766E"],.vidrio .universe [style*="color: rgb(15, 118, 110)"]{color:#9BF2EB!important}
-.vidrio .universe [style*="color:#14532D"],.vidrio .universe [style*="color: rgb(20, 83, 45)"]{color:#9FEEBE!important}
-.vidrio .universe [style*="color:#155E75"],.vidrio .universe [style*="color: rgb(21, 94, 117)"]{color:#9FDBEE!important}
-.vidrio .universe [style*="color:#15803D"],.vidrio .universe [style*="color: rgb(21, 128, 61)"]{color:#9EEFBC!important}
-.vidrio .universe [style*="color:#16A34A"],.vidrio .universe [style*="color: rgb(22, 163, 74)"]{color:#9CF1BB!important}
-.vidrio .universe [style*="color:#1E3A8A"],.vidrio .universe [style*="color: rgb(30, 58, 138)"]{color:#9FB3EE!important}
-.vidrio .universe [style*="color:#5B21B6"],.vidrio .universe [style*="color: rgb(91, 33, 182)"]{color:#BE9FEE!important}
-.vidrio .universe [style*="color:#7F1D1D"],.vidrio .universe [style*="color: rgb(127, 29, 29)"]{color:#EE9F9F!important}
-.vidrio .universe [style*="color:#92400E"],.vidrio .universe [style*="color: rgb(146, 64, 14)"]{color:#F5BB98!important}
-.vidrio .universe [style*="color:#991B1B"],.vidrio .universe [style*="color: rgb(153, 27, 27)"]{color:#EE9F9F!important}
-.vidrio .universe [style*="color:#9F1239"],.vidrio .universe [style*="color: rgb(159, 18, 57)"]{color:#F39AB2!important}
-.vidrio .universe [style*="color:#B8000F"],.vidrio .universe [style*="color: rgb(184, 0, 15)"]{color:#FC919A!important}
-.vidrio .universe [style*="color:#B91C1C"],.vidrio .universe [style*="color: rgb(185, 28, 28)"]{color:#F09D9D!important}
-.vidrio .universe [style*="color:#BE185D"],.vidrio .universe [style*="color: rgb(190, 24, 93)"]{color:#F29BBF!important}
-.vidrio .universe [style*="color:#D97706"],.vidrio .universe [style*="color: rgb(217, 119, 6)"]{color:#FBCA91!important}
-.vidrio .universe [style*="color:#DC2626"],.vidrio .universe [style*="color: rgb(220, 38, 38)"]{color:#EF9E9E!important}
-.vidrio .universe [style*="color:#E2001A"],.vidrio .universe [style*="color: rgb(226, 0, 26)"]{color:#FC919D!important}
+.vidrio .sf{background:rgba(255,255,255,.80);border-radius:12px}
+.vidrio .ms-btn{border-radius:10px}
+.vidrio .ms-panel{border-radius:14px;box-shadow:0 14px 40px rgba(4,30,36,.30)}
 /* filas sueltas sobre el fondo (fuera de tarjetas) */
-.vidrio #ri-paisc-root>div[style*="justify-content:space-between"]{background:var(--cristal);border:1px solid var(--cristal-borde);border-radius:16px;padding:8px 14px;
+.vidrio #ri-paisc-root>div[style*="justify-content:space-between"]{background:var(--vidrio);border:1px solid var(--vidrio-borde);border-radius:14px;padding:8px 14px;
   -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 /* interruptor de estilo del encabezado */
 #btn-estilo{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
@@ -1374,41 +1255,12 @@ function alternarEstilo(){
     }catch(e){ return null; }
   }
 
-  /* ── TEMA CRISTAL: adapta a fondo oscuro los colores de las gráficas (texto, rejillas y rellenos oscuros) ── */
-  function _hexRgb(c){var m=/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(c||'');if(!m)return null;var h=m[1];if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
-  function _rgbHsl(r,g,b){r/=255;g/=255;b/=255;var mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,h=0,s=0;if(mx!==mn){var d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h*=60;}return [h,s,l];}
-  function _hslHex(h,s,l){var c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2,r=0,g=0,b=0;
-    if(h<60){r=c;g=x;}else if(h<120){r=x;g=c;}else if(h<180){g=c;b=x;}else if(h<240){g=x;b=c;}else if(h<300){r=x;b=c;}else{r=c;b=x;}
-    return '#'+[r,g,b].map(function(v){return ('0'+Math.round((v+m)*255).toString(16)).slice(-2);}).join('');}
-  /* rol: 'texto' (oscuro → claro), 'rejilla' (muy claro → blanco translúcido), 'relleno' (oscuro → más luminoso) */
-  function _recolor(c,rol){
-    if(typeof c!=='string')return c;
-    var rgb=_hexRgb(c);if(!rgb)return c;
-    var hsl=_rgbHsl(rgb[0],rgb[1],rgb[2]),L=hsl[2];
-    if(rol==='texto'){return L<.55?'#E6F2F3':(L<.8?'rgba(230,242,243,.68)':c);}
-    if(rol==='rejilla'){return L>.8?'rgba(255,255,255,.10)':c;}
-    return L<.36?_hslHex(hsl[0],Math.min(hsl[1],.72),.60):c;
-  }
-  function _recolorLista(v,rol){return Array.isArray(v)?v.map(function(x){return _recolor(x,rol);}):_recolor(v,rol);}
+  /* ── TEMA CRISTAL: anillos y pasteles con aspecto de vidrio (los demás colores se dejan como en el clásico) ── */
   function adaptaVidrio(cfg){
     if(!vidrioOn()||!cfg)return;
-    var o=cfg.options=cfg.options||{}, sc=o.scales||{};
-    Object.keys(sc).forEach(function(k){
-      var e=sc[k]||{};
-      if(e.ticks&&e.ticks.color)e.ticks.color=_recolor(e.ticks.color,'texto');
-      if(e.grid&&e.grid.color)e.grid.color=_recolor(e.grid.color,'rejilla');
-      if(e.title&&e.title.color)e.title.color=_recolor(e.title.color,'texto');
-    });
-    var lg=o.plugins&&o.plugins.legend&&o.plugins.legend.labels;
-    if(lg&&lg.color)lg.color=_recolor(lg.color,'texto');
+    var o=cfg.options=cfg.options||{};
     var redonda=cfg.type==='doughnut'||cfg.type==='pie'||cfg.type==='polarArea';
-    ((cfg.data&&cfg.data.datasets)||[]).forEach(function(ds){
-      ['backgroundColor','borderColor','pointBackgroundColor','hoverBackgroundColor'].forEach(function(k){
-        if(ds[k]!==undefined)ds[k]=_recolorLista(ds[k],'relleno');
-      });
-      if(redonda&&(ds.borderColor==='#fff'||ds.borderColor==='#ffffff'))ds.borderColor='rgba(7,38,44,.9)';
-    });
-    /* Anillos y pasteles en estilo cristal: segmentos redondeados y separados, sin borde oscuro,
+    /* Anillos y pasteles en estilo cristal: segmentos redondeados y separados, sin borde,
        anillo más fino, brillo suave y un aro de luz interior */
     if(redonda){
       if(cfg.type==='pie')cfg.type='doughnut';
@@ -1417,7 +1269,7 @@ function alternarEstilo(){
       o.spacing=esDona?3:2;
       ((cfg.data&&cfg.data.datasets)||[]).forEach(function(ds){
         ds.borderWidth=esDona?0:2;
-        if(!esDona)ds.borderColor='rgba(255,255,255,.35)';
+        if(!esDona)ds.borderColor='rgba(255,255,255,.7)';
         ds.borderRadius=esDona?9:6;
         ds.hoverOffset=8;
       });
@@ -1426,13 +1278,13 @@ function alternarEstilo(){
   }
   var _brilloCristal={
     id:'brilloCristal',
-    beforeDatasetsDraw:function(c){var x=c.ctx;x.save();x.shadowColor='rgba(94,214,222,.40)';x.shadowBlur=18;x.shadowOffsetY=3;},
+    beforeDatasetsDraw:function(c){var x=c.ctx;x.save();x.shadowColor='rgba(8,122,132,.28)';x.shadowBlur=14;x.shadowOffsetY=3;},
     afterDatasetsDraw:function(c){
       var x=c.ctx;x.restore();
       var m=c.getDatasetMeta(0),el=m&&m.data&&m.data[0];
       if(!el||c.config.type!=='doughnut')return;
       x.save();x.beginPath();x.arc(el.x,el.y,Math.max(el.innerRadius-9,4),0,Math.PI*2);
-      x.lineWidth=1;x.strokeStyle='rgba(255,255,255,.16)';x.stroke();x.restore();
+      x.lineWidth=1;x.strokeStyle='rgba(8,122,132,.18)';x.stroke();x.restore();
     }
   };
 
@@ -1486,10 +1338,7 @@ function alternarEstilo(){
             /* Agrupada vertical: la etiqueta va arriba, el límite es el ancho de la barra */
             return g.grosor>anchoTxt*0.75;
           },
-          color: function(context){
-            var cv=context.chart.canvas;
-            return stacked?'#fff':((cv&&cv.closest&&cv.closest('.vidrio'))?'#EAF4F5':'#334155');
-          },
+          color: stacked?'#fff':'#334155',
           anchor: stacked ? 'center' : 'end',
           align: stacked ? 'center' : 'end',
           offset: stacked ? 0 : 3,
@@ -1519,7 +1368,7 @@ function alternarEstilo(){
               if(!area)return;
               ctx2.save();
               ctx2.font='bold 10px system-ui,-apple-system,Segoe UI,sans-serif';
-              ctx2.fillStyle=vidrioOn()?'#F4FAFB':'#0F172A';
+              ctx2.fillStyle='#0F172A';
               ctx2.textAlign='center';
               ctx2.textBaseline='bottom';
               for(i=0;i<chart.data.labels.length;i++){
@@ -1558,7 +1407,6 @@ function alternarEstilo(){
   /* Preservar propiedades estáticas de Chart */
   for(var k in _OrigChart){ if(_OrigChart.hasOwnProperty(k)) window.Chart[k]=_OrigChart[k]; }
   window.Chart.defaults = _OrigChart.defaults;
-  if(vidrioOn()){_OrigChart.defaults.color='#E6F2F3';_OrigChart.defaults.borderColor='rgba(255,255,255,.12)';}
   window.Chart.register = function(){ return _OrigChart.register.apply(_OrigChart, arguments); };
 })();
 
@@ -1653,11 +1501,10 @@ var _donutCenterPlugin={
     ctx.save();
     ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.font='900 28px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-    var vid=chart.canvas&&chart.canvas.closest&&chart.canvas.closest('.vidrio');
-    ctx.fillStyle=vid?'#F4FAFB':'#0F172A';
+    ctx.fillStyle='#0F172A';
     ctx.fillText(total,cx,cy-10);
     ctx.font='600 11px -apple-system,sans-serif';
-    ctx.fillStyle=vid?'rgba(234,244,245,.7)':'#94A3B8';
+    ctx.fillStyle='#94A3B8';
     ctx.fillText(chart._centerSub||'total',cx,cy+13);
     ctx.restore();
   }
@@ -1695,7 +1542,7 @@ function renderDonutConLeyenda(opts){
   var ctx=canvas.getContext('2d');
   var chart=new Chart(ctx,{type:'doughnut',
     plugins:[_donutCenterPlugin],
-    data:{labels:labels,datasets:[{data:values,backgroundColor:colors,borderWidth:3,borderColor:(canvas.closest&&canvas.closest('.vidrio'))?'rgba(7,38,44,.9)':'#fff',hoverOffset:10,hoverBorderWidth:0}]},
+    data:{labels:labels,datasets:[{data:values,backgroundColor:colors,borderWidth:3,borderColor:'#fff',hoverOffset:10,hoverBorderWidth:0}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:opts.cutout||'58%',
       onClick:onSeg?function(evt,els){if(els&&els.length)onSeg(labels[els[0].index],els[0].index);}:undefined,
       onHover:onSeg?function(evt,els){evt.native.target.style.cursor=els&&els.length?'pointer':'default';}:undefined,
