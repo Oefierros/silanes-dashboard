@@ -1289,6 +1289,9 @@ function alternarEstilo(){
      esquinas más redondeadas y sombra suave. Los colores y datos no cambian. */
   function vidrioBarras(cfg,o){
     var horiz=o.indexAxis==='y';
+    /* Chart.js no sabe interpolar degradados al animar el color: las barras salían casi transparentes
+       al pasar el cursor. Se desactiva solo la animación de color (el crecimiento de las barras sigue). */
+    o.animations=Object.assign({},o.animations,{colors:false});
     var planos={};   /* color liso de cada serie, para que la leyenda no use el degradado */
     ((cfg.data&&cfg.data.datasets)||[]).forEach(function(ds,i){
       if(ds.type&&ds.type!=='bar')return;   /* series de línea u otro tipo dentro de una gráfica de barras */
