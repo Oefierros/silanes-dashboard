@@ -1277,40 +1277,12 @@ function alternarEstilo(){
       cfg.plugins=(cfg.plugins||[]).concat([_brilloCristal]);
     }
   }
-  /* Convierte "#hex" o "rgb(a)" en [r,g,b]; null si no se puede interpretar (entonces el color no se toca) */
-  function _colorRgb(c){
-    if(typeof c!=='string')return null;
-    var m=/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(c);
-    if(m){var h=m[1];if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
-    m=/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(c);
-    return m?[+m[1],+m[2],+m[3]]:null;
-  }
-  /* Barras con aspecto de vidrio: degradado (punta más clara → base con el color), borde de luz,
-     esquinas más redondeadas y sombra suave. Los colores y datos no cambian. */
+  /* Barras con aspecto de vidrio: el color de cada barra no se toca; encima se dibuja un reflejo
+     (brillo blanco que se desvanece hacia abajo, con la geometría real de la barra en cada cuadro),
+     y se agregan borde de luz, esquinas más redondeadas y una sombra suave. */
   function vidrioBarras(cfg,o){
-    var horiz=o.indexAxis==='y';
-    /* Chart.js no sabe interpolar degradados al animar el color: las barras salían casi transparentes
-       al pasar el cursor. Se desactiva solo la animación de color (el crecimiento de las barras sigue). */
-    o.animations=Object.assign({},o.animations,{colors:false});
-    var planos={};   /* color liso de cada serie, para que la leyenda no use el degradado */
-    ((cfg.data&&cfg.data.datasets)||[]).forEach(function(ds,i){
+    ((cfg.data&&cfg.data.datasets)||[]).forEach(function(ds){
       if(ds.type&&ds.type!=='bar')return;   /* series de línea u otro tipo dentro de una gráfica de barras */
-      var orig=ds.backgroundColor;
-      if(orig!==undefined&&typeof orig!=='function'){
-        planos[i]=Array.isArray(orig)?orig[0]:orig;
-        ds.backgroundColor=function(c){
-          var base=Array.isArray(orig)?orig[c.dataIndex]:orig;
-          var rgb=_colorRgb(base),el=c.element;
-          if(!rgb||!el)return base===undefined?orig:base;
-          var p=el.getProps(['x','y','base'],true);
-          if(!isFinite(p.x)||!isFinite(p.y)||!isFinite(p.base))return base;
-          var g=c.chart.ctx.createLinearGradient(horiz?p.x:0,horiz?0:p.y,horiz?p.base:0,horiz?0:p.base);
-          var claro=rgb.map(function(v){return Math.round(v+(255-v)*.38);});
-          g.addColorStop(0,'rgba('+claro.join(',')+',.96)');
-          g.addColorStop(1,'rgba('+rgb.join(',')+',.88)');
-          return g;
-        };
-      }
       if(ds.borderColor===undefined)ds.borderColor='rgba(255,255,255,.80)';
       if(!ds.borderWidth)ds.borderWidth=1;
       var r=ds.borderRadius;
@@ -1318,20 +1290,34 @@ function alternarEstilo(){
       else if(r&&typeof r==='object'){var r2={};Object.keys(r).forEach(function(k){r2[k]=Math.max(r[k],7);});ds.borderRadius=r2;}
       else if(r===undefined)ds.borderRadius=7;
     });
-    /* la leyenda muestra el color liso (un degradado sin barra de referencia sale vacío o pálido) */
-    var lg=((o.plugins=o.plugins||{}).legend=o.plugins.legend||{}).labels=(o.plugins.legend.labels||{});
-    var genera=lg.generateLabels;
-    lg.generateLabels=function(chart){
-      var items=genera?genera.call(this,chart):_OrigChart.defaults.plugins.legend.labels.generateLabels(chart);
-      items.forEach(function(it){if(planos[it.datasetIndex]!==undefined)it.fillStyle=planos[it.datasetIndex];});
-      return items;
-    };
     cfg.plugins=(cfg.plugins||[]).concat([_brilloBarras]);
   }
   var _brilloBarras={
     id:'brilloBarras',
     beforeDatasetDraw:function(c){var x=c.ctx;x.save();x.shadowColor='rgba(6,90,98,.20)';x.shadowBlur=9;x.shadowOffsetY=3;},
-    afterDatasetDraw:function(c){c.ctx.restore();}
+    afterDatasetDraw:function(c,args){
+      var x=c.ctx;x.restore();
+      var meta=args.meta;
+      if(!meta||!meta.data||c.config.type!=='bar')return;
+      var horiz=c.options.indexAxis==='y';
+      meta.data.forEach(function(el){
+        if(!el||el.skip)return;
+        var p=el.getProps(['x','y','base','width','height'],true);
+        var izq,der,arr,aba;
+        if(horiz){izq=Math.min(p.x,p.base);der=Math.max(p.x,p.base);arr=p.y-p.height/2;aba=p.y+p.height/2;}
+        else{izq=p.x-p.width/2;der=p.x+p.width/2;arr=Math.min(p.y,p.base);aba=Math.max(p.y,p.base);}
+        var w=der-izq,h=aba-arr;
+        if(!isFinite(w)||!isFinite(h)||w<2||h<2)return;
+        var rad=Math.min(7,w/2,h/2);
+        var g=x.createLinearGradient(0,arr,0,aba);
+        g.addColorStop(0,'rgba(255,255,255,.42)');
+        g.addColorStop(.55,'rgba(255,255,255,.08)');
+        g.addColorStop(1,'rgba(255,255,255,0)');
+        x.save();x.fillStyle=g;x.beginPath();
+        if(x.roundRect)x.roundRect(izq,arr,w,h,rad);else x.rect(izq,arr,w,h);
+        x.fill();x.restore();
+      });
+    }
   };
   var _brilloCristal={
     id:'brilloCristal',
