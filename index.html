@@ -354,19 +354,20 @@ body.vidrio{
 </style>
 </head>
 <body>
-<!-- TEMA CRISTAL: por defecto se muestra el estilo clásico; el cristal solo se activa con ?estilo=cristal
-     o con la preferencia guardada por el botón del encabezado (clave "estiloDashboard") -->
+<!-- TEMA CRISTAL: por defecto se muestra el estilo clásico; el cristal solo se activa si el usuario lo eligió
+     con el botón del encabezado (preferencia guardada en localStorage, clave "estiloDashboard").
+     Ya no se lee el parámetro ?estilo= de la URL, para que un enlace guardado nunca fuerce el cristal. -->
 <script>
 (function(){
   var pref=null;
-  try{var q=location.search.match(/[?&]estilo=(clasico|cristal)/);pref=q?q[1]:localStorage.getItem('estiloDashboard');}catch(e){}
+  try{pref=localStorage.getItem('estiloDashboard');}catch(e){}
   if(pref==='cristal')document.body.classList.add('vidrio');
 })();
 function vidrioOn(){return document.body.classList.contains('vidrio');}
 function alternarEstilo(){
   var nuevo=vidrioOn()?'clasico':'cristal';
   try{localStorage.setItem('estiloDashboard',nuevo);}catch(e){}
-  location.href=location.href.split('?')[0]+'?estilo='+nuevo;
+  location.href=location.href.split('?')[0];   /* recarga sin parámetros para aplicar la preferencia */
 }
 </script>
 
