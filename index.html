@@ -1056,7 +1056,8 @@ function alternarEstilo(){
         </div>
       </div>
       <div class="card">
-        <div class="ct">Lotes pendientes por producto (sin aprobados)<span class="help-ico">i</span><span class="help-tip">Solo muestra los lotes que NO están aprobados, es decir, los que todavía requieren seguimiento. Haz clic en la barra de un producto para desplegar el detalle de cada lote: número de lote, estado, si está en rezago, cuándo entró a CCAYAC/LEI y su fecha estimada de resolución.</span></div>
+        <div class="ct"><span id="bio-prod-titulo">Lotes pendientes por producto</span><span class="help-ico">i</span><span class="help-tip">Con el selector eliges qué ver: "Pendientes" son los lotes que siguen en proceso (planeados, sometidos, en evaluación o en corrección interna); "Cancelados / desistidos" son los trámites que ya terminaron sin aprobarse; "Todos" junta ambos. Los aprobados nunca se cuentan aquí. Haz clic en la barra de un producto para desplegar el detalle de cada lote: estado, rezago, ingreso del CoA a COFEPRIS y fecha estimada de resolución.</span></div>
+        <div id="bio-prod-modo" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"></div>
         <div id="bio-prod-hdr" style="display:none;margin-bottom:8px"></div>
         <div style="height:clamp(200px,28vh,300px)"><canvas id="bio-productos">Productos</canvas></div>
         <div id="bio-prod-detalle" style="margin-top:12px"></div>
@@ -1924,10 +1925,29 @@ function renderBIODonut(){
 }
 
 var BIO_PROD_SEL = null; /* producto seleccionado para ver su detalle */
+var BIO_PROD_MODO = 'pend'; /* qué lotes grafica: 'pend' (en proceso), 'cerr' (cancelados y desistidos) o 'todo' (todos menos aprobados) */
+
+/* Datos de cada modo del selector: filtro, textos y color de las barras */
+var BIO_PROD_MODOS = {
+  pend:{boton:'Pendientes',titulo:'Lotes pendientes por producto',sust:'pendiente(s)',color:'#0A9AA6',
+        pasa:function(d){return d.estado!=='Aprobado'&&d.estado!=='Cancelado'&&d.estado!=='Desistido';},vacio:'No hay lotes pendientes con este filtro.'},
+  cerr:{boton:'Cancelados / desistidos',titulo:'Lotes cancelados y desistidos por producto',sust:'cancelado(s) o desistido(s)',color:'#64748B',
+        pasa:function(d){return d.estado==='Cancelado'||d.estado==='Desistido';},vacio:'No hay lotes cancelados ni desistidos con este filtro.'},
+  todo:{boton:'Todos',titulo:'Lotes no aprobados por producto',sust:'no aprobado(s)',color:'#0A9AA6',
+        pasa:function(d){return d.estado!=='Aprobado';},vacio:'No hay lotes sin aprobar con este filtro. Todos están aprobados.'}
+};
+
+function bioProdModo(m){BIO_PROD_MODO=m;BIO_PROD_SEL=null;renderBIOProductos();}
 
 function renderBIOProductos(){
-  /* Solo lotes NO aprobados: los que todavía requieren seguimiento */
-  var pend=BIOF.filter(function(d){return d.estado!=='Aprobado';});
+  var M=BIO_PROD_MODOS[BIO_PROD_MODO];
+  /* Selector de qué lotes ver (pendientes / cancelados y desistidos / todos) */
+  setHTML('bio-prod-modo',Object.keys(BIO_PROD_MODOS).map(function(k){
+    var on=k===BIO_PROD_MODO;
+    return '<button onclick="bioProdModo(&quot;'+k+'&quot;)" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:999px;cursor:pointer;border:1px solid '+(on?'#087A84':'#CBD5E1')+';background:'+(on?'#087A84':'#fff')+';color:'+(on?'#fff':'#475569')+'">'+BIO_PROD_MODOS[k].boton+'</button>';
+  }).join(''));
+  setTC('bio-prod-titulo',M.titulo);
+  var pend=BIOF.filter(M.pasa);
   var pm={};
   pend.forEach(function(d){pm[d.producto]=(pm[d.producto]||0)+1;});
   var prods=Object.keys(pm).sort(function(a,b){return pm[b]-pm[a];});
@@ -1937,15 +1957,15 @@ function renderBIOProductos(){
 
   dc('bio-productos');
   if(!prods.length){
-    setHTML('bio-prod-detalle','<div style="padding:14px;color:#94A3B8;font-size:12px">No hay lotes pendientes con este filtro. Todos están aprobados.</div>');
+    setHTML('bio-prod-detalle','<div style="padding:14px;color:#94A3B8;font-size:12px">'+M.vacio+'</div>');
     var h0=document.getElementById('bio-prod-hdr'); if(h0){h0.style.display='none';h0.innerHTML='';}
     return;
   }
   var ctx=document.getElementById('bio-productos').getContext('2d');
   CH['bio-productos']=new Chart(ctx,{type:'bar',
-    data:{labels:prods,datasets:[{label:'Lotes pendientes',
+    data:{labels:prods,datasets:[{label:'Lotes '+M.sust,
       data:prods.map(function(p){return pm[p];}),
-      backgroundColor:prods.map(function(p){return p===BIO_PROD_SEL?'#E2001A':'#0A9AA6';}),
+      backgroundColor:prods.map(function(p){return p===BIO_PROD_SEL?'#E2001A':M.color;}),
       borderRadius:4}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
       onClick:function(evt,els){
@@ -1957,7 +1977,7 @@ function renderBIOProductos(){
       },
       onHover:function(evt,els){evt.native.target.style.cursor=els&&els.length?'pointer':'default';},
       plugins:{legend:{display:false},
-        tooltip:{callbacks:{label:function(c){return c.parsed.x+' lote(s) pendiente(s) · clic para ver detalle';}}}},
+        tooltip:{callbacks:{label:function(c){return c.parsed.x+' lote(s) '+M.sust+' · clic para ver detalle';}}}},
       scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},color:'#94A3B8',precision:0}},
               y:{grid:{display:false},ticks:{font:{size:10,weight:'bold'},color:'#374151'}}}}});
 
@@ -1965,7 +1985,7 @@ function renderBIOProductos(){
   var hdr=document.getElementById('bio-prod-hdr');
   if(!BIO_PROD_SEL){
     if(hdr){hdr.style.display='none';hdr.innerHTML='';}
-    setHTML('bio-prod-detalle','<div style="padding:10px 12px;color:#94A3B8;font-size:11px;background:#F8FAFC;border-radius:8px">👆 Haz clic en un producto para ver el detalle de sus lotes pendientes.</div>');
+    setHTML('bio-prod-detalle','<div style="padding:10px 12px;color:#94A3B8;font-size:11px;background:#F8FAFC;border-radius:8px">👆 Haz clic en un producto para ver el detalle de sus lotes.</div>');
     return;
   }
   var lotes=pend.filter(function(d){return d.producto===BIO_PROD_SEL;})
@@ -1978,7 +1998,7 @@ function renderBIOProductos(){
   if(hdr){
     hdr.style.display='block';
     hdr.innerHTML='<button onclick="BIO_PROD_SEL=null;renderBIOProductos();" style="background:#F1F5F9;border:1px solid #E2E8F0;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;color:#475569;cursor:pointer">← Ver todos</button>'+
-      '<span style="margin-left:10px;font-size:12px;font-weight:800;color:#E2001A">'+BIO_PROD_SEL+' · '+lotes.length+' lote(s) pendiente(s)</span>';
+      '<span style="margin-left:10px;font-size:12px;font-weight:800;color:#E2001A">'+BIO_PROD_SEL+' · '+lotes.length+' lote(s) '+M.sust+'</span>';
   }
   setHTML('bio-prod-detalle',
     '<div class="tw" style="max-height:280px;overflow-y:auto"><table style="font-size:11px"><thead><tr>'+
