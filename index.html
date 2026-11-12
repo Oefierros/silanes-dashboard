@@ -331,7 +331,7 @@ function alternarEstilo(){
       </div>
     </div>
     <div class="card">
-      <div class="ct">Trámites por año de plan<span class="help-ico">i</span><span class="help-tip">Agrupa los trámites por el año de su fecha planeada vigente (la Nueva fecha reprogramada, si la tiene). Cada barra apila los estatus de ese año. Al filtrar un año, solo aparece la barra de ese año.</span></div>
+      <div class="ct">Trámites por año de plan<span class="help-ico">i</span><span class="help-tip">Agrupa los trámites por el año de su fecha planeada vigente (la Nueva fecha reprogramada, si la tiene). Cada barra apila los estatus de ese año. El filtro de Años usa el año de la fecha planeada ORIGINAL: al filtrar 2026 verás en qué años quedaron los trámites que originalmente eran de 2026 (los reprogramados aparecen en el año de su nueva fecha).</span></div>
       <div style="height:clamp(240px,32vh,360px)"><canvas id="a-year">Año</canvas></div>
     </div>
     <div class="g2">
@@ -3074,8 +3074,8 @@ function renderPAGPresup(){
 ══════════════════════════════════════ */
 function initFiltrosARN(){
   if(!D||!D.records)return;
-  /* Años de fecha planeada */
-  var years={};D.records.forEach(function(d){if(d.fp)years[d.fp.slice(0,4)]=1;});
+  /* Años de la fecha planeada ORIGINAL: así, al filtrar un año se ve hacia qué años se movieron sus trámites reprogramados */
+  var years={};D.records.forEach(function(d){var f=d.fpo||d.fp;if(f)years[f.slice(0,4)]=1;});
   msBuild('a-fy','Años',Object.keys(years).sort().map(function(y){return{v:y,t:y};}),applyARN);
   /* Tipos */
   var tipos={};D.records.forEach(function(d){if(d.t)tipos[d.t]=1;});
@@ -3095,7 +3095,8 @@ function applyARN(){
   var fry=msGet('a-fry');
   AFILTERED=D.records.filter(function(d){
     if(fy.length){
-      var anioRef = d.fp ? d.fp.slice(0,4) : null;
+      var fOrig = d.fpo || d.fp;   /* año original del plan, no el de la nueva fecha */
+      var anioRef = fOrig ? fOrig.slice(0,4) : null;
       if(fy.indexOf(anioRef)<0) return false;
     }
     if(ft.length && ft.indexOf(d.t)<0)return false;
