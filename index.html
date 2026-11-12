@@ -13,7 +13,9 @@
                      → transformación de datos en vivo → arranque
 
   UNIVERSOS (pestañas principales)
-    ARN        Plan de Trabajo ARN: Asuntos Regulatorios Nacionales (trámites ante COFEPRIS)
+    ARN        Plan de Trabajo ARN: Asuntos Regulatorios Nacionales (trámites ante COFEPRIS).
+               Si un trámite trae "Nueva fecha reprogramada" en Smartsheet, esa pasa a ser su fecha planeada
+               vigente (cumplimiento, atraso, Δ días y vencimientos se miden contra ella); sin ella, cuenta normal.
     Pagos      Registro de Pagos: presupuesto, llaves de pago y su ejecución
     ARI        Plan de Trabajo ARI: Asuntos Regulatorios Internacionales (trámites por país)
     Productos Nuevos (id interno "cmn", protegido con contraseña):
@@ -321,7 +323,7 @@ function alternarEstilo(){
         <div class="g3" id="a-gauge-stats" style="gap:8px;margin-top:12px"></div>
       </div>
       <div class="card" style="display:flex;flex-direction:column">
-        <div class="ct">Cumplimiento General<span class="help-ico">i</span><span class="help-tip">Distribución de todos los trámites según su estatus de cumplimiento: A tiempo, Ingresado tarde, Atrasado, Pendiente, Reprogramado y Cancelado. Se calcula con la regla de Fecha planeada vs Fecha de ingreso.</span></div>
+        <div class="ct">Cumplimiento General<span class="help-ico">i</span><span class="help-tip">Distribución de todos los trámites según su estatus de cumplimiento: A tiempo, Ingresado tarde, Atrasado, Pendiente, Reprogramado y Cancelado. Se calcula con la regla de Fecha planeada vs Fecha de ingreso; si el trámite tiene Nueva fecha reprogramada, se mide contra esa fecha (el atraso corre hasta que se cumpla).</span></div>
         <div class="donut-wrap">
           <div class="donut-canvas-box"><canvas id="a-cumpl">Cumplimiento</canvas></div>
           <div id="a-cumpl-lg" class="donut-leg"></div>
@@ -329,7 +331,7 @@ function alternarEstilo(){
       </div>
     </div>
     <div class="card">
-      <div class="ct">Trámites por año de plan<span class="help-ico">i</span><span class="help-tip">Agrupa los trámites por el año de su Fecha planeada. Cada barra apila los estatus de ese año. Al filtrar un año, solo aparece la barra de ese año.</span></div>
+      <div class="ct">Trámites por año de plan<span class="help-ico">i</span><span class="help-tip">Agrupa los trámites por el año de su fecha planeada vigente (la Nueva fecha reprogramada, si la tiene). Cada barra apila los estatus de ese año. Al filtrar un año, solo aparece la barra de ese año.</span></div>
       <div style="height:clamp(240px,32vh,360px)"><canvas id="a-year">Año</canvas></div>
     </div>
     <div class="g2">
@@ -389,7 +391,7 @@ function alternarEstilo(){
       <span id="a-al-cnt" style="margin-left:auto;font-size:11px;font-weight:700;color:#64748B"></span>
     </div>
     <div id="a-av-at" class="card">
-      <div class="ct" style="color:#059669">✓ Trámites A Tiempo<span class="help-ico">i</span><span class="help-tip">Lista los trámites que se ingresaron en o antes de su Fecha planeada (ganaron días). La columna Δ muestra cuántos días se adelantaron.</span></div>
+      <div class="ct" style="color:#059669">✓ Trámites A Tiempo<span class="help-ico">i</span><span class="help-tip">Lista los trámites que se ingresaron en o antes de su fecha planeada vigente (la Nueva fecha reprogramada, si la tiene; ganaron días). La columna Δ muestra cuántos días se adelantaron.</span></div>
       <div class="tw"><table><thead><tr><th>#</th><th>Producto</th><th>Tipo</th><th>Responsable</th><th>F.Planeada</th><th>F.Ingreso</th><th>F.Resolución</th><th>Δ Días Plan/Ingreso</th><th>Monto</th></tr></thead><tbody id="a-bd-at"></tbody></table></div>
     </div>
     <div id="a-av-re" class="card hidden">
@@ -420,7 +422,7 @@ function alternarEstilo(){
       <div class="tw"><table><thead><tr><th>#</th><th>Producto</th><th>RS</th><th>Responsable</th><th>F.Ingreso</th><th>Plazo</th><th>Cae en rezago</th><th>F.Resolución</th><th>Estatus</th></tr></thead><tbody id="a-mrz-body"></tbody></table></div>
     </div>
     <div class="card">
-      <div class="ct" style="color:#087A84">📅 Próximos Vencimientos<span class="help-ico">i</span><span class="help-tip">Trámites cuya Fecha planeada está por llegar y aún no se ingresan, ordenados por urgencia (días restantes).</span></div>
+      <div class="ct" style="color:#087A84">📅 Próximos Vencimientos<span class="help-ico">i</span><span class="help-tip">Trámites cuya fecha planeada vigente (la reprogramada, si la tiene) está por llegar y aún no se ingresan, ordenados por urgencia (días restantes).</span></div>
       <div id="a-upcoming"></div>
     </div>
   </div>
@@ -433,7 +435,7 @@ function alternarEstilo(){
       </div>
       <div class="tw"><table><thead><tr>
         <th>Producto</th><th>RS</th><th>Tipo</th><th>Descripción</th><th>Estado</th><th>Cumplimiento</th>
-        <th>Responsable</th><th>F.Planeada</th><th>F.Ingreso</th><th>F.Resolución</th><th>Δ días</th><th>Presup.</th><th>Monto</th>
+        <th>Responsable</th><th>F.Planeada</th><th title="Nueva fecha reprogramada: si tiene fecha, el Δ y el atraso se miden contra ella">F.Reprog.</th><th>F.Ingreso</th><th>F.Resolución</th><th>Δ días</th><th>Presup.</th><th>Monto</th>
       </tr></thead><tbody id="a-det-body"></tbody></table></div>
     </div>
   </div>
@@ -1497,7 +1499,9 @@ function kpiMap(o){
 }
 
 /* ─── CONFIG COLORES ─── */
-var ARNTODAY='2026-05-29';
+/* Fecha de hoy para los días de atraso / días que faltan de ARN (antes estaba fija en 2026-05-29;
+   misma referencia que TODAY_STR, que clasifica Atrasado / Pendiente) */
+var ARNTODAY=new Date().toISOString().slice(0,10);
 var ACFG={'A tiempo':{bg:'#DCFCE7',c:'#15803D',bar:'#059669'},'Ingresado tarde':{bg:'#FEE2E2',c:'#991B1B',bar:'#DC2626'},'Atrasado':{bg:'#FEF3C7',c:'#92400E',bar:'#D97706'},'Pendiente':{bg:'#E0F2F3',c:'#087A84',bar:'#0A9AA6'},'Reprogramado':{bg:'#EDE9FE',c:'#5B21B6',bar:'#7C3AED'},'Cancelado':{bg:'#F3F4F6',c:'#374151',bar:'#6B7280'}};
 var ATCLR={'MCR':'#087A84','Prorroga':'#059669','BPF/Licencia sanitaria':'#7C3AED','Corrección interna':'#D97706','Controlados':'#DC2626','EL':'#0891B2','Aviso':'#6B7280'};
 var PTCLR={'P.Import':'#087A84','Permiso Publicidad':'#059669','MCR':'#DC2626','Protocolo':'#7C3AED','Permiso Venta':'#D97706','Prórroga':'#0891B2','Visita y Verificación':'#BE185D','Permiso Adquisición':'#65A30D','Ubicación Geo':'#6B7280','RN':'#B45309','Multa':'#7F1D1D'};
@@ -1521,6 +1525,12 @@ function rs(r){return ARESP_S[r]||r||'--';}
    Solo se marca como crítico (rojo) si el ingreso fue más de 180 días después de lo planeado;
    por debajo de ese umbral se muestra en ámbar, sin alarmar. */
 var ARN_DIAS_CRITICO=180;
+/* Celda de "fecha planeada" para las tablas de Alertas: la fecha vigente y, si fue reprogramada, la original debajo */
+function fpCelda(d,color){
+  return '<span style="color:'+(color||'#64748B')+'">'+(d.fp||'--')+'</span>'+
+    (d.fn&&d.fpo?'<div style="font-size:9px;color:#7C3AED;font-weight:700;margin-top:1px" title="Fecha planeada original">↻ orig. '+d.fpo+'</div>':'');
+}
+
 function cumplBadge(c,dif){
   if(c==='Ingresado tarde'&&dif!==null&&dif!==undefined&&!isNaN(dif)){
     var critico=dif>ARN_DIAS_CRITICO;
@@ -3392,7 +3402,7 @@ function renderARNAlertas(){
   renderARNAlView();
   renderARNMcrRezago();
   var upcoming=AFILTERED.filter(function(d){return(d.c==='Pendiente')&&d.fp&&d.fp>=ARNTODAY;}).sort(function(a,b){return a.fp>b.fp?1:-1;}).slice(0,7);
-  H('a-upcoming').innerHTML=upcoming.map(function(d){var df=dd(ARNTODAY,d.fp);var uc=df<=7?'#DC2626':df<=30?'#D97706':'#059669';return'<div class="uc-item" style="border-left-color:'+uc+'"><div style="background:'+uc+'22;border-radius:8px;width:46px;height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><div style="font-size:16px;font-weight:900;color:'+uc+';line-height:1">'+df+'</div><div style="font-size:8px;color:'+uc+';font-weight:800">DÍAS</div></div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:12px">'+d.p+'</div><div style="font-size:10px;color:#64748B;margin-top:2px">'+(d.rs||'')+' · '+(d.t||'')+'</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:10px;color:#94A3B8;font-family:monospace">'+d.fp+'</div><div style="font-size:10px;color:#64748B;margin-top:2px;font-weight:600">'+rs(d.r)+'</div></div></div>';}).join('')||'<div style="text-align:center;color:#94A3B8;padding:16px">Sin vencimientos próximos</div>';
+  H('a-upcoming').innerHTML=upcoming.map(function(d){var df=dd(ARNTODAY,d.fp);var uc=df<=7?'#DC2626':df<=30?'#D97706':'#059669';return'<div class="uc-item" style="border-left-color:'+uc+'"><div style="background:'+uc+'22;border-radius:8px;width:46px;height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><div style="font-size:16px;font-weight:900;color:'+uc+';line-height:1">'+df+'</div><div style="font-size:8px;color:'+uc+';font-weight:800">DÍAS</div></div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:12px">'+d.p+'</div><div style="font-size:10px;color:#64748B;margin-top:2px">'+(d.rs||'')+' · '+(d.t||'')+'</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:10px;color:#94A3B8;font-family:monospace">'+d.fp+(d.fn?' ↻':'')+'</div><div style="font-size:10px;color:#64748B;margin-top:2px;font-weight:600">'+rs(d.r)+'</div></div></div>';}).join('')||'<div style="text-align:center;color:#94A3B8;padding:16px">Sin vencimientos próximos</div>';
 }
 
 function renderARNAlView(){if(CUR_AV==='at')renderARNATiempo();else if(CUR_AV==='re')renderARNAtrasados();else renderARNReprog();}
@@ -3400,7 +3410,7 @@ function renderARNAlView(){if(CUR_AV==='at')renderARNATiempo();else if(CUR_AV===
 function renderARNATiempo(){
   var data=AFILTERED.filter(function(d){return d.c==='A tiempo';}).sort(function(a,b){return(a.fp||'')>(b.fp||'')?1:-1;});
   setTC('a-al-cnt',data.length+' a tiempo');
-  H('a-bd-at').innerHTML=data.map(function(d,i){var dif=dd(d.fp,d.fi);var dc2=dif===null?'#94A3B8':dif<=0?'#059669':dif<=15?'#D97706':'#DC2626';var dt=dif===null?'Sin ingreso':dif===0?'En fecha':dif<0?(Math.abs(dif)+'d antes'):('+'+dif+'d tarde');return'<tr><td style="font-weight:800;color:#059669">'+(i+1)+'</td><td style="font-weight:700">'+d.p+'</td><td>'+badgeT(d.t,atc)+'</td><td style="font-size:10px">'+rs(d.r)+'</td><td style="font-family:monospace;font-size:10px;color:#64748B">'+(d.fp||'--')+'</td><td style="font-family:monospace;font-size:10px;color:#087A84">'+(d.fi||'--')+'</td><td style="font-family:monospace;font-size:10px;color:#059669;font-weight:700">'+(d.fr||'--')+'</td><td style="font-weight:800;color:'+dc2+'">'+dt+'</td><td style="color:#0F766E;font-weight:700">'+(d.monto?'$'+d.monto.toLocaleString():'--')+'</td></tr>';}).join('')||'<tr><td colspan="9" style="text-align:center;color:#94A3B8;padding:20px">Sin trámites a tiempo</td></tr>';
+  H('a-bd-at').innerHTML=data.map(function(d,i){var dif=dd(d.fp,d.fi);var dc2=dif===null?'#94A3B8':dif<=0?'#059669':dif<=15?'#D97706':'#DC2626';var dt=dif===null?'Sin ingreso':dif===0?'En fecha':dif<0?(Math.abs(dif)+'d antes'):('+'+dif+'d tarde');return'<tr><td style="font-weight:800;color:#059669">'+(i+1)+'</td><td style="font-weight:700">'+d.p+'</td><td>'+badgeT(d.t,atc)+'</td><td style="font-size:10px">'+rs(d.r)+'</td><td style="font-family:monospace;font-size:10px">'+fpCelda(d)+'</td><td style="font-family:monospace;font-size:10px;color:#087A84">'+(d.fi||'--')+'</td><td style="font-family:monospace;font-size:10px;color:#059669;font-weight:700">'+(d.fr||'--')+'</td><td style="font-weight:800;color:'+dc2+'">'+dt+'</td><td style="color:#0F766E;font-weight:700">'+(d.monto?'$'+d.monto.toLocaleString():'--')+'</td></tr>';}).join('')||'<tr><td colspan="9" style="text-align:center;color:#94A3B8;padding:20px">Sin trámites a tiempo</td></tr>';
 }
 
 function renderARNAtrasados(){
@@ -3410,20 +3420,20 @@ function renderARNAtrasados(){
   else data=AFILTERED.filter(function(d){return d.c==='Atrasado';});
   data.sort(function(a,b){return(a.fp||'')>(b.fp||'')?1:-1;});
   setTC('a-al-cnt',data.length+' atrasados');
-  H('a-bd-re').innerHTML=data.map(function(d,i){var df=d.fi?dd(d.fp,d.fi):(d.fp?dd(d.fp,ARNTODAY):null);var rb=df>90?'#FFF5F5':df>30?'#FFFBEB':'#fff';var dc2=df>90?'#DC2626':df>30?'#D97706':'#374151';var dt=df===null?'Sin ingreso':df>0?('+'+df+' días'):df<=0?'En fecha':'--';return'<tr style="background:'+rb+'"><td style="font-weight:900;color:'+dc2+';font-size:13px">'+(i+1)+'</td><td style="font-weight:700">'+d.p+'</td><td style="font-family:monospace;font-size:9px;color:#64748B">'+(d.rs||'--')+'</td><td>'+badgeT(d.t,atc)+'</td><td style="font-size:10px">'+rs(d.r)+'</td><td>'+cumplBadge(d.c,df)+'</td><td style="font-family:monospace;font-size:10px;color:#64748B">'+(d.fp||'--')+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fi?'#087A84':'#CBD5E1')+'">'+(d.fi||'Sin ingreso')+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fr?'#059669':'#CBD5E1')+'">'+(d.fr||'--')+'</td><td style="font-weight:900;font-size:13px;color:'+dc2+'">'+dt+'</td></tr>';}).join('')||'<tr><td colspan="10" style="text-align:center;color:#94A3B8;padding:20px">Sin trámites</td></tr>';
+  H('a-bd-re').innerHTML=data.map(function(d,i){var df=d.fi?dd(d.fp,d.fi):(d.fp?dd(d.fp,ARNTODAY):null);var rb=df>90?'#FFF5F5':df>30?'#FFFBEB':'#fff';var dc2=df>90?'#DC2626':df>30?'#D97706':'#374151';var dt=df===null?'Sin ingreso':df>0?('+'+df+' días'):df<=0?'En fecha':'--';return'<tr style="background:'+rb+'"><td style="font-weight:900;color:'+dc2+';font-size:13px">'+(i+1)+'</td><td style="font-weight:700">'+d.p+'</td><td style="font-family:monospace;font-size:9px;color:#64748B">'+(d.rs||'--')+'</td><td>'+badgeT(d.t,atc)+'</td><td style="font-size:10px">'+rs(d.r)+'</td><td>'+cumplBadge(d.c,df)+'</td><td style="font-family:monospace;font-size:10px">'+fpCelda(d)+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fi?'#087A84':'#CBD5E1')+'">'+(d.fi||'Sin ingreso')+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fr?'#059669':'#CBD5E1')+'">'+(d.fr||'--')+'</td><td style="font-weight:900;font-size:13px;color:'+dc2+'">'+dt+'</td></tr>';}).join('')||'<tr><td colspan="10" style="text-align:center;color:#94A3B8;padding:20px">Sin trámites</td></tr>';
 }
 
 function renderARNReprog(){
   var data=AFILTERED.filter(function(d){return d.c==='Reprogramado';}).sort(function(a,b){return(a.fp||'z')>(b.fp||'z')?1:-1;});
   setTC('a-al-cnt',data.length+' reprogramados');
-  H('a-bd-rp').innerHTML=data.map(function(d,i){var df=d.fp?dd(ARNTODAY,d.fp):null;var uc=df===null?'#94A3B8':df<0?'#DC2626':df<=30?'#D97706':'#7C3AED';var dfT=df===null?'Por definir':df<0?('VENCIDA '+Math.abs(df)+'d'):df===0?'HOY':('En '+df+' días');var mot=(d.comentarios||'Sin comentario').slice(0,100);return'<tr><td style="font-weight:800;color:#7C3AED">'+(i+1)+'</td><td style="font-weight:700">'+d.p+'</td><td style="font-family:monospace;font-size:9px;color:#64748B">'+(d.rs||'--')+'</td><td>'+badgeT(d.t,atc)+'</td><td style="font-size:10px;color:#64748B;max-width:100px">'+(d.det||d.d||'--').slice(0,50)+'</td><td style="font-size:10px">'+rs(d.r)+'</td><td style="font-weight:800;color:'+uc+'"><div style="font-family:monospace;font-size:11px">'+(d.fp||'Por definir')+'</div><div style="font-size:9px;margin-top:2px">'+dfT+'</div></td><td style="font-size:10px">'+(d.e||'Reprogramado')+'</td><td style="font-size:10px;color:#64748B;max-width:180px" title="'+mot.replace(/"/g,"'")+'">'+mot+(mot.length>=100?'...':'')+'</td></tr>';}).join('')||'<tr><td colspan="9" style="text-align:center;color:#94A3B8;padding:20px">Sin reprogramados</td></tr>';
+  H('a-bd-rp').innerHTML=data.map(function(d,i){var df=d.fp?dd(ARNTODAY,d.fp):null;var uc=df===null?'#94A3B8':df<0?'#DC2626':df<=30?'#D97706':'#7C3AED';var dfT=df===null?'Por definir':df<0?('VENCIDA '+Math.abs(df)+'d'):df===0?'HOY':('En '+df+' días');var mot=(d.comentarios||'Sin comentario').slice(0,100);return'<tr><td style="font-weight:800;color:#7C3AED">'+(i+1)+'</td><td style="font-weight:700">'+d.p+'</td><td style="font-family:monospace;font-size:9px;color:#64748B">'+(d.rs||'--')+'</td><td>'+badgeT(d.t,atc)+'</td><td style="font-size:10px;color:#64748B;max-width:100px">'+(d.det||d.d||'--').slice(0,50)+'</td><td style="font-size:10px">'+rs(d.r)+'</td><td style="font-weight:800;color:'+uc+'"><div style="font-family:monospace;font-size:11px">'+(d.fp||'Por definir')+'</div><div style="font-size:9px;margin-top:2px">'+dfT+'</div>'+(d.fn&&d.fpo?'<div style="font-size:9px;color:#94A3B8;font-weight:600;margin-top:1px">orig. '+d.fpo+'</div>':'')+'</td><td style="font-size:10px">'+(d.e||'Reprogramado')+'</td><td style="font-size:10px;color:#64748B;max-width:180px" title="'+mot.replace(/"/g,"'")+'">'+mot+(mot.length>=100?'...':'')+'</td></tr>';}).join('')||'<tr><td colspan="9" style="text-align:center;color:#94A3B8;padding:20px">Sin reprogramados</td></tr>';
 }
 
 function renderARNDet(){
   var q=(document.getElementById('a-srch').value||'').toLowerCase();
   var data=AFILTERED.filter(function(d){return!q||(d.p||'').toLowerCase().indexOf(q)>=0||(d.rs||'').toLowerCase().indexOf(q)>=0;});
   setTC('a-det-cnt',data.length+' registros');
-  H('a-det-body').innerHTML=data.map(function(d,i){var dif=d.fp&&d.fi?dd(d.fp,d.fi):null;var dc2=dif===null?'#CBD5E1':dif>0?'#DC2626':dif<0?'#059669':'#94A3B8';var dt=dif===null?'--':dif===0?'0d':dif>0?('+'+dif+'d'):(dif+'d');return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'"><td style="font-weight:700;max-width:120px">'+d.p+'</td><td style="font-family:monospace;font-size:9px;color:#64748B;white-space:nowrap">'+(d.rs||'--')+'</td><td>'+badgeT(d.t,atc)+'</td><td style="color:#64748B">'+(d.d||'--')+'</td><td style="font-size:10px">'+(d.e||'--')+'</td><td>'+cumplBadge(d.c,dif)+'</td><td style="font-size:10px;white-space:nowrap">'+rs(d.r)+'</td><td style="font-family:monospace;font-size:10px;color:#64748B;white-space:nowrap">'+(d.fp||'--')+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fi?'#087A84':'#CBD5E1')+';white-space:nowrap">'+(d.fi||'--')+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fr?'#059669':'#CBD5E1')+';white-space:nowrap">'+(d.fr||'--')+'</td><td style="font-weight:800;color:'+dc2+';white-space:nowrap">'+dt+'</td><td style="text-align:center;font-weight:700;color:'+(d.presupuestado==='Si'||d.presupuestado==='SI'?'#059669':'#CBD5E1')+'">'+(d.presupuestado==='Si'||d.presupuestado==='SI'?'✓':'·')+'</td><td style="font-weight:'+(d.monto?'700':'400')+';color:'+(d.monto?'#0F766E':'#CBD5E1')+';white-space:nowrap">'+(d.monto?'$'+d.monto.toLocaleString():'--')+'</td></tr>';}).join('');
+  H('a-det-body').innerHTML=data.map(function(d,i){var dif=d.fp&&d.fi?dd(d.fp,d.fi):null;var dc2=dif===null?'#CBD5E1':dif>0?'#DC2626':dif<0?'#059669':'#94A3B8';var dt=dif===null?'--':dif===0?'0d':dif>0?('+'+dif+'d'):(dif+'d');return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'"><td style="font-weight:700;max-width:120px">'+d.p+'</td><td style="font-family:monospace;font-size:9px;color:#64748B;white-space:nowrap">'+(d.rs||'--')+'</td><td>'+badgeT(d.t,atc)+'</td><td style="color:#64748B">'+(d.d||'--')+'</td><td style="font-size:10px">'+(d.e||'--')+'</td><td>'+cumplBadge(d.c,dif)+'</td><td style="font-size:10px;white-space:nowrap">'+rs(d.r)+'</td><td style="font-family:monospace;font-size:10px;color:#64748B;white-space:nowrap'+(d.fn?';text-decoration:line-through;opacity:.7':'')+'">'+(d.fpo||'--')+'</td><td style="font-family:monospace;font-size:10px;white-space:nowrap;font-weight:'+(d.fn?'800':'400')+';color:'+(d.fn?'#7C3AED':'#CBD5E1')+'">'+(d.fn||'--')+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fi?'#087A84':'#CBD5E1')+';white-space:nowrap">'+(d.fi||'--')+'</td><td style="font-family:monospace;font-size:10px;color:'+(d.fr?'#059669':'#CBD5E1')+';white-space:nowrap">'+(d.fr||'--')+'</td><td style="font-weight:800;color:'+dc2+';white-space:nowrap" title="'+(d.fn?'Δ contra la nueva fecha reprogramada ('+d.fn+')':'Δ contra la fecha planeada')+'">'+dt+(d.fn?' ↻':'')+'</td><td style="text-align:center;font-weight:700;color:'+(d.presupuestado==='Si'||d.presupuestado==='SI'?'#059669':'#CBD5E1')+'">'+(d.presupuestado==='Si'||d.presupuestado==='SI'?'✓':'·')+'</td><td style="font-weight:'+(d.monto?'700':'400')+';color:'+(d.monto?'#0F766E':'#CBD5E1')+';white-space:nowrap">'+(d.monto?'$'+d.monto.toLocaleString():'--')+'</td></tr>';}).join('');
 }
 
 /* ══════════════════════════════════════
@@ -5475,7 +5485,13 @@ function transformARN(rows){
     var prod = _clean(r['Producto / Actividad']);
     if(!prod || prod==='#NO MATCH') return; // fila vacía
 
-    var fp = _date(r['Fecha planeada']);
+    /* Fecha planeada ORIGINAL y NUEVA FECHA REPROGRAMADA (columna opcional).
+       Regla: sin nueva fecha el trámite cuenta normal; con nueva fecha, todos los cálculos (cumplimiento,
+       atraso, Δ días, año de plan, próximos vencimientos) usan la nueva fecha: el atraso corre hasta que se cumpla.
+       fpo = original (se muestra en el detalle) · fn = nueva · fp = fecha vigente que usa el resto del código */
+    var fpo = _date(r['Fecha planeada']);
+    var fn = _date(r['Nueva fecha reprogramada']);
+    var fp = fn || fpo;
     var fi = _date(r['Fecha Ingreso']);
     var fr = _date(r['Fecha de Resolución']);
     var estado = _clean(r['Estado']) || '';
@@ -5483,11 +5499,15 @@ function transformARN(rows){
     // Cumplimiento (misma lógica Python)
     var c;
     var fpok = !!fp, fiok = !!fi;
-    // Reglas: el cumplimiento se mide por Fecha Ingreso vs Fecha planeada.
-    // Cancelado y Reprogramado son estados especiales que tienen prioridad.
+    // Reglas: el cumplimiento se mide por Fecha Ingreso vs Fecha planeada vigente (la nueva fecha si existe).
+    // Cancelado y Reprogramado son estados especiales que tienen prioridad, con esta salvedad:
+    // un Reprogramado con nueva fecha sigue "Reprogramado" solo mientras no se ingrese y la nueva fecha no haya
+    // vencido; después se evalúa como cualquier trámite contra esa nueva fecha (ingresado tarde / atrasado).
     if(estado==='Cancelado'){
       c='Cancelado';
-    } else if(estado==='Reprogramado'){
+    } else if(estado==='Reprogramado' && !fn){
+      c='Reprogramado';
+    } else if(estado==='Reprogramado' && !fiok && fn>=TODAY_STR){
       c='Reprogramado';
     } else if(fiok){
       // Ya fue ingresado: comparar contra fecha planeada
@@ -5514,7 +5534,7 @@ function transformARN(rows){
       d: _clean(r['Descripción del Tramite']),
       det: _clean(r['Detalle']),
       r: _clean(r['Responsable']),
-      fp: fp, fi: fi, fr: fr,
+      fp: fp, fpo: fpo, fn: fn, fi: fi, fr: fr,
       presupuestado: _clean(r['Presupuestado']),
       monto: _money(r['Monto']),
       internacional: _clean(r['¿Impacta a Internacional?']),
