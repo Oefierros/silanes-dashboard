@@ -6541,9 +6541,8 @@ function renderPORTKpis(){
     {l:'En Ámbar',v:amarillo,s:pct(amarillo,t)+'% 15-30 días',c:'#D97706'},
     {l:'En Rojo',v:rojo,s:pct(rojo,t)+'% +30 días',c:'#DC2626'},
     {l:'Replanificados',v:PORT_META.replanificados,s:'del portafolio total',c:'#7C3AED'},
-    {l:'Con No-aprobación',v:PORT_META.noAprobacion,s:'al menos 1 oficio negativo',c:'#BE185D'},
-    {l:'Δ histórico prom.',v:PORT_META.deltaHistoricoProm+'m',s:'máx. '+PORT_META.maxDeltaHistorico+' meses',c:'#0891B2'},
-    {l:'% portafolio en riesgo',v:PORT_META.pctPortafolioRiesgo+'%',s:'cumplimiento de fechas',c:'#B91C1C'}
+    {l:'Con no-aprobación',v:PORT_META.noAprobacion,s:'proyectos a los que COFEPRIS les emitió al menos un oficio negativo (no favorable o desecho). No depende del tiempo del proyecto.',c:'#BE185D'},
+    {l:'Retraso promedio vs. fecha original',v:PORT_META.deltaHistoricoProm+' meses',s:'cuánto se movió en promedio la fecha de registro respecto a la original (V1), entre los '+PORT_META.proyectosTotales+' proyectos. El que más se movió: '+PORT_META.maxDeltaHistorico+' meses.',c:'#0891B2'}
   ].map(kpiMap({fs:[5,'20']})).join(''));
 }
 
@@ -6660,8 +6659,8 @@ function portTLElegir(i){
 /* ══════════════════════════════════════════════════════════
    VISTA POR PROYECTO (según la "Especificación de mejoras" de nov-2026)
    Bloques, de lo más ejecutivo a lo más detallado:
-     1 Encabezado · 2 Ficha del producto · 3 Situación actual (dónde está detenido, avance por etapas,
-     fechas) · 4 Estrategia y riesgo · 5 Bitácora · 6 Cuánto se movió cada etapa.
+     1 Encabezado · 2 Ficha del producto · 3 Situación actual (etapa actual, atraso / próximo hito, fecha de
+     obtención de registro planeada, avance por etapas) · 4 Estrategia y riesgo · 5 Bitácora · 6 Cuánto se movió cada etapa.
    Reglas: las 11 etapas se llaman por su nombre corto (sin códigos E1–E10); "N/A" = la etapa no aplica y no se
    dibuja; las etapas CMN solo salen si el Plan actual les puso fecha; el semáforo de Δ días por etapa es 30/90.
    ══════════════════════════════════════════════════════════ */
@@ -6776,7 +6775,7 @@ function portFichaHTML(p){
   '</div>';
 }
 
-/* ── 3 · Situación actual: dónde está detenido · atraso / próximo hito · registro objetivo · avance por etapas ── */
+/* ── 3 · Situación actual: etapa actual · atraso / próximo hito · fecha de obtención de registro planeada · avance por etapas ── */
 function portSituacionHTML(p,semCol,et){
   var corte=portCorte(), ea=p.etapaActual||'Sin etapa asignada';
   var sg=function(n){return (n>0?'+':(n<0?'−':''))+Math.abs(n);};
@@ -6788,12 +6787,12 @@ function portSituacionHTML(p,semCol,et){
       '<div class="ks" style="white-space:normal;line-height:1.35">'+sub+'</div></div>';
   };
 
-  /* Dónde está detenido */
+  /* Etapa actual */
   var sub=p.subEstatus&&p.subEstatus!=='No aplica'&&p.subEstatus!=='Sin dato'?p.subEstatus:'';
   var sc=portSubColor2(sub);
   var dEt=(p.deltaEtapa==null||ea==='Desarrollo'||ea==='Cancelado')?null:p.deltaEtapa;
   var hitoNom=PORT_HITO_DE[ea]||ea;
-  var detenido=kpi('#065A62','Dónde está detenido','<span style="font-size:20px">'+portEsc(ea)+'</span>',
+  var detenido=kpi('#065A62','Etapa actual','<span style="font-size:20px">'+portEsc(ea)+'</span>',
     (dEt!==null?('Δ de '+portEsc(hitoNom)+': <b style="color:'+portColorDias(dEt)+'">'+sg(dEt)+' d</b> <span style="color:#94A3B8">(negativo = días de margen)</span>'):'Sin Δ: esta etapa no lleva fecha comprometida.'),
     sub?portBadge(portEsc(sub),sc.c)+(sc.quien?' <span style="font-size:10px;color:#94A3B8;font-weight:700">'+sc.quien+'</span>':''):'',19);
 
@@ -6810,12 +6809,12 @@ function portSituacionHTML(p,semCol,et){
   var subMax=(acum>0?'Acumulado: '+acum+' d en '+atr.length+' etapa'+(atr.length===1?'':'s')+'. ':'Ninguna etapa atrasada. ')+'Semáforo por etapa: hasta 30 d verde, 31–90 d ámbar, más de 90 d rojo.';
   var mayor=kpi(cMax,tituloMax,valMax,subMax,extraMax,p.maxDesv>0?null:22);
 
-  /* Registro objetivo vs original */
+  /* Fecha de obtención de registro planeada vs original */
   var blE10=p.baselineEtapas&&p.baselineEtapas[9];
   var tBl=portParseFecha(blE10), tVig=portParseFecha(p.fechaReg);
   var dv=(tBl!==null&&tVig!==null)?Math.round((tVig-tBl)/86400000/30.44):p.deltaV1;
   var cDv=portColorMeses(dv||0);
-  var registro=kpi(cDv,'Registro objetivo',fF(p.fechaReg),
+  var registro=kpi(cDv,'Fecha de obtención de registro planeada',fF(p.fechaReg),
     (blE10?'Original '+fF(blE10)+'. ':'')+(dv>0?'Se atrasó vs. lo acordado.':(dv<0?'Se adelantó vs. lo acordado.':'Sin cambio vs. lo acordado.')),
     '<span style="color:'+cDv+'">'+sg(dv)+' meses vs. original</span>',19);
 
@@ -6848,37 +6847,6 @@ function portSituacionHTML(p,semCol,et){
   var punt='<div style="font-size:11px;color:#94A3B8;margin-top:10px" title="Antes “% de cumplimiento”. Mide qué tan cerca va el proyecto de su fecha planeada; no mide el avance.">Índice de puntualidad: <b style="color:#64748B">'+(p.pctCumpl==null?'—':p.pctCumpl+'%')+'</b> · Δ histórico vs. V1: <b style="color:'+portColorMeses(p.deltaV1||0)+'">'+sg(p.deltaV1||0)+' meses</b></div>';
 
   return '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:14px">'+detenido+mayor+registro+'</div>'+punt+stepper;
-}
-
-/* ── Inicio del proyecto: compara la MISMA etapa en Baseline, Plan vigente y Real ── */
-function portInicioHTML(p,et){
-  var corte=portCorte();
-  var e0=et[0];
-  /* Informe Fase 1 si aplica y tiene fecha; si no, la primera etapa que tenga fecha en el Baseline y en el Plan actual */
-  var e=null;
-  if(e0.visible&&(e0.tb!==null||e0.tp!==null))e=e0;
-  else for(var i=1;i<et.length;i++){if(et[i].visible&&et[i].tb!==null&&et[i].tp!==null){e=et[i];break;}}
-  if(!e)return '';
-  var iniBase=portParseFecha(p.baselineF1ini);   /* Baseline G: inicio planeado de Fase 1 */
-  var celda=function(titulo,color,valor,extra){
-    return '<div style="flex:1;min-width:180px;border-left:4px solid '+color+';padding:4px 0 4px 12px"><div style="font-size:10px;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.4px">'+titulo+'</div>'+valor+(extra?'<div style="font-size:10px;color:#64748B">'+extra+'</div>':'')+'</div>';
-  };
-  var val=function(ts,color){return ts===null?'<div style="font-size:15px;font-weight:700;color:#94A3B8;margin-top:5px">Sin fecha</div>':'<div style="font-size:19px;font-weight:800;color:'+color+';margin-top:3px">'+portFmtFecha(ts)+'</div>';};
-  var dif=function(a,b,txt){if(a===null||b===null)return '';var d=Math.round((b-a)/86400000);return d===0?'sin cambio':(d>0?'+'+d+' d '+txt:Math.abs(d)+' d antes');};
-  var real;
-  if(e.tr!==null)real=celda('Real','#065A62',val(e.tr,'#065A62'),dif(e.tp,e.tr,'vs plan vigente'));
-  else{
-    var vencido=(e===e0&&iniBase!==null&&iniBase<corte)||(e!==e0&&e.tp!==null&&e.tp<corte);
-    real=vencido?celda('Real','#D97706','<div style="font-size:14px;font-weight:800;color:#B45309;margin-top:5px">Sin fecha real</div>','inicio planeado: '+portFmtFecha(e===e0?iniBase:e.tp)):
-      celda('Real','#94A3B8','<div style="font-size:15px;font-weight:700;color:#94A3B8;margin-top:5px">Aún no inicia</div>','');
-  }
-  return '<div class="card" style="margin-top:14px"><div class="ct">Inicio del proyecto: planeado · plan vigente · real<span class="help-ico">i</span><span class="help-tip">Compara la misma etapa en las tres trayectorias: fecha original (Baseline V1), plan vigente y real. Se usa Informe Fase 1; si no aplica, la primera etapa con fecha en el Baseline y en el Plan actual. Si el inicio planeado ya pasó y no hay fecha real, se avisa en ámbar.</span>'+
-    '<span style="margin-left:10px;font-size:10px;font-weight:700;color:#475569;background:#F1F5F9;padding:3px 9px;border-radius:12px;text-transform:none;letter-spacing:0">Etapa: '+portEsc(e.nombre)+'</span></div>'+
-    '<div style="display:flex;gap:18px;flex-wrap:wrap">'+
-      celda('Original (Baseline V1)','#7C3AED',val(e.tb,'#7C3AED'),(e===e0&&iniBase!==null?'inicio planeado '+portFmtFecha(iniBase):''))+
-      celda('Plan vigente ('+portEsc(p.version)+')','#64748B',val(e.tp,'#64748B'),dif(e.tb,e.tp,'vs original'))+
-      real+
-    '</div></div>';
 }
 
 /* ── 4 · Estrategia y riesgo ── */
@@ -6985,7 +6953,6 @@ function renderPORTTLPanel(){
   var h=portEncabezadoHTML(p,catCol,semCol)+
     portFichaHTML(p)+
     portSituacionHTML(p,semCol,et)+
-    portInicioHTML(p,et)+
     portEstratCardHTML(p)+
     portBitacoraCardHTML(p)+
     '<div class="card" style="margin-top:14px">'+
@@ -7075,7 +7042,7 @@ function renderPORTTLDumbbell(p,et){
       var row=function(l,items){return '<div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:3px 0">'+lbl+l+'</span>'+items.map(function(x){return '<span>'+x+'</span>';}).join('')+'</div>';};
       return '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:8px 14px;margin-bottom:12px;font-size:11px;font-weight:600;color:#475569">'+
         row('Puntos',[dotS('#7C3AED')+'Original (Baseline)',dotS('#64748B')+'Plan vigente',dotS('#065A62',true)+'Real (ya ocurrió)',dotS('#DC2626',true)+'Pendiente con plan vencido (sobre la línea de hoy)'])+
-        row('Líneas',[lineS('#F87171')+'Cuánto se movió el plan vs. el original',lineS('#DC2626',true)+'Diferencia entre real y plan vigente'])+
+        row('Líneas',[lineS('#F87171')+'Versión inicial vs plan actual (cuánto se movió el plan)',lineS('#DC2626',true)+'Real vs plan actual'])+
         row('Color',[dotS('#DC2626')+'Rojo = atraso',dotS('#059669')+'Verde = adelanto',dotS('#065A62')+'Teal = a tiempo'])+
       '</div>';
     })()+
@@ -7104,9 +7071,9 @@ function renderPORTTLDumbbell(p,et){
     if(r.tr!==null)dots+=dot(r.tr,colReal,15,tip('Real',r.tr),4,true);
     if(enCurso)dots+=dot(corte,'#DC2626',13,'Pendiente: no se ha entregado; lleva '+dias(corte,r.tp)+' d de atraso al corte',4,true);
     var chips=[];
-    if(r.tb!==null&&r.tp!==null)chips.push(chip('Plan vs original',dias(r.tp,r.tb)));
-    else if(r.tp!==null)chips.push('<span style="font-size:10px;color:#94A3B8">sin fecha original</span>');
-    if(r.tp!==null&&r.tr!==null)chips.push(chip('Real vs plan',dias(r.tr,r.tp)));
+    if(r.tb!==null&&r.tp!==null)chips.push(chip('Versión inicial vs plan actual',dias(r.tp,r.tb)));
+    else if(r.tp!==null)chips.push('<span style="font-size:10px;color:#94A3B8">sin fecha en la versión inicial</span>');
+    if(r.tp!==null&&r.tr!==null)chips.push(chip('Real vs plan actual',dias(r.tr,r.tp)));
     if(r.pend){
       if(enCurso)chips.push(chip('Pendiente · atraso en curso',dias(corte,r.tp)));
       else chips.push('<span style="font-size:10px;font-weight:700;background:#F1F5F9;color:#64748B;padding:3px 8px;border-radius:12px;white-space:nowrap">Pendiente'+(r.tp!==null?' · faltan '+dias(r.tp,corte)+' d':' · sin fecha plan')+'</span>');
