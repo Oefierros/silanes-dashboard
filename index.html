@@ -300,7 +300,7 @@ function alternarEstilo(){
     <div id="a-ft"></div>
     <div id="a-fr"></div>
     <div id="a-fry"></div>
-    <span class="info" id="a-info">150 trámites</span>
+    <span class="info" id="a-info">Cargando…</span>
   </div>
   <!-- Tabs ARN -->
   <div class="sec-tabs">
@@ -460,7 +460,7 @@ function alternarEstilo(){
       <option value="">Todas las llaves</option>
       <option value="✅">✅ Confirmadas</option><option value="⚠️">⚠️ Pendientes</option>
     </select>
-    <span class="info" id="p-info">351 pagos</span>
+    <span class="info" id="p-info">Cargando…</span>
   </div>
   <!-- Tabs Pagos -->
   <div class="sec-tabs">
@@ -648,7 +648,7 @@ function alternarEstilo(){
     <div id="ri-ft"></div>
     <div id="ri-fd"></div>
     <div id="ri-fa"></div>
-    <span class="info" id="ri-info">443 trámites</span>
+    <span class="info" id="ri-info">Cargando…</span>
   </div>
   <div class="sec-tabs">
     <button class="sec-tab on" onclick="showARITab('ov',this)">📊 Resumen</button>
@@ -815,7 +815,7 @@ function alternarEstilo(){
     <div id="rn-fo"></div>
     <div id="rn-fe"></div>
     <div id="rn-ff"></div>
-    <span class="info" id="rn-info">42 proyectos</span>
+    <span class="info" id="rn-info">Cargando…</span>
   </div>
   <div class="sec-tabs">
     <button class="sec-tab on" onclick="showRNTab('ov',this)">📊 Resumen Ejecutivo</button>
@@ -964,7 +964,7 @@ function alternarEstilo(){
     <span style="font-size:10px;color:#94A3B8;font-weight:700">FILTROS:</span>
     <div id="port-fc"></div>
     <div id="port-fs"></div>
-    <span class="info" id="port-info">43 proyectos</span>
+    <span class="info" id="port-info">Cargando…</span>
   </div>
   <div class="sec-tabs">
     <button class="sec-tab on" onclick="showPORTTab('ov',this)">📊 Resumen</button>
@@ -1039,7 +1039,7 @@ function alternarEstilo(){
     <div id="bio-fe"></div>
     <div id="bio-fl"></div>
     <div id="bio-fy"></div>
-    <span class="info" id="bio-info">76 lotes</span>
+    <span class="info" id="bio-info">Cargando…</span>
   </div>
   <div class="sec-tabs">
     <button class="sec-tab on" onclick="showBIOTab('ov',this)">📊 Resumen</button>
@@ -1148,7 +1148,7 @@ function alternarEstilo(){
     <div id="nrr-fg"></div>
     <div id="nrr-fs"></div>
     <div id="nrr-fk"></div>
-    <span class="info" id="nrr-info">91 productos</span>
+    <span class="info" id="nrr-info">Cargando…</span>
   </div>
   <div class="sec-tabs">
     <button class="sec-tab on" onclick="showNRRTab('ov',this)">📊 Resumen</button>
@@ -4642,13 +4642,18 @@ function applyRN(){
   }
   RNF=RN.records.filter(pasa);
   RNE=(RN.entradas||[]).filter(pasa);
-  var unicos=RNF.filter(function(d){return !d.maxIntentoReg||d.maxIntentoReg<=1;}).length;
-  var conReing=RNF.filter(function(d){return d.maxIntentoReg>=2;}).length;
-  setTC('rn-info',RNF.length+' proyectos ('+unicos+' únicos + '+conReing+' con reingreso)');
   renderRN();
 }
 
+/* Contador del encabezado de RN: proyectos consolidados (únicos + con reingreso) del filtro actual */
+function actualizarInfoRN(){
+  var unicos=RNF.filter(function(d){return !d.maxIntentoReg||d.maxIntentoReg<=1;}).length;
+  var conReing=RNF.filter(function(d){return d.maxIntentoReg>=2;}).length;
+  setTC('rn-info',RNF.length+' proyectos ('+unicos+' únicos + '+conReing+' con reingreso)');
+}
+
 function renderRN(){
+  actualizarInfoRN();
   renderRNKPIs();renderRNFunnel();renderRNDonut();renderRNCmnDonut();renderRNAnio();
   renderRNDuracion();renderRNTiempos();renderRNCmn();renderRNReing();renderRNDet();
 }
@@ -7029,6 +7034,20 @@ function renderPORTTLDumbbell(p){
   el.innerHTML=h;
 }
 
+/* Contadores del encabezado de cada universo con los datos recién cargados (cada universo los
+   vuelve a escribir al aplicar filtros o dibujarse; esto evita que los universos que no están a la vista queden desfasados) */
+function actualizarContadoresEncabezado(){
+  var n=function(arr){return arr?arr.length:0;};
+  /* solo se escribe donde todavía dice "Cargando…": si el universo ya se dibujó, conserva su texto completo */
+  var pon=function(id,txt){var e=document.getElementById(id);if(e&&/^Cargando/.test(e.textContent))e.textContent=txt;};
+  pon('a-info',n(AFILTERED)+' trámites');
+  pon('p-info',n(PFILTERED)+' pagos');
+  pon('ri-info',n(ARIF)+' trámites');
+  if(/^Cargando/.test((document.getElementById('rn-info')||{}).textContent||''))actualizarInfoRN();
+  pon('bio-info',n(BIOF)+' lotes');
+  pon('nrr-info',n(NRRF)+' producto'+(n(NRRF)===1?'':'s'));
+}
+
 function cargarDatosEnVivo(){
   mostrarCargando(true);
   var sello=document.getElementById('sello-actualizacion');
@@ -7083,6 +7102,7 @@ function cargarDatosEnVivo(){
     else if(activeUni==='ari'&&typeof renderARI==='function') renderARI();
     else if(activeUni==='rn'&&typeof renderRN==='function'){ if(RN_UNLOCKED) renderRN(); else rnLockShow(true); }
 
+    actualizarContadoresEncabezado();
     actualizarSello(true);
     mostrarCargando(false);
   }).catch(function(err){
