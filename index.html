@@ -456,6 +456,11 @@ function alternarEstilo(){
     <div id="p-fm"></div>
     <div id="p-ft"></div>
     <div id="p-fr"></div>
+    <select id="p-fu" onchange="applyPAG()" title="Publicidad = centro de costos 13110000 (se carga a Comercial, no a Regulatorios)" style="border:1px solid #CBD5E1;border-radius:8px;padding:5px 8px;font-size:11px;font-weight:700;color:#334155;background:#fff;cursor:pointer">
+      <option value="reg">Regulatorios (sin Publicidad)</option>
+      <option value="pub">Solo Publicidad (13110000)</option>
+      <option value="todo">Regulatorios + Publicidad</option>
+    </select>
     <select id="p-fc" style="display:none">
       <option value="">Todas las llaves</option>
       <option value="✅">✅ Confirmadas</option><option value="⚠️">⚠️ Pendientes</option>
@@ -1686,7 +1691,7 @@ function initTablasOrdenables(){
 initTablasOrdenables();
 
 var CH={};
-var AFILTERED=[], PFILTERED=[];
+var AFILTERED=[], PFILTERED=[], PBASE=[];
 var CUR_AV='at', CUR_SV='all';
 
 /* ── NAVEGACIÓN PRINCIPAL ── */
@@ -3516,18 +3521,26 @@ function applyPAG(){
   var fm=msGet('p-fm');
   var ft=msGet('p-ft');
   var fr=msGet('p-fr');
-  PFILTERED=P.records.filter(function(d){
+  /* PBASE = registros que cumplen los filtros, con Regulatorios y Publicidad juntos */
+  PBASE=P.records.filter(function(d){
     if(fy.length&&fy.indexOf(String(d.anioSol))<0)return false;
     if(fm.length&&fm.indexOf(String(d.mesSol))<0)return false;
     if(ft.length&&ft.indexOf(d.tramite)<0)return false;
     if(fr.length&&fr.indexOf(d.resp)<0)return false;
     return true;
   });
+  /* PFILTERED = lo que se grafica en todas las pestañas: por defecto SOLO Regulatorios */
+  var uni=(document.getElementById('p-fu')||{}).value||'reg';
+  PFILTERED=PBASE.filter(function(d){return uni==='todo'||(uni==='pub'?d.pub:!d.pub);});
   var real=PFILTERED.filter(function(d){return d.status==='Real';});
-  var plan=PFILTERED.filter(function(d){return d.status==='Planeado';});
-  setTC('p-info',PFILTERED.length+' pagos | Planeado: '+fmt(sum(PFILTERED,'monto'))+' | Real: '+fmt(sum(real,'monto'))+' ('+pct(sum(real,'monto'),sum(PFILTERED,'monto'))+'% ejec.)');
+  var pubB=PBASE.filter(function(d){return d.pub;});
+  var nota=pubB.length&&uni==='reg'?' | Publicidad aparte: '+pubB.length+' ('+fmt(sum(pubB,'monto'))+')':'';
+  setTC('p-info',(uni==='pub'?'PUBLICIDAD · ':'')+PFILTERED.length+' pagos | Planeado: '+fmt(sum(PFILTERED,'monto'))+' | Real: '+fmt(sum(real,'monto'))+' ('+pct(sum(real,'monto'),sum(PFILTERED,'monto'))+'% ejec.)'+nota);
   renderPAG();
 }
+
+/* Registros de Publicidad (13110000) que cumplen los filtros actuales, sin importar la vista elegida */
+function pagPubDe(resp){return (PBASE||[]).filter(function(d){return d.pub&&(!resp||d.resp===resp);});}
 
 function renderPAG(){renderPAGKPIs();renderPAGOv();renderPAGMesTabs();renderPAGTramTabs();renderPAGRespTabs();lazyRun('pag-llaves','p-pg-llaves',renderPAGLlaves);lazyRun('pag-det','p-pg-det',renderPAGDet);}
 
@@ -3771,8 +3784,17 @@ function renderPAGRespTabs(){
       scales:{x:{grid:{display:false},ticks:{font:{size:9,weight:'bold'},color:'#374151'}},
               y:{grid:{color:'#F1F5F9'},ticks:{font:{size:9},color:'#94A3B8',
                        callback:function(v){return fmt(v);}}}}}});
+  /* cada tarjeta muestra, si aplica, el desglose Regulatorios vs Publicidad (centro de costos 13110000) */
   H('p-resp-cards').innerHTML=rd.map(function(d){
     var color=prc(d.resp);
+    var pubR=pagPubDe(d.resp), regR=(PBASE||[]).filter(function(x){return x.resp===d.resp&&!x.pub;});
+    var split=pubR.length?
+      '<div style="margin-top:10px;border:1px dashed #C4B5FD;background:#FAF5FF;border-radius:8px;padding:9px 10px">'+
+        '<div style="font-size:9px;font-weight:800;color:#6D28D9;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">A quién se le cargó (centro de costos)</div>'+
+        '<div style="display:flex;gap:8px">'+
+          '<div style="flex:1"><div style="font-size:9px;color:#64748B;font-weight:700">REGULATORIOS</div><div style="font-size:15px;font-weight:900;color:#065A62">'+fmt(sum(regR,'monto'))+'</div><div style="font-size:10px;color:#64748B">'+regR.length+' pagos</div></div>'+
+          '<div style="flex:1"><div style="font-size:9px;color:#64748B;font-weight:700">COMERCIAL · PUBLICIDAD (13110000)</div><div style="font-size:15px;font-weight:900;color:#7C3AED">'+fmt(sum(pubR,'monto'))+'</div><div style="font-size:10px;color:#64748B">'+pubR.length+' pagos</div></div>'+
+        '</div></div>':'';
     var bc=d.ejPct>=80?'#059669':d.ejPct>=50?'#D97706':'#DC2626';
     return'<div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:5px solid '+color+'">'+
       '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'+
@@ -3798,7 +3820,7 @@ function renderPAGRespTabs(){
       '</div>'+
       '<div style="background:#E2E8F0;border-radius:4px;height:8px;overflow:hidden">'+
         '<div style="background:'+color+';height:8px;border-radius:4px;width:'+d.ejPct+'%"></div>'+
-      '</div>'+
+      '</div>'+split+
     '</div>';
   }).join('');
 }
@@ -3840,7 +3862,7 @@ function renderPAGDet(){
   var q=(document.getElementById('p-srch').value||'').toLowerCase();
   var data=PFILTERED.filter(function(d){return!q||(d.prod||'').toLowerCase().indexOf(q)>=0||(d.llave||'').toLowerCase().indexOf(q)>=0||(d.desc||'').toLowerCase().indexOf(q)>=0||(d.tramite||'').toLowerCase().indexOf(q)>=0;});
   setTC('p-det-cnt',data.length+' registros · '+fmt(sum(data,'monto')));
-  H('p-det-body').innerHTML=data.map(function(d,i){var confBg=d.conf==='✅'?'#DCFCE7':d.conf==='⚠️'?'#FEF3C7':'#F1F5F9';var confC=d.conf==='✅'?'#15803D':d.conf==='⚠️'?'#92400E':'#64748B';return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'"><td style="font-weight:700;color:#64748B;font-size:10px">'+(d.orden||i+1)+'</td><td style="font-weight:700;max-width:120px">'+d.prod+'</td><td>'+badgeT(d.tramite,ptc)+'</td><td style="color:#64748B;font-size:10px;max-width:130px">'+(d.desc||'--')+'</td><td style="font-size:10px">'+d.resp+'</td><td style="font-weight:800;color:#059669;white-space:nowrap">'+fmt(d.monto)+'</td><td style="font-family:monospace;font-size:10px;color:#64748B;white-space:nowrap">'+(d.fSol||'--')+'</td><td style="font-family:monospace;font-size:10px;color:#087A84;white-space:nowrap">'+(d.fEnt||'--')+'</td><td style="font-family:monospace;font-size:10px;white-space:nowrap">'+(d.llave||'--')+'</td><td><span class="badge" style="background:'+confBg+';color:'+confC+'">'+(d.conf||'--')+'</span></td><td style="font-size:10px;color:#64748B;max-width:150px" title="'+(d.coment||'').replace(/"/g,"'")+'">'+(d.coment?d.coment.slice(0,55)+(d.coment.length>55?'...':''):'--')+'</td></tr>';}).join('');
+  H('p-det-body').innerHTML=data.map(function(d,i){var confBg=d.conf==='✅'?'#DCFCE7':d.conf==='⚠️'?'#FEF3C7':'#F1F5F9';var confC=d.conf==='✅'?'#15803D':d.conf==='⚠️'?'#92400E':'#64748B';return'<tr style="background:'+(i%2===0?'#fff':'#FAFAFA')+'"><td style="font-weight:700;color:#64748B;font-size:10px">'+(d.orden||i+1)+'</td><td style="font-weight:700;max-width:120px">'+d.prod+(d.pub?' <span class="badge" style="background:#EDE9FE;color:#5B21B6" title="Centro de costos 13110000: se carga a Comercial">Publicidad</span>':'')+'</td><td>'+badgeT(d.tramite,ptc)+'</td><td style="color:#64748B;font-size:10px;max-width:130px">'+(d.desc||'--')+'</td><td style="font-size:10px">'+d.resp+'</td><td style="font-weight:800;color:#059669;white-space:nowrap">'+fmt(d.monto)+'</td><td style="font-family:monospace;font-size:10px;color:#64748B;white-space:nowrap">'+(d.fSol||'--')+'</td><td style="font-family:monospace;font-size:10px;color:#087A84;white-space:nowrap">'+(d.fEnt||'--')+'</td><td style="font-family:monospace;font-size:10px;white-space:nowrap">'+(d.llave||'--')+'</td><td><span class="badge" style="background:'+confBg+';color:'+confC+'">'+(d.conf||'--')+'</span></td><td style="font-size:10px;color:#64748B;max-width:150px" title="'+(d.coment||'').replace(/"/g,"'")+'">'+(d.coment?d.coment.slice(0,55)+(d.coment.length>55?'...':''):'--')+'</td></tr>';}).join('');
 }
 
 /* INICIO: los datos se cargan en vivo con cargarDatosEnVivo() */
@@ -5645,6 +5667,10 @@ function esPresupuestado(v){
   return null;
 }
 
+/* Centro de costos 13110000 = PUBLICIDAD: se carga a Comercial, no a Regulatorios.
+   Es un universo aparte: el total de Regulatorios no lo incluye (siempre son trámites de MA. Flores). */
+var PAG_CC_PUBLICIDAD='13110000';
+
 function transformPagos(rows){
   var records=[];
 
@@ -5693,6 +5719,7 @@ function transformPagos(rows){
       desc:_clean(r['Descripción']),
       monto:monto,
       cc:_clean(r['Centro de costos']),
+      pub:String(_clean(r['Centro de costos'])||'').replace(/\D/g,'')===PAG_CC_PUBLICIDAD,
       fSol:fSol,
       mesSol:mesPlan,
       anioSol:anioPlan,
@@ -7128,7 +7155,8 @@ function cargarDatosEnVivo(){
 
     // Reiniciar las marcas de "ya dibujado" y los datos filtrados
     if(typeof AFILTERED!=='undefined') AFILTERED=D.records.slice();
-    if(typeof PFILTERED!=='undefined') PFILTERED=P.records.slice();
+    if(typeof PBASE!=='undefined') PBASE=P.records.slice();
+    if(typeof PFILTERED!=='undefined') PFILTERED=P.records.filter(function(d){return !d.pub;});
     if(typeof ARIF!=='undefined') ARIF=ARI.records.slice();
     if(typeof RNF!=='undefined') RNF=RN.records.slice();
     if(typeof RNE!=='undefined') RNE=RN.entradas.slice();
